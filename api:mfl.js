@@ -11,40 +11,43 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing required params: server, TYPE" });
   }
 
-  // playersByName: fetch the MFL player DB server-side, return only watchlist matches.
-  // Tries several base URLs since the players endpoint may live on a different host.
+  // playersByName: fetch MFL player DB server-side (no timeout — let Vercel's 60s limit handle it),
+  // then return only the players that match the watchlist.
   if (TYPE === "playersByName") {
     const nameSet = new Set((names || "").split(",").filter(Boolean));
     if (!nameSet.size) return res.status(400).json({ error: "Missing names param" });
 
-    const bases = [
-      `https://${server}.myfantasyleague.com`,
-      `https://www.myfantasyleague.com`,
-      `https://www57.myfantasyleague.com`,
-    ];
-
     const errors = [];
 
+    // Try several base URLs — the players DB may live on a different host than league data
+    const bases = [
+      `https://api.myfantasyleague.com`,
+      `https://${server}.myfantasyleague.com`,
+      `https://www.myfantasyleague.com`,
+    ];
+
     for (const base of bases) {
-      // Try with and without league context
       const urls = L
         ? [`${base}/${year}/export?TYPE=players&L=${L}&JSON=1`, `${base}/${year}/export?TYPE=players&JSON=1`]
         : [`${base}/${year}/export?TYPE=players&JSON=1`];
 
       for (const url of urls) {
         try {
+          // No AbortSignal here — let the 60-second Vercel limit be the ceiling
           const r = await fetch(url, {
             headers: { "Accept-Encoding": "gzip, deflate, br" },
-            signal: AbortSignal.timeout(8000),
           });
           if (!r.ok) { errors.push(`${url} → HTTP ${r.status}`); continue; }
           const data = await r.json();
           const all = data?.players?.player ?? [];
           const arr = Array.isArray(all) ? all : [all];
-          if (arr.length === 0) { errors.push(`${url} → empty player list`); continue; }
+          if (arr.length === 0) { errors.push(`${url} → empty list`); continue; }
           const filtered = arr.filter(p => nameSet.has(norm(p.name)));
           res.setHeader("Cache-Control", "no-store");
-          return res.json({ players: { player: filtered }, _meta: { total: arr.length, matched: filtered.length, source: url } });
+          return res.json({
+            players: { player: filtered },
+            _meta: { total: arr.length, matched: filtered.length, source: url },
+          });
         } catch (e) {
           errors.push(`${url} → ${e.message}`);
         }
