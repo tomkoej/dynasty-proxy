@@ -5,56 +5,51 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  const { server, year = "2026", TYPE, L, names, ...rest } = req.query;
+  const { server, year = "2026", TYPE, L, names, POSITIONS, ...rest } = req.query;
 
   if (!server || !TYPE) {
     return res.status(400).json({ error: "Missing required params: server, TYPE" });
   }
 
-  // playersByName: fetch MFL player DB server-side (no timeout — let Vercel's 60s limit handle it),
-  // then return only the players that match the watchlist.
+  // playersByName: fetch position-filtered player lists (small requests), return only matches.
+  // Avoids the massive full player DB which hangs and kills the connection.
   if (TYPE === "playersByName") {
     const nameSet = new Set((names || "").split(",").filter(Boolean));
     if (!nameSet.size) return res.status(400).json({ error: "Missing names param" });
 
+    const positions = (POSITIONS || "QB,RB,WR,TE").split(",");
+    const matched = [];
     const errors = [];
 
-    // Try several base URLs — the players DB may live on a different host than league data
-    const bases = [
-      `https://api.myfantasyleague.com`,
-      `https://${server}.myfantasyleague.com`,
-      `https://www.myfantasyleague.com`,
-    ];
-
-    for (const base of bases) {
-      const urls = L
-        ? [`${base}/${year}/export?TYPE=players&L=${L}&JSON=1`, `${base}/${year}/export?TYPE=players&JSON=1`]
-        : [`${base}/${year}/export?TYPE=players&JSON=1`];
-
+    for (const pos of positions) {
+      const urls = [
+        `https://${server}.myfantasyleague.com/${year}/export?TYPE=players&POSITION=${pos}&JSON=1${L ? `&L=${L}` : ""}`,
+        `https://api.myfantasyleague.com/${year}/export?TYPE=players&POSITION=${pos}&JSON=1${L ? `&L=${L}` : ""}`,
+      ];
+      let gotPos = false;
       for (const url of urls) {
         try {
-          // No AbortSignal here — let the 60-second Vercel limit be the ceiling
           const r = await fetch(url, {
             headers: { "Accept-Encoding": "gzip, deflate, br" },
+            signal: AbortSignal.timeout(20000),
           });
-          if (!r.ok) { errors.push(`${url} → HTTP ${r.status}`); continue; }
+          if (!r.ok) { errors.push(`${pos}: HTTP ${r.status}`); continue; }
           const data = await r.json();
           const all = data?.players?.player ?? [];
           const arr = Array.isArray(all) ? all : [all];
-          if (arr.length === 0) { errors.push(`${url} → empty list`); continue; }
-          const filtered = arr.filter(p => nameSet.has(norm(p.name)));
-          res.setHeader("Cache-Control", "no-store");
-          return res.json({
-            players: { player: filtered },
-            _meta: { total: arr.length, matched: filtered.length, source: url },
-          });
+          const hits = arr.filter(p => nameSet.has(norm(p.name)));
+          matched.push(...hits);
+          gotPos = true;
+          break;
         } catch (e) {
-          errors.push(`${url} → ${e.message}`);
+          errors.push(`${pos}: ${e.message}`);
         }
       }
+      if (!gotPos) errors.push(`${pos}: all urls failed`);
     }
 
-    return res.status(500).json({ error: "All player DB attempts failed", attempts: errors });
+    res.setHeader("Cache-Control", "no-store");
+    return res.json({ players: { player: matched }, _meta: { matched: matched.length, errors } });
   }
 
   // Standard proxy for all other MFL API calls
