@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynasty Watchlist</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --surface:#161b22; --border:#30363d; --dim:#6b7280;
+      --muted:#374151; --text:#e5e5e5; --green:#16a34a; --green-hi:#22c55e;
+      --blue:#2563eb; --red:#dc2626;
+      --font:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
+    }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; }
+
+    #header {
+      display:flex; justify-content:space-between; align-items:flex-start;
+      padding:20px 24px 16px; border-bottom:1px solid var(--border);
+      background:var(--surface); position:sticky; top:0; z-index:10;
+    }
+    #header h1 { font-size:18px; font-weight:700; letter-spacing:-0.01em; }
+    #header h1 span { color:var(--green-hi); }
+    #header p  { color:var(--dim); font-size:12px; margin-top:3px; }
+    #refresh-wrap { text-align:right; }
+    #refresh-btn {
+      background:var(--surface); border:1px solid var(--border); color:var(--text);
+      padding:7px 14px; border-radius:6px; font-family:var(--font); font-size:13px;
+      cursor:pointer; transition:border-color .15s;
+    }
+    #refresh-btn:hover { border-color:var(--green); }
+    #refresh-btn:disabled { opacity:.5; cursor:default; }
+    #timestamp { color:#fff; font-size:11px; margin-top:5px; }
+    #debug     { color:var(--muted); font-size:10px; margin-top:2px; }
+
+    #main { max-width:680px; margin:0 auto; padding:20px 24px 48px; }
+
+    #search {
+      width:100%; background:var(--surface); border:1px solid var(--border);
+      color:var(--text); padding:9px 14px; border-radius:6px;
+      font-family:var(--font); font-size:14px; margin-bottom:18px;
+    }
+    #search:focus { outline:none; border-color:var(--green); }
+    #search::placeholder { color:var(--muted); }
+
+    #error-box {
+      background:#1f0a0a; border:1px solid #7f1d1d; color:#fca5a5;
+      padding:10px 14px; border-radius:6px; font-size:12px; line-height:1.6;
+      margin-bottom:16px; display:none;
+    }
+
+    #legend { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:12px; }
+    .legend-item { display:flex; align-items:center; gap:5px; }
+    .legend-dot  { width:11px; height:11px; border-radius:50%; border:1px solid var(--border); flex-shrink:0; }
+    .legend-label { color:var(--dim); font-size:12px; }
+
+    #league-key { color:var(--muted); font-size:11px; margin-bottom:20px; line-height:1.9; }
+
+    .player-row { margin-bottom:14px; }
+    .player-name-row { display:flex; align-items:center; gap:8px; }
+    .remove-btn {
+      background:none; border:none; color:var(--muted); cursor:pointer;
+      font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0;
+    }
+    .remove-btn:hover { color:var(--red); }
+    .player-pos { color:var(--dim); }
+    .icon-row { display:flex; gap:5px; margin-top:5px; padding-left:20px; }
+    .league-icon {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:20px; height:20px; border-radius:50%; color:white;
+      font-size:10px; font-weight:700; border:1px solid var(--border);
+      cursor:default; flex-shrink:0;
+    }
+
+    #add-bar { display:flex; gap:8px; flex-wrap:wrap; padding-top:16px; border-top:1px solid var(--border); }
+    .add-input {
+      background:var(--surface); border:1px solid var(--border); color:var(--text);
+      padding:6px 10px; border-radius:4px; font-family:var(--font); font-size:13px;
+    }
+    .add-input:focus { outline:none; border-color:var(--green); }
+    #add-name { width:200px; }
+    #add-pos  { width:70px; }
+    #add-btn {
+      background:var(--surface); border:1px solid var(--border); color:var(--green-hi);
+      padding:6px 12px; border-radius:4px; font-family:var(--font); font-size:13px; cursor:pointer;
+    }
+    #add-btn:hover { border-color:var(--green); }
+    .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <h1>🏈 <span>Dynasty</span> Watchlist</h1>
+    <p id="subtitle">—</p>
+  </div>
+  <div id="refresh-wrap">
+    <button id="refresh-btn" onclick="doRefresh()">↻ Refresh</button>
+    <div id="timestamp">Not yet refreshed</div>
+    <div id="debug"></div>
+  </div>
+</div>
+
+<div id="main">
+  <input id="search" type="text" placeholder="Search players…" oninput="renderList()">
+  <div id="error-box"></div>
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-label">My Team</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div><span class="legend-label">Rostered</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#1f2937"></div><span class="legend-label">Unknown</span></div>
+  </div>
+  <div id="league-key">—</div>
+  <div id="player-list"></div>
+  <div id="add-bar">
+    <input id="add-name" class="add-input" type="text" placeholder="Add player…" onkeydown="if(event.key==='Enter')addPlayer()">
+    <select id="add-pos" class="add-input">
+      <option>QB</option><option>RB</option><option selected>WR</option><option>TE</option>
+    </select>
+    <button id="add-btn" onclick="addPlayer()">+ Add</button>
+  </div>
+</div>
+
+<script>
+const LEAGUES = [
+  { server:"www42", id:"71526" },
+  { server:"www47", id:"52453" },
+  { server:"www48", id:"68291" },
+  { server:"www47", id:"13133" },
+  { server:"www47", id:"69382" },
+  { server:"www47", id:"64818" },
+];
+const MY_TEAM_NAMES = {
+  "71526":"QC at the Kratom Factory","52453":"Cleon LIX","68291":"The Undertaker",
+  "13133":"Mediocre Morsov","69382":"Shotgun Shai-Hulud","64818":"The Undertaker",
+};
+const NAME_TO_ID = {
+  "brandonaiyuk":"14840","erickall":"16645","cyrusallen":"17518","lequintallen":"17061",
+  "tysonbagent":"16384","malikbenson":"17706","nateboerkircher":"17591","isaiahbond":"17076",
+  "deionburks":"17510","keoncoleman":"16617","mitchellevans":"17109","ryanflournoy":"16778",
+  "theojohnson":"16649","colekmet":"14867","charliekolar":"15795","brycelance":"17519",
+  "kendremiller":"16171","jalenmilroe":"17033","joemixon":"13131","tyrenmontgomery":"17715",
+  "devinneal":"17046","garrettnussmeier":"17465","adamrandall":"17652","jtavionsanders":"16643",
+  "brenenthompson":"17529","cedrictillman":"16191","darnellwashington":"16216",
+  "deshaunwatson":"13113","jordanwhittington":"16633",
+};
+const DEFAULT_WATCHLIST = [
+  {name:"Brandon Aiyuk",pos:"WR"},{name:"Erick All",pos:"TE"},{name:"Cyrus Allen",pos:"WR"},
+  {name:"LeQuint Allen",pos:"RB"},{name:"Tyson Bagent",pos:"QB"},{name:"Malik Benson",pos:"WR"},
+  {name:"Nate Boerkircher",pos:"TE"},{name:"Isaiah Bond",pos:"WR"},{name:"Deion Burks",pos:"WR"},
+  {name:"Keon Coleman",pos:"WR"},{name:"Mitchell Evans",pos:"TE"},{name:"Ryan Flournoy",pos:"WR"},
+  {name:"Theo Johnson",pos:"TE"},{name:"Cole Kmet",pos:"TE"},{name:"Charlie Kolar",pos:"TE"},
+  {name:"Bryce Lance",pos:"WR"},{name:"Kendre Miller",pos:"RB"},{name:"Jalen Milroe",pos:"QB"},
+  {name:"Joe Mixon",pos:"RB"},{name:"Tyren Montgomery",pos:"WR"},{name:"Devin Neal",pos:"RB"},
+  {name:"Garrett Nussmeier",pos:"QB"},{name:"Adam Randall",pos:"RB"},{name:"Ja'Tavion Sanders",pos:"TE"},
+  {name:"Brenen Thompson",pos:"WR"},{name:"Cedric Tillman",pos:"WR"},{name:"Darnell Washington",pos:"TE"},
+  {name:"Deshaun Watson",pos:"QB"},{name:"Jordan Whittington",pos:"WR"},
+];
+
+let watchlist    = JSON.parse(localStorage.getItem("wl") || "null") || DEFAULT_WATCHLIST;
+let playerStatus = JSON.parse(localStorage.getItem("ps") || "{}");
+let leagueNames  = JSON.parse(localStorage.getItem("ln") || "{}");
+let lastRefresh  = localStorage.getItem("lr") || null;
+
+const norm     = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
+const flipName = n => { const p=(n||"").trim().split(" "); return p.length<2?n:`${p[p.length-1]}, ${p.slice(0,-1).join(" ")}`; };
+const sortKey  = n => flipName(n).toLowerCase();
+const toArr    = v => !v?[]:Array.isArray(v)?v:[v];
+
+function iconColor(s) {
+  return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":"#1f2937";
+}
+function iconLabel(s) {
+  return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":"Unknown";
+}
+
+async function mfl(server, leagueId, type, year="2026") {
+  const p = new URLSearchParams({ server, TYPE:type, year });
+  if (leagueId) p.set("L", leagueId);
+  const r = await fetch(`/api/mfl?${p}`);
+  if (!r.ok) throw new Error("HTTP "+r.status);
+  const d = await r.json();
+  if (d?.error) throw new Error(d.error);
+  return d;
+}
+
+async function doRefresh() {
+  const btn = document.getElementById("refresh-btn");
+  btn.disabled = true; btn.textContent = "… Refreshing";
+  showError(null);
+
+  const rosterErrors = [], newNames = {}, leagueRosters = {};
+
+  for (const cfg of LEAGUES) {
+    let fetched = false;
+    for (const year of ["2026","2025"]) {
+      try {
+        const rData = await mfl(cfg.server, cfg.id, "rosters", year);
+        try {
+          const lg = await mfl(cfg.server, cfg.id, "league", year);
+          newNames[cfg.id] = lg?.league?.name || cfg.id;
+        } catch { newNames[cfg.id] = cfg.id; }
+        const allFr = toArr(rData?.rosters?.franchise);
+        const myFr  = allFr.find(fr => norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
+        const mine=new Set(), other=new Set();
+        allFr.forEach(fr => {
+          const isMe = myFr && fr.id===myFr.id;
+          toArr(fr.player).forEach(p => isMe?mine.add(p.id):other.add(p.id));
+        });
+        leagueRosters[cfg.id] = {mine, other};
+        fetched = true; break;
+      } catch(e) {
+        rosterErrors.push(cfg.id+"/"+year+": "+e.message);
+        leagueRosters[cfg.id] = null;
+      }
+    }
+    if (!fetched) { newNames[cfg.id]=cfg.id; leagueRosters[cfg.id]=null; }
+  }
+
+  leagueNames = newNames;
+  const statusMap = {};
+  watchlist.forEach(player => {
+    const pid = NAME_TO_ID[norm(player.name)];
+    const ls  = {};
+    LEAGUES.forEach(cfg => {
+      const rs = leagueRosters[cfg.id];
+      if (!rs)                ls[cfg.id]="error";
+      else if (!pid)          ls[cfg.id]="unknown";
+      else if (rs.mine.has(pid))  ls[cfg.id]="mine";
+      else if (rs.other.has(pid)) ls[cfg.id]="taken";
+      else                        ls[cfg.id]="available";
+    });
+    statusMap[norm(player.name)] = ls;
+  });
+  playerStatus = statusMap;
+
+  const now = new Date();
+  lastRefresh = now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
+
+  localStorage.setItem("ps", JSON.stringify(playerStatus));
+  localStorage.setItem("ln", JSON.stringify(leagueNames));
+  localStorage.setItem("lr", lastRefresh);
+
+  const loaded = Object.values(leagueRosters).filter(r=>r!==null).length;
+  document.getElementById("debug").textContent = loaded+"/6 leagues"+(rosterErrors.length?" · "+rosterErrors[0]:"");
+  document.getElementById("timestamp").textContent = "Updated "+lastRefresh;
+
+  btn.disabled=false; btn.textContent="↻ Refresh";
+  renderLeagueKey(); renderList();
+}
+
+function renderLeagueKey() {
+  document.getElementById("league-key").textContent =
+    LEAGUES.map((c,i)=>`[${i+1}] ${leagueNames[c.id]||c.id}`).join("  ");
+}
+
+function renderList() {
+  const query = norm(document.getElementById("search").value);
+  const el    = document.getElementById("player-list");
+  const sorted = watchlist
+    .map((p,i)=>({...p,i}))
+    .sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)))
+    .filter(p=>!query||norm(p.name).includes(query)||p.pos.toLowerCase().includes(query));
+
+  if (!sorted.length) { el.innerHTML='<p class="no-results">No players match.</p>'; return; }
+
+  el.innerHTML = sorted.map(({name,pos,i})=>{
+    const status = playerStatus[norm(name)]||{};
+    const icons  = LEAGUES.map((cfg,j)=>{
+      const s=status[cfg.id], ln=leagueNames[cfg.id]||cfg.id;
+      return `<span class="league-icon" style="background:${iconColor(s)}" title="[${j+1}] ${ln} — ${iconLabel(s)}">${j+1}</span>`;
+    }).join("");
+    return `<div class="player-row">
+      <div class="player-name-row">
+        <button class="remove-btn" onclick="removePlayer(${i})">×</button>
+        <span class="player-name">${flipName(name)}</span>
+        <span class="player-pos">${pos}</span>
+      </div>
+      <div class="icon-row">${icons}</div>
+    </div>`;
+  }).join("");
+
+  document.getElementById("subtitle").textContent = watchlist.length+" players · 6 leagues";
+}
+
+function removePlayer(i) {
+  watchlist=watchlist.filter((_,j)=>j!==i);
+  localStorage.setItem("wl",JSON.stringify(watchlist));
+  renderList();
+}
+function addPlayer() {
+  const name=document.getElementById("add-name").value.trim();
+  const pos=document.getElementById("add-pos").value;
+  if (!name) return;
+  watchlist.push({name,pos});
+  localStorage.setItem("wl",JSON.stringify(watchlist));
+  document.getElementById("add-name").value="";
+  renderList();
+}
+function showError(msg) {
+  const el=document.getElementById("error-box");
+  if (msg){el.textContent="⚠ "+msg;el.style.display="block";}
+  else el.style.display="none";
+}
+
+// Init
+if (lastRefresh) document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+renderLeagueKey();
+renderList();
+</script>
+</body>
+</html>
