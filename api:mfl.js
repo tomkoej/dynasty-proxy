@@ -11,25 +11,47 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing required params: server, TYPE" });
   }
 
-  // playersByName: fetch the full MFL player DB server-side, return only matches.
-  // This keeps the response tiny regardless of how large the full DB is.
+  // playersByName: fetch the MFL player DB server-side, return only watchlist matches.
+  // Tries several base URLs since the players endpoint may live on a different host.
   if (TYPE === "playersByName") {
     const nameSet = new Set((names || "").split(",").filter(Boolean));
     if (!nameSet.size) return res.status(400).json({ error: "Missing names param" });
 
-    const url = `https://${server}.myfantasyleague.com/${year}/export?TYPE=players&JSON=1`;
-    try {
-      const r = await fetch(url);
-      if (!r.ok) return res.status(r.status).json({ error: `MFL returned ${r.status}` });
-      const data = await r.json();
-      const all = data?.players?.player ?? [];
-      const arr = Array.isArray(all) ? all : [all];
-      const filtered = arr.filter(p => nameSet.has(norm(p.name)));
-      res.setHeader("Cache-Control", "no-store");
-      return res.json({ players: { player: filtered } });
-    } catch (err) {
-      return res.status(500).json({ error: err.message });
+    const bases = [
+      `https://${server}.myfantasyleague.com`,
+      `https://www.myfantasyleague.com`,
+      `https://www57.myfantasyleague.com`,
+    ];
+
+    const errors = [];
+
+    for (const base of bases) {
+      // Try with and without league context
+      const urls = L
+        ? [`${base}/${year}/export?TYPE=players&L=${L}&JSON=1`, `${base}/${year}/export?TYPE=players&JSON=1`]
+        : [`${base}/${year}/export?TYPE=players&JSON=1`];
+
+      for (const url of urls) {
+        try {
+          const r = await fetch(url, {
+            headers: { "Accept-Encoding": "gzip, deflate, br" },
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!r.ok) { errors.push(`${url} → HTTP ${r.status}`); continue; }
+          const data = await r.json();
+          const all = data?.players?.player ?? [];
+          const arr = Array.isArray(all) ? all : [all];
+          if (arr.length === 0) { errors.push(`${url} → empty player list`); continue; }
+          const filtered = arr.filter(p => nameSet.has(norm(p.name)));
+          res.setHeader("Cache-Control", "no-store");
+          return res.json({ players: { player: filtered }, _meta: { total: arr.length, matched: filtered.length, source: url } });
+        } catch (e) {
+          errors.push(`${url} → ${e.message}`);
+        }
+      }
     }
+
+    return res.status(500).json({ error: "All player DB attempts failed", attempts: errors });
   }
 
   // Standard proxy for all other MFL API calls
@@ -39,7 +61,7 @@ export default async function handler(req, res) {
   const url = `https://${server}.myfantasyleague.com/${year}/export?${params}`;
 
   try {
-    const r = await fetch(url);
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
     if (!r.ok) return res.status(r.status).json({ error: `MFL returned ${r.status}` });
     const data = await r.json();
     res.setHeader("Cache-Control", "no-store");
