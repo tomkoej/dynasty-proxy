@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/mfl.js": {
+      "maxDuration": 60
+    }
+  }
+}
