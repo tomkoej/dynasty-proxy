@@ -37,48 +37,48 @@
     /* Main */
     #main { max-width:680px; margin:0 auto; padding:20px 24px 60px; }
 
+    /* Section label */
+    .sec-label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+
     /* Add player section */
-    #add-section { margin-bottom:20px; }
-    #add-section label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
-    #add-row { display:flex; gap:8px; position:relative; }
+    #add-section { margin-bottom:20px; position:relative; }
     #add-search {
-      flex:1; background:var(--surface); border:1px solid var(--border);
+      width:100%; background:var(--surface); border:1px solid var(--border);
       color:var(--text); padding:9px 14px; border-radius:6px;
       font-family:var(--font); font-size:14px;
     }
     #add-search:focus { outline:none; border-color:var(--green); }
     #add-search::placeholder { color:var(--muted); }
-    #add-pos-filter {
-      background:var(--surface); border:1px solid var(--border); color:var(--dim);
-      padding:8px 10px; border-radius:6px; font-family:var(--font); font-size:13px; width:80px;
-    }
-    #pool-status { color:var(--muted); font-size:11px; margin-top:5px; }
+    #pool-status { color:var(--dim); font-size:11px; margin-top:5px; }
 
     /* Autocomplete dropdown */
     #add-results {
-      position:absolute; top:calc(100% + 4px); left:0; right:88px;
+      position:absolute; top:calc(100% - 26px); left:0; right:0;
       background:var(--surface); border:1px solid var(--border);
-      border-radius:6px; overflow:hidden; z-index:100; display:none;
-      max-height:280px; overflow-y:auto;
+      border-top:none; border-radius:0 0 6px 6px;
+      overflow-y:auto; z-index:100; display:none; max-height:260px;
     }
     .add-result {
       display:flex; align-items:center; justify-content:space-between;
       padding:9px 14px; cursor:pointer; gap:8px;
     }
     .add-result:hover { background:var(--muted); }
-    .add-result-info { display:flex; align-items:center; gap:8px; }
     .add-result-name { color:var(--text); }
     .add-result-meta { color:var(--dim); font-size:12px; }
-    .add-result-already { color:var(--muted); font-size:11px; }
-    .add-btn-small {
-      background:var(--green); color:white; border:none; padding:3px 10px;
-      border-radius:4px; font-family:var(--font); font-size:12px; cursor:pointer;
-      flex-shrink:0; white-space:nowrap;
-    }
-    .add-btn-small:disabled { background:var(--muted); cursor:default; }
+    .add-result.already { opacity:.4; cursor:default; }
 
     /* Divider */
     .section-divider { border:none; border-top:1px solid var(--border); margin:18px 0; }
+
+    /* Filters */
+    #filter-section { margin-bottom:16px; }
+    #filter-bar { display:flex; gap:8px; flex-wrap:wrap; }
+    .filter-select {
+      background:var(--surface); border:1px solid var(--border); color:var(--text);
+      padding:7px 10px; border-radius:6px; font-family:var(--font); font-size:13px;
+      cursor:pointer; flex:1; min-width:120px;
+    }
+    .filter-select:focus { outline:none; border-color:var(--green); }
 
     /* Legend */
     #legend { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
@@ -87,18 +87,7 @@
     .legend-label { color:var(--dim); font-size:12px; }
 
     /* League key */
-    #league-key { color:var(--muted); font-size:11px; margin-bottom:16px; line-height:1.9; }
-
-    /* Watchlist filters */
-    #filter-bar { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
-    .filter-input {
-      background:var(--surface); border:1px solid var(--border); color:var(--text);
-      padding:7px 12px; border-radius:6px; font-family:var(--font); font-size:13px;
-    }
-    .filter-input:focus { outline:none; border-color:var(--green); }
-    .filter-input::placeholder { color:var(--muted); }
-    #wl-search { flex:1; min-width:140px; }
-    #wl-pos, #wl-status { width:auto; color:var(--dim); }
+    #league-key { color:var(--muted); font-size:11px; margin-bottom:20px; line-height:1.9; }
 
     /* Player list */
     .player-row { margin-bottom:14px; }
@@ -109,8 +98,8 @@
     }
     .remove-btn:hover { color:var(--red); }
     .player-name { color:var(--text); }
-    .player-pos  { color:var(--dim); }
-    .player-team { color:var(--muted); font-size:12px; }
+    .player-pos  { color:var(--text); font-size:14px; }
+    .player-team { color:var(--text); font-size:14px; }
     .icon-row { display:flex; gap:5px; margin-top:5px; padding-left:20px; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
@@ -139,20 +128,38 @@
 
   <!-- Add Player -->
   <div id="add-section">
-    <label>Add from MFL player pool</label>
-    <div id="add-row">
-      <input id="add-search" type="text" placeholder="Search by name…" autocomplete="off"
-        oninput="onAddInput()" onfocus="onAddInput()" onblur="hideResultsDelayed()">
-      <select id="add-pos-filter" onchange="onAddInput()">
-        <option value="">All pos</option>
-        <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
-      </select>
-      <div id="add-results"></div>
-    </div>
+    <span class="sec-label">Add from MFL Player Pool</span>
+    <input id="add-search" type="text" placeholder="Search by name…" autocomplete="off"
+      oninput="onAddInput()" onfocus="onAddInput()" onblur="hideResultsDelayed()">
+    <div id="add-results"></div>
     <div id="pool-status">Loading player pool…</div>
   </div>
 
   <hr class="section-divider">
+
+  <!-- Filters -->
+  <div id="filter-section">
+    <span class="sec-label">Filter Watchlist</span>
+    <div id="filter-bar">
+      <select id="wl-name" class="filter-select" onchange="renderList()">
+        <option value="">All Players</option>
+      </select>
+      <select id="wl-pos" class="filter-select" onchange="renderList()">
+        <option value="">All Positions</option>
+        <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
+      </select>
+      <select id="wl-team" class="filter-select" onchange="renderList()">
+        <option value="">All Teams</option>
+      </select>
+      <select id="wl-status" class="filter-select" onchange="renderList()">
+        <option value="">All Statuses</option>
+        <option value="available">Available</option>
+        <option value="mine">My Team</option>
+        <option value="taken">Rostered</option>
+        <option value="unknown">Unknown</option>
+      </select>
+    </div>
+  </div>
 
   <!-- Legend -->
   <div id="legend">
@@ -164,22 +171,6 @@
 
   <!-- League key -->
   <div id="league-key">—</div>
-
-  <!-- Watchlist filters -->
-  <div id="filter-bar">
-    <input id="wl-search" class="filter-input" type="text" placeholder="Filter watchlist…" oninput="renderList()">
-    <select id="wl-pos" class="filter-input" onchange="renderList()">
-      <option value="">All positions</option>
-      <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
-    </select>
-    <select id="wl-status" class="filter-input" onchange="renderList()">
-      <option value="">All statuses</option>
-      <option value="available">Available</option>
-      <option value="mine">My Team</option>
-      <option value="taken">Rostered</option>
-      <option value="unknown">Unknown</option>
-    </select>
-  </div>
 
   <!-- Player list -->
   <div id="player-list"></div>
@@ -212,28 +203,21 @@ const DEFAULT_WATCHLIST = [
   {name:"Deshaun Watson",pos:"QB"},{name:"Jordan Whittington",pos:"WR"},
 ];
 
-// State
 let watchlist    = JSON.parse(localStorage.getItem("wl") || "null") || DEFAULT_WATCHLIST;
 let playerStatus = JSON.parse(localStorage.getItem("ps") || "{}");
 let leagueNames  = JSON.parse(localStorage.getItem("ln") || "{}");
 let lastRefresh  = localStorage.getItem("lr") || null;
-let mflPlayers   = [];  // full player pool [{id, name, position, team}]
-let nameToId     = {};  // norm(name) -> id, built from mflPlayers
+let mflPlayers   = [];
+let nameToId     = {};
 
-// Helpers
 const norm     = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
 const flipName = n => { const p=(n||"").trim().split(" "); return p.length<2?n:`${p[p.length-1]}, ${p.slice(0,-1).join(" ")}`; };
 const sortKey  = n => flipName(n).toLowerCase();
 const toArr    = v => !v?[]:Array.isArray(v)?v:[v];
 
-function iconColor(s) {
-  return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":"#1f2937";
-}
-function iconLabel(s) {
-  return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":"Unknown";
-}
+function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":"#1f2937";}
+function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":"Unknown";}
 
-// MFL API call (same-origin)
 async function mfl(server, leagueId, type, year="2026") {
   const p = new URLSearchParams({ server, TYPE:type, year });
   if (leagueId) p.set("L", leagueId);
@@ -244,23 +228,36 @@ async function mfl(server, leagueId, type, year="2026") {
   return d;
 }
 
-// Load MFL player pool — cached 24hr in localStorage
+// Get player's First Last display name from MFL "Last, First" or normal format
+function displayName(mflName) {
+  const parts = (mflName||"").split(", ");
+  return parts.length===2 ? parts[1]+" "+parts[0] : mflName;
+}
+
+// Look up a watchlist player in the pool
+function getPlayerMeta(name) {
+  const n = norm(name);
+  return mflPlayers.find(p => {
+    if (!p.name) return false;
+    return norm(p.name)===n || norm(displayName(p.name))===n;
+  });
+}
+
+// Load MFL player pool — cached 24hr
 async function loadPlayerPool() {
   const cached     = localStorage.getItem("mflPool");
   const cachedTime = parseInt(localStorage.getItem("mflPoolTime")||"0");
-  const age        = Date.now() - cachedTime;
 
-  if (cached && age < 86400000) {
+  if (cached && (Date.now()-cachedTime) < 86400000) {
     mflPlayers = JSON.parse(cached);
   } else {
     document.getElementById("pool-status").textContent = "Fetching player pool from MFL…";
     try {
-      // Use the first www47 league for context
-      const d = await mfl("www47", "52453", "players", "2026");
+      const d = await mfl("www47","52453","players","2026");
       const raw = toArr(d?.players?.player);
       if (raw.length > 100) {
         mflPlayers = raw;
-        localStorage.setItem("mflPool",     JSON.stringify(raw));
+        localStorage.setItem("mflPool", JSON.stringify(raw));
         localStorage.setItem("mflPoolTime", Date.now().toString());
       }
     } catch(e) {
@@ -269,137 +266,144 @@ async function loadPlayerPool() {
     }
   }
 
-  // Build name→id map, handling MFL's "Last, First" format
+  // Build name→id map (handles "Last, First" and "First Last")
   mflPlayers.forEach(p => {
-    if (!p.name || !p.id) return;
+    if (!p.name||!p.id) return;
     nameToId[norm(p.name)] = p.id;
-    const parts = p.name.split(", ");
-    if (parts.length === 2) nameToId[norm(parts[1]+" "+parts[0])] = p.id;
+    nameToId[norm(displayName(p.name))] = p.id;
   });
 
   const ts = new Date(parseInt(localStorage.getItem("mflPoolTime")||Date.now()));
   document.getElementById("pool-status").textContent =
-    `${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleDateString()}`;
+    `${mflPlayers.length.toLocaleString()} Players · Pool Updated ${ts.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`;
+
+  buildTeamFilter();
+  renderList(); // re-render to show team abbreviations
 }
 
-// Add player search
+// Build team filter dropdown from current watchlist
+function buildTeamFilter() {
+  const teams = new Set();
+  watchlist.forEach(p => {
+    const meta = getPlayerMeta(p.name);
+    if (meta?.team) teams.add(meta.team);
+  });
+  const sorted = [...teams].sort();
+  const sel = document.getElementById("wl-team");
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">All Teams</option>' +
+    sorted.map(t => `<option${t===cur?" selected":""}>${t}</option>`).join("");
+}
+
+// Build name dropdown from watchlist (alphabetical)
+function buildNameDropdown() {
+  const sel = document.getElementById("wl-name");
+  const cur = sel.value;
+  const sorted = [...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));
+  sel.innerHTML = '<option value="">All Players</option>' +
+    sorted.map(p=>`<option value="${norm(p.name)}"${norm(p.name)===cur?" selected":""}>${flipName(p.name)}</option>`).join("");
+}
+
+// Add player autocomplete
 let addTimer;
 function onAddInput() {
   clearTimeout(addTimer);
   addTimer = setTimeout(updateAddResults, 120);
 }
 function hideResultsDelayed() {
-  setTimeout(() => { document.getElementById("add-results").style.display="none"; }, 200);
+  setTimeout(()=>{document.getElementById("add-results").style.display="none";},200);
 }
 
 function updateAddResults() {
-  const q      = norm(document.getElementById("add-search").value);
-  const posF   = document.getElementById("add-pos-filter").value.toUpperCase();
-  const box    = document.getElementById("add-results");
-  const inWl   = new Set(watchlist.map(p => norm(p.name)));
+  const q   = norm(document.getElementById("add-search").value);
+  const box = document.getElementById("add-results");
+  const inWl = new Set(watchlist.map(p=>norm(p.name)));
 
-  if (!q || q.length < 2) { box.style.display="none"; return; }
+  if (!q||q.length<2){box.style.display="none";return;}
 
-  // Filter & score: prefer starts-with over contains
   const results = mflPlayers
     .filter(p => {
       if (!p.name) return false;
-      const n1 = norm(p.name);
-      // MFL: "Last, First" — also check "First Last"
-      const parts = (p.name||"").split(", ");
-      const flipped = parts.length===2 ? norm(parts[1]+" "+parts[0]) : n1;
-      const matches = n1.includes(q) || flipped.includes(q);
-      const posOk = !posF || (p.position||"").toUpperCase()===posF;
-      return matches && posOk;
+      const n1=norm(p.name), dn=norm(displayName(p.name));
+      return n1.includes(q)||dn.includes(q);
     })
-    .sort((a,b) => {
-      const an = norm(a.name), bn = norm(b.name);
-      const as = an.startsWith(q)?0:1, bs = bn.startsWith(q)?0:1;
-      return as-bs || an.localeCompare(bn);
+    .sort((a,b)=>{
+      const an=norm(displayName(a.name)),bn=norm(displayName(b.name));
+      return (an.startsWith(q)?0:1)-(bn.startsWith(q)?0:1)||an.localeCompare(bn);
     })
-    .slice(0, 12);
+    .slice(0,12);
 
-  if (!results.length) { box.style.display="none"; return; }
+  if (!results.length){box.style.display="none";return;}
 
-  // Display name in "First Last" format
-  const displayName = p => {
-    const parts = (p.name||"").split(", ");
-    return parts.length===2 ? parts[1]+" "+parts[0] : p.name;
-  };
-
-  box.innerHTML = results.map(p => {
-    const already = inWl.has(norm(displayName(p)));
-    return `<div class="add-result">
-      <div class="add-result-info">
-        <span class="add-result-name">${flipName(displayName(p))}</span>
-        <span class="add-result-meta">${p.position||""}${p.team?" · "+p.team:""}</span>
-      </div>
-      <button class="add-btn-small" ${already?"disabled":""} onclick="addFromPool('${(displayName(p)).replace(/'/g,"\\'")}','${p.position||""}')">
-        ${already?"Added":"+ Add"}
-      </button>
+  box.innerHTML = results.map(p=>{
+    const dn = displayName(p.name);
+    const already = inWl.has(norm(dn));
+    return `<div class="add-result${already?" already":""}" ${already?"":`onclick="addFromPool('${dn.replace(/'/g,"\\'")}','${p.position||""}')"`}>
+      <span class="add-result-name">${flipName(dn)}</span>
+      <span class="add-result-meta">${p.position||""}${p.team?" · "+p.team:""}</span>
     </div>`;
   }).join("");
-  box.style.display = "block";
+  box.style.display="block";
 }
 
 function addFromPool(name, pos) {
-  if (watchlist.some(p => norm(p.name)===norm(name))) return;
-  watchlist.push({name, pos});
-  localStorage.setItem("wl", JSON.stringify(watchlist));
-  // Clear search
-  document.getElementById("add-search").value = "";
-  document.getElementById("add-results").style.display = "none";
+  if (watchlist.some(p=>norm(p.name)===norm(name))) return;
+  watchlist.push({name,pos});
+  localStorage.setItem("wl",JSON.stringify(watchlist));
+  document.getElementById("add-search").value="";
+  document.getElementById("add-results").style.display="none";
+  buildNameDropdown();
+  buildTeamFilter();
   renderList();
-  updateAddResults();
 }
 
 // Refresh availability
 async function doRefresh() {
-  const btn = document.getElementById("refresh-btn");
+  const btn=document.getElementById("refresh-btn");
   btn.disabled=true; btn.textContent="… Refreshing";
 
-  const rosterErrors=[], newNames={}, leagueRosters={};
+  const rosterErrors=[],newNames={},leagueRosters={};
 
   for (const cfg of LEAGUES) {
     let fetched=false;
     for (const year of ["2026","2025"]) {
       try {
-        const rData = await mfl(cfg.server, cfg.id, "rosters", year);
+        const rData=await mfl(cfg.server,cfg.id,"rosters",year);
         let myFranchiseId=null;
         try {
-          const lg = await mfl(cfg.server, cfg.id, "league", year);
-          newNames[cfg.id] = lg?.league?.name || cfg.id;
-          const frs = toArr(lg?.league?.franchises?.franchise);
-          const myFr = frs.find(fr => norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
-          myFranchiseId = myFr?.id||null;
-        } catch { newNames[cfg.id]=cfg.id; }
-        const allFr = toArr(rData?.rosters?.franchise);
-        const mine=new Set(), other=new Set();
-        allFr.forEach(fr => {
-          const isMe = myFranchiseId && fr.id===myFranchiseId;
-          toArr(fr.player).forEach(p => isMe?mine.add(p.id):other.add(p.id));
+          const lg=await mfl(cfg.server,cfg.id,"league",year);
+          newNames[cfg.id]=lg?.league?.name||cfg.id;
+          const frs=toArr(lg?.league?.franchises?.franchise);
+          const myFr=frs.find(fr=>norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
+          myFranchiseId=myFr?.id||null;
+        } catch {newNames[cfg.id]=cfg.id;}
+        const allFr=toArr(rData?.rosters?.franchise);
+        const mine=new Set(),other=new Set();
+        allFr.forEach(fr=>{
+          const isMe=myFranchiseId&&fr.id===myFranchiseId;
+          toArr(fr.player).forEach(p=>isMe?mine.add(p.id):other.add(p.id));
         });
-        leagueRosters[cfg.id]={mine,other}; fetched=true; break;
-      } catch(e) {
+        leagueRosters[cfg.id]={mine,other};fetched=true;break;
+      } catch(e){
         rosterErrors.push(cfg.id+"/"+year+": "+e.message);
         leagueRosters[cfg.id]=null;
       }
     }
-    if (!fetched){newNames[cfg.id]=cfg.id;leagueRosters[cfg.id]=null;}
+    if(!fetched){newNames[cfg.id]=cfg.id;leagueRosters[cfg.id]=null;}
   }
 
   leagueNames=newNames;
   const statusMap={};
-  watchlist.forEach(player => {
-    const pid = nameToId[norm(player.name)];
+  watchlist.forEach(player=>{
+    const pid=nameToId[norm(player.name)];
     const ls={};
-    LEAGUES.forEach(cfg => {
+    LEAGUES.forEach(cfg=>{
       const rs=leagueRosters[cfg.id];
-      if (!rs)                   ls[cfg.id]="error";
-      else if (!pid)             ls[cfg.id]="unknown";
-      else if (rs.mine.has(pid)) ls[cfg.id]="mine";
-      else if (rs.other.has(pid))ls[cfg.id]="taken";
-      else                       ls[cfg.id]="available";
+      if(!rs)                   ls[cfg.id]="error";
+      else if(!pid)             ls[cfg.id]="unknown";
+      else if(rs.mine.has(pid)) ls[cfg.id]="mine";
+      else if(rs.other.has(pid))ls[cfg.id]="taken";
+      else                      ls[cfg.id]="available";
     });
     statusMap[norm(player.name)]=ls;
   });
@@ -414,56 +418,49 @@ async function doRefresh() {
   const loaded=Object.values(leagueRosters).filter(r=>r!==null).length;
   document.getElementById("debug").textContent=loaded+"/6 leagues"+(rosterErrors.length?" · "+rosterErrors[0]:"");
   document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-  btn.disabled=false; btn.textContent="↻ Refresh";
-  renderLeagueKey(); renderList();
-}
-
-// Get player info from pool
-function getPlayerMeta(name) {
-  const n = norm(name);
-  return mflPlayers.find(p => {
-    if (!p.name) return false;
-    const parts=(p.name||"").split(", ");
-    const flipped=parts.length===2?norm(parts[1]+" "+parts[0]):norm(p.name);
-    return norm(p.name)===n||flipped===n;
-  });
+  btn.disabled=false;btn.textContent="↻ Refresh";
+  renderLeagueKey();renderList();
 }
 
 function renderLeagueKey() {
-  document.getElementById("league-key").textContent=
-    LEAGUES.map((c,i)=>`[${i+1}] ${leagueNames[c.id]||c.id}`).join("  ");
+  document.getElementById("league-key").textContent =
+    LEAGUES.map((c,i)=>`[${i+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ");
 }
 
 function renderList() {
-  const q      = norm(document.getElementById("wl-search").value);
+  const nameF  = document.getElementById("wl-name").value;
   const posF   = document.getElementById("wl-pos").value;
+  const teamF  = document.getElementById("wl-team").value;
   const statusF= document.getElementById("wl-status").value;
   const el     = document.getElementById("player-list");
 
   const sorted = watchlist
     .map((p,i)=>({...p,i}))
     .sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)))
-    .filter(p => {
-      if (q && !norm(p.name).includes(q)) return false;
+    .filter(p=>{
+      if (nameF && norm(p.name)!==nameF) return false;
       if (posF && p.pos!==posF) return false;
+      if (teamF) {
+        const meta=getPlayerMeta(p.name);
+        if ((meta?.team||"")!==teamF) return false;
+      }
       if (statusF) {
         const st=playerStatus[norm(p.name)]||{};
-        const vals=Object.values(st);
-        if (!vals.some(v=>v===statusF)) return false;
+        if (!Object.values(st).some(v=>v===statusF)) return false;
       }
       return true;
     });
 
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
 
-  if (!sorted.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
+  if(!sorted.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
 
   el.innerHTML=sorted.map(({name,pos,i})=>{
     const status=playerStatus[norm(name)]||{};
     const meta=getPlayerMeta(name);
     const team=meta?.team||"";
     const icons=LEAGUES.map((cfg,j)=>{
-      const s=status[cfg.id],ln=leagueNames[cfg.id]||cfg.id;
+      const s=status[cfg.id],ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
       return `<span class="league-icon" style="background:${iconColor(s)}" title="[${j+1}] ${ln} — ${iconLabel(s)}">${j+1}</span>`;
     }).join("");
     return `<div class="player-row">
@@ -481,12 +478,15 @@ function renderList() {
 function removePlayer(i){
   watchlist=watchlist.filter((_,j)=>j!==i);
   localStorage.setItem("wl",JSON.stringify(watchlist));
+  buildNameDropdown();
+  buildTeamFilter();
   renderList();
 }
 
 // Init
 if(lastRefresh) document.getElementById("timestamp").textContent="Updated "+lastRefresh;
 renderLeagueKey();
+buildNameDropdown();
 renderList();
 loadPlayerPool();
 </script>
