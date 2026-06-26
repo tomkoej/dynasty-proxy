@@ -12,13 +12,18 @@
       --blue:#2563eb; --red:#dc2626;
       --font:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
     }
-    body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; }
+    html, body { height:100%; overflow:hidden; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
+    #page-wrap   { display:flex; flex-direction:column; height:100vh; overflow:hidden; }
+    #frozen-top  { flex-shrink:0; background:var(--bg); }
+    #scroll-list { flex:1; overflow-y:auto; }
+    #list-inner  { max-width:680px; margin:0 auto; padding:16px 24px 60px; }
 
     /* Header */
     #header {
       display:flex; justify-content:space-between; align-items:flex-start;
       padding:16px 24px; border-bottom:1px solid var(--border);
-      background:var(--surface); position:sticky; top:0; z-index:20;
+      background:var(--surface);
     }
     #header h1 { font-size:18px; font-weight:700; }
     #header h1 span { color:var(--green-hi); }
@@ -37,7 +42,7 @@
     #debug     { color:var(--muted); font-size:10px; }
 
     /* Main */
-    #main { max-width:680px; margin:0 auto; padding:20px 24px 60px; }
+    #main { max-width:680px; margin:0 auto; padding:20px 24px 0; }
     .sec-label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
     .section-divider { border:none; border-top:1px solid var(--border); margin:18px 0; }
 
@@ -129,7 +134,8 @@
   </style>
 </head>
 <body>
-
+<div id="page-wrap">
+<div id="frozen-top">
 <div id="header">
   <div>
     <h1>🏈 <span>Dynasty</span> Watchlist</h1>
@@ -192,9 +198,15 @@
   </div>
 
   <div id="league-key"></div>
-  <div id="player-list"></div>
+</div><!-- #main -->
+</div><!-- #frozen-top -->
 
+<div id="scroll-list">
+  <div id="list-inner">
+    <div id="player-list"></div>
+  </div>
 </div>
+</div><!-- #page-wrap -->
 
 <script>
 const LEAGUES = [
