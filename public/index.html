@@ -96,14 +96,20 @@
     .player-name { color:var(--text); }
     .player-pos  { color:var(--text); font-size:14px; }
     .player-team { color:var(--text); font-size:14px; }
-    .icon-row { display:flex; gap:5px; margin-top:5px; padding-left:20px; align-items:center; }
+    .icon-row-group { margin-top:6px; padding-left:20px; display:flex; flex-direction:column; gap:5px; }
+    .icon-row-line  { display:flex; align-items:center; gap:5px; }
+    .row-label { color:var(--muted); font-size:10px; min-width:46px; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
       width:20px; height:20px; border-radius:50%; color:white;
       font-size:10px; font-weight:700; border:1px solid var(--border);
       cursor:default; flex-shrink:0;
     }
-    .icon-pair { display:inline-flex; gap:2px; }
+    .nwo-oval {
+      display:inline-flex; gap:3px; align-items:center;
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:14px; padding:1px 5px;
+    }
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
   </style>
 </head>
@@ -172,7 +178,7 @@ const LEAGUES = [
   { server:"www47", id:"52453",                  label:"SF/TE+" },  // Cleon LIX
   { server:"www48", id:"68291",                  label:"SF/TE+" },  // The Undertaker
   { server:"www47", id:"69382",                  label:"SF/TE+" },  // Shotgun Shai-Hulud
-  { server:"www47", id:"64818", twoCopy:true,    label:"2-Copy" },  // The Undertaker (nWo)
+  { server:"www47", id:"64818", twoCopy:true,    label:"SF/TE+" },  // The Undertaker (nWo)
 ];
 const MY_TEAM_NAMES = {
   "71526":"QC at the Kratom Factory","13133":"Mediocre Morsov",
@@ -443,9 +449,8 @@ async function doRefresh(){
 
 function renderLeagueKey(){
   const groups=[
-    {label:"SF",   ids:LEAGUES.filter(c=>c.label==="SF")},
+    {label:"SF",    ids:LEAGUES.filter(c=>c.label==="SF")},
     {label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")},
-    {label:"2-Copy",ids:LEAGUES.filter(c=>c.label==="2-Copy")},
   ];
   document.getElementById("league-key").innerHTML=groups.map(g=>{
     const items=g.ids.map((c,i)=>{
@@ -503,20 +508,22 @@ function renderList(){
     const meta=getPlayerMeta(name);
     const team=meta?.team||"";
 
-    const icons=LEAGUES.map((cfg,j)=>{
-      const s=status[cfg.id];
-      const num=j+1;
-      const ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
-
+    const makeIcon=(cfg,s)=>{
+      const num=LEAGUES.indexOf(cfg)+1, ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
       if(cfg.twoCopy&&Array.isArray(s)){
-        // Two bubbles side by side for nWo
-        return`<span class="icon-pair">`+
+        return`<span class="nwo-oval">`+
           s.map((si,k)=>`<span class="league-icon" style="background:${iconColor(si)}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(si)}">${num}</span>`).join("")+
         `</span>`;
       }
       const sv=typeof s==="string"?s:"unknown";
       return`<span class="league-icon" style="background:${iconColor(sv)}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
-    }).join("");
+    };
+    const sfIcons  =LEAGUES.filter(c=>c.label==="SF"   ).map(c=>makeIcon(c,status[c.id])).join("");
+    const sfteIcons=LEAGUES.filter(c=>c.label==="SF/TE+").map(c=>makeIcon(c,status[c.id])).join("");
+    const icons=`<div class="icon-row-group">
+      <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
+      <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
+    </div>`;
 
     return`<div class="player-row">
       <div class="player-name-row">
@@ -525,7 +532,7 @@ function renderList(){
         <span class="player-pos">${pos}</span>
         ${team?`<span class="player-team">${team}</span>`:""}
       </div>
-      <div class="icon-row">${icons}</div>
+      ${icons}
     </div>`;
   }).join("");
 }
