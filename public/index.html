@@ -197,15 +197,18 @@ async function doRefresh() {
     for (const year of ["2026","2025"]) {
       try {
         const rData = await mfl(cfg.server, cfg.id, "rosters", year);
+        let myFranchiseId = null;
         try {
           const lg = await mfl(cfg.server, cfg.id, "league", year);
           newNames[cfg.id] = lg?.league?.name || cfg.id;
+          const frs = toArr(lg?.league?.franchises?.franchise);
+          const myFr = frs.find(fr => norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
+          myFranchiseId = myFr?.id || null;
         } catch { newNames[cfg.id] = cfg.id; }
         const allFr = toArr(rData?.rosters?.franchise);
-        const myFr  = allFr.find(fr => norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
         const mine=new Set(), other=new Set();
         allFr.forEach(fr => {
-          const isMe = myFr && fr.id===myFr.id;
+          const isMe = myFranchiseId && fr.id===myFranchiseId;
           toArr(fr.player).forEach(p => isMe?mine.add(p.id):other.add(p.id));
         });
         leagueRosters[cfg.id] = {mine, other};
