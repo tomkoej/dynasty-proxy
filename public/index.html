@@ -14,7 +14,6 @@
     }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; }
 
-    /* Header */
     #header {
       display:flex; justify-content:space-between; align-items:flex-start;
       padding:16px 24px; border-bottom:1px solid var(--border);
@@ -34,13 +33,11 @@
     #timestamp { color:#fff; font-size:11px; margin-top:5px; }
     #debug     { color:var(--muted); font-size:10px; margin-top:2px; }
 
-    /* Main */
     #main { max-width:680px; margin:0 auto; padding:20px 24px 60px; }
 
-    /* Section label */
     .sec-label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
 
-    /* Add player section */
+    /* Add player */
     #add-section { margin-bottom:20px; position:relative; }
     #add-search {
       width:100%; background:var(--surface); border:1px solid var(--border);
@@ -50,8 +47,6 @@
     #add-search:focus { outline:none; border-color:var(--green); }
     #add-search::placeholder { color:var(--muted); }
     #pool-status { color:var(--dim); font-size:11px; margin-top:5px; }
-
-    /* Autocomplete dropdown */
     #add-results {
       position:absolute; top:calc(100% - 26px); left:0; right:0;
       background:var(--surface); border:1px solid var(--border);
@@ -67,7 +62,6 @@
     .add-result-meta { color:var(--dim); font-size:12px; }
     .add-result.already { opacity:.4; cursor:default; }
 
-    /* Divider */
     .section-divider { border:none; border-top:1px solid var(--border); margin:18px 0; }
 
     /* Filters */
@@ -87,7 +81,9 @@
     .legend-label { color:var(--dim); font-size:12px; }
 
     /* League key */
-    #league-key { color:var(--muted); font-size:11px; margin-bottom:20px; line-height:1.9; }
+    #league-key { color:var(--muted); font-size:11px; margin-bottom:20px; line-height:2; }
+    .league-group { margin-bottom:2px; }
+    .league-group-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; }
 
     /* Player list */
     .player-row { margin-bottom:14px; }
@@ -100,13 +96,14 @@
     .player-name { color:var(--text); }
     .player-pos  { color:var(--text); font-size:14px; }
     .player-team { color:var(--text); font-size:14px; }
-    .icon-row { display:flex; gap:5px; margin-top:5px; padding-left:20px; }
+    .icon-row { display:flex; gap:5px; margin-top:5px; padding-left:20px; align-items:center; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
       width:20px; height:20px; border-radius:50%; color:white;
       font-size:10px; font-weight:700; border:1px solid var(--border);
       cursor:default; flex-shrink:0;
     }
+    .icon-pair { display:inline-flex; gap:2px; }
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
   </style>
 </head>
@@ -126,7 +123,6 @@
 
 <div id="main">
 
-  <!-- Add Player -->
   <div id="add-section">
     <span class="sec-label">Add from MFL Player Pool</span>
     <input id="add-search" type="text" placeholder="Search by name…" autocomplete="off"
@@ -137,20 +133,15 @@
 
   <hr class="section-divider">
 
-  <!-- Filters -->
   <div id="filter-section">
     <span class="sec-label">Filter Watchlist</span>
     <div id="filter-bar">
-      <select id="wl-name" class="filter-select" onchange="renderList()">
-        <option value="">All Players</option>
-      </select>
-      <select id="wl-pos" class="filter-select" onchange="renderList()">
+      <select id="wl-name"   class="filter-select" onchange="renderList()"><option value="">All Players</option></select>
+      <select id="wl-pos"    class="filter-select" onchange="renderList()">
         <option value="">All Positions</option>
         <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
       </select>
-      <select id="wl-team" class="filter-select" onchange="renderList()">
-        <option value="">All Teams</option>
-      </select>
+      <select id="wl-team"   class="filter-select" onchange="renderList()"><option value="">All Teams</option></select>
       <select id="wl-status" class="filter-select" onchange="renderList()">
         <option value="">All Statuses</option>
         <option value="available">Available</option>
@@ -161,7 +152,6 @@
     </div>
   </div>
 
-  <!-- Legend -->
   <div id="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-label">My Team</span></div>
@@ -169,26 +159,25 @@
     <div class="legend-item"><div class="legend-dot" style="background:#1f2937"></div><span class="legend-label">Unknown</span></div>
   </div>
 
-  <!-- League key -->
-  <div id="league-key">—</div>
-
-  <!-- Player list -->
+  <div id="league-key"></div>
   <div id="player-list"></div>
 
 </div>
 
 <script>
+// SF leagues first, SF/TE+ leagues second, nWo (2-copy) last
 const LEAGUES = [
-  { server:"www47", id:"52453" },
-  { server:"www42", id:"71526" },
-  { server:"www48", id:"68291" },
-  { server:"www47", id:"13133" },
-  { server:"www47", id:"69382" },
-  { server:"www47", id:"64818" },
+  { server:"www42", id:"71526",                  label:"SF"     },  // QC at the Kratom Factory
+  { server:"www47", id:"13133",                  label:"SF"     },  // Mediocre Morsov
+  { server:"www47", id:"52453",                  label:"SF/TE+" },  // Cleon LIX
+  { server:"www48", id:"68291",                  label:"SF/TE+" },  // The Undertaker
+  { server:"www47", id:"69382",                  label:"SF/TE+" },  // Shotgun Shai-Hulud
+  { server:"www47", id:"64818", twoCopy:true,    label:"2-Copy" },  // The Undertaker (nWo)
 ];
 const MY_TEAM_NAMES = {
-  "52453":"Cleon LIX","71526":"QC at the Kratom Factory","68291":"The Undertaker",
-  "13133":"Mediocre Morsov","69382":"Shotgun Shai-Hulud","64818":"The Undertaker",
+  "71526":"QC at the Kratom Factory","13133":"Mediocre Morsov",
+  "52453":"Cleon LIX","68291":"The Undertaker","69382":"Shotgun Shai-Hulud",
+  "64818":"The Undertaker (nWo)",
 };
 const DEFAULT_WATCHLIST = [
   {name:"Brandon Aiyuk",pos:"WR"},{name:"Erick All",pos:"TE"},{name:"Cyrus Allen",pos:"WR"},
@@ -203,10 +192,10 @@ const DEFAULT_WATCHLIST = [
   {name:"Deshaun Watson",pos:"QB"},{name:"Jordan Whittington",pos:"WR"},
 ];
 
-let watchlist    = JSON.parse(localStorage.getItem("wl") || "null") || DEFAULT_WATCHLIST;
-let playerStatus = JSON.parse(localStorage.getItem("ps") || "{}");
-let leagueNames  = JSON.parse(localStorage.getItem("ln") || "{}");
-let lastRefresh  = localStorage.getItem("lr") || null;
+let watchlist    = JSON.parse(localStorage.getItem("wl")||"null") || DEFAULT_WATCHLIST;
+let playerStatus = JSON.parse(localStorage.getItem("ps")||"{}");
+let leagueNames  = JSON.parse(localStorage.getItem("ln")||"{}");
+let lastRefresh  = localStorage.getItem("lr")||null;
 let mflPlayers   = [];
 let nameToId     = {};
 
@@ -218,130 +207,93 @@ const toArr    = v => !v?[]:Array.isArray(v)?v:[v];
 function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":"#1f2937";}
 function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":"Unknown";}
 
-async function mfl(server, leagueId, type, year="2026") {
-  const p = new URLSearchParams({ server, TYPE:type, year });
-  if (leagueId) p.set("L", leagueId);
-  const r = await fetch(`/api/mfl?${p}`);
-  if (!r.ok) throw new Error("HTTP "+r.status);
-  const d = await r.json();
-  if (d?.error) throw new Error(d.error);
+async function mfl(server,leagueId,type,year="2026"){
+  const p=new URLSearchParams({server,TYPE:type,year});
+  if(leagueId)p.set("L",leagueId);
+  const r=await fetch(`/api/mfl?${p}`);
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  const d=await r.json();
+  if(d?.error)throw new Error(d.error);
   return d;
 }
 
-// Get player's First Last display name from MFL "Last, First" or normal format
-function displayName(mflName) {
-  const parts = (mflName||"").split(", ");
-  return parts.length===2 ? parts[1]+" "+parts[0] : mflName;
+function displayName(mflName){
+  const p=(mflName||"").split(", ");
+  return p.length===2?p[1]+" "+p[0]:mflName;
+}
+function getPlayerMeta(name){
+  const n=norm(name);
+  return mflPlayers.find(p=>p.name&&(norm(p.name)===n||norm(displayName(p.name))===n));
 }
 
-// Look up a watchlist player in the pool
-function getPlayerMeta(name) {
-  const n = norm(name);
-  return mflPlayers.find(p => {
-    if (!p.name) return false;
-    return norm(p.name)===n || norm(displayName(p.name))===n;
-  });
+// Build the two-copy statuses array for nWo league
+function twoCopyStatuses(mineCount,otherCount){
+  const st=[];
+  for(let i=0;i<mineCount;i++) st.push("mine");
+  for(let i=0;i<otherCount;i++) st.push("taken");
+  while(st.length<2) st.push("available");
+  return st.slice(0,2);
 }
 
-// Load MFL player pool — cached 24hr
-async function loadPlayerPool() {
-  const cached     = localStorage.getItem("mflPool");
-  const cachedTime = parseInt(localStorage.getItem("mflPoolTime")||"0");
-
-  if (cached && (Date.now()-cachedTime) < 86400000) {
-    mflPlayers = JSON.parse(cached);
+// Load MFL player pool (cached 24hr, offensive positions only)
+async function loadPlayerPool(){
+  const cached    =localStorage.getItem("mflPool");
+  const cachedTime=parseInt(localStorage.getItem("mflPoolTime")||"0");
+  if(cached&&(Date.now()-cachedTime)<86400000){
+    mflPlayers=JSON.parse(cached);
   } else {
-    document.getElementById("pool-status").textContent = "Fetching player pool from MFL…";
-    try {
-      const d = await mfl("www47","52453","players","2026");
-      const raw = toArr(d?.players?.player);
-      if (raw.length > 100) {
-        mflPlayers = raw;
-        localStorage.setItem("mflPool", JSON.stringify(raw));
-        localStorage.setItem("mflPoolTime", Date.now().toString());
+    document.getElementById("pool-status").textContent="Fetching player pool from MFL…";
+    try{
+      const d=await mfl("www47","52453","players","2026");
+      const raw=toArr(d?.players?.player);
+      if(raw.length>100){
+        // Offensive positions only
+        mflPlayers=raw.filter(p=>["QB","RB","WR","TE"].includes(p.position));
+        localStorage.setItem("mflPool",JSON.stringify(mflPlayers));
+        localStorage.setItem("mflPoolTime",Date.now().toString());
       }
-    } catch(e) {
-      document.getElementById("pool-status").textContent = "Could not load player pool: "+e.message;
+    }catch(e){
+      document.getElementById("pool-status").textContent="Could not load player pool: "+e.message;
       return;
     }
   }
-
-  // Filter to offensive positions only
-  mflPlayers = mflPlayers.filter(p => ["QB","RB","WR","TE"].includes(p.position));
-
-  // Build name→id map (handles "Last, First" and "First Last")
-  mflPlayers.forEach(p => {
-    if (!p.name||!p.id) return;
-    nameToId[norm(p.name)] = p.id;
-    nameToId[norm(displayName(p.name))] = p.id;
+  mflPlayers.forEach(p=>{
+    if(!p.name||!p.id)return;
+    nameToId[norm(p.name)]=p.id;
+    nameToId[norm(displayName(p.name))]=p.id;
   });
-
-  const ts = new Date(parseInt(localStorage.getItem("mflPoolTime")||Date.now()));
-  document.getElementById("pool-status").textContent =
+  const ts=new Date(parseInt(localStorage.getItem("mflPoolTime")||Date.now()));
+  document.getElementById("pool-status").textContent=
     `${mflPlayers.length.toLocaleString()} Players · Pool Updated ${ts.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}`;
-
   buildTeamFilter();
-  renderList(); // re-render to show team abbreviations
-}
-
-// Build team filter dropdown from current watchlist
-function buildTeamFilter() {
-  const teams = new Set();
-  watchlist.forEach(p => {
-    const meta = getPlayerMeta(p.name);
-    if (meta?.team) teams.add(meta.team);
-  });
-  const sorted = [...teams].sort();
-  const sel = document.getElementById("wl-team");
-  const cur = sel.value;
-  sel.innerHTML = '<option value="">All Teams</option>' +
-    sorted.map(t => `<option${t===cur?" selected":""}>${t}</option>`).join("");
-}
-
-// Build name dropdown from watchlist (alphabetical)
-function buildNameDropdown() {
-  const sel = document.getElementById("wl-name");
-  const cur = sel.value;
-  const sorted = [...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));
-  sel.innerHTML = '<option value="">All Players</option>' +
-    sorted.map(p=>`<option value="${norm(p.name)}"${norm(p.name)===cur?" selected":""}>${flipName(p.name)}</option>`).join("");
+  renderList();
 }
 
 // Add player autocomplete
 let addTimer;
-function onAddInput() {
-  clearTimeout(addTimer);
-  addTimer = setTimeout(updateAddResults, 120);
-}
-function hideResultsDelayed() {
-  setTimeout(()=>{document.getElementById("add-results").style.display="none";},200);
-}
+function onAddInput(){clearTimeout(addTimer);addTimer=setTimeout(updateAddResults,120);}
+function hideResultsDelayed(){setTimeout(()=>{document.getElementById("add-results").style.display="none";},200);}
 
-function updateAddResults() {
-  const q   = norm(document.getElementById("add-search").value);
-  const box = document.getElementById("add-results");
-  const inWl = new Set(watchlist.map(p=>norm(p.name)));
-
-  if (!q||q.length<2){box.style.display="none";return;}
-
-  const results = mflPlayers
-    .filter(p => {
-      if (!p.name) return false;
-      const n1=norm(p.name), dn=norm(displayName(p.name));
-      return n1.includes(q)||dn.includes(q);
+function updateAddResults(){
+  const q=norm(document.getElementById("add-search").value);
+  const box=document.getElementById("add-results");
+  const inWl=new Set(watchlist.map(p=>norm(p.name)));
+  if(!q||q.length<2){box.style.display="none";return;}
+  const results=mflPlayers
+    .filter(p=>{
+      if(!p.name)return false;
+      return norm(p.name).includes(q)||norm(displayName(p.name)).includes(q);
     })
     .sort((a,b)=>{
       const an=norm(displayName(a.name)),bn=norm(displayName(b.name));
-      return (an.startsWith(q)?0:1)-(bn.startsWith(q)?0:1)||an.localeCompare(bn);
+      return(an.startsWith(q)?0:1)-(bn.startsWith(q)?0:1)||an.localeCompare(bn);
     })
     .slice(0,12);
-
-  if (!results.length){box.style.display="none";return;}
-
-  box.innerHTML = results.map(p=>{
-    const dn = displayName(p.name);
-    const already = inWl.has(norm(dn));
-    return `<div class="add-result${already?" already":""}" ${already?"":`onclick="addFromPool('${dn.replace(/'/g,"\\'")}','${p.position||""}')"`}>
+  if(!results.length){box.style.display="none";return;}
+  box.innerHTML=results.map(p=>{
+    const dn=displayName(p.name);
+    const already=inWl.has(norm(dn));
+    return`<div class="add-result${already?" already":""}" ${already?"":`onclick="addFromPool('${dn.replace(/'/g,"\\'")}','${p.position||""}')"`}>
       <span class="add-result-name">${flipName(dn)}</span>
       <span class="add-result-meta">${p.position||""}${p.team?" · "+p.team:""}</span>
     </div>`;
@@ -349,77 +301,93 @@ function updateAddResults() {
   box.style.display="block";
 }
 
-function loadCachedRosters() {
+function addFromPool(name,pos){
+  if(watchlist.some(p=>norm(p.name)===norm(name)))return;
+  watchlist.push({name,pos});
+  localStorage.setItem("wl",JSON.stringify(watchlist));
+  const status=computePlayerStatus(name);
+  if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
+  document.getElementById("add-search").value="";
+  document.getElementById("add-results").style.display="none";
+  buildNameDropdown();buildTeamFilter();renderList();
+}
+
+// Roster helpers
+function loadCachedRosters(){
   const data=JSON.parse(localStorage.getItem("leagueRostersData")||"null");
-  if (!data) return null;
+  if(!data)return null;
   const result={};
   LEAGUES.forEach(cfg=>{
     const rs=data[cfg.id];
-    result[cfg.id]=rs?{mine:new Set(rs.mine),other:new Set(rs.other)}:null;
+    if(!rs){result[cfg.id]=null;}
+    else if(rs.twoCopy){result[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,twoCopy:true};}
+    else{result[cfg.id]={mine:new Set(rs.mine),other:new Set(rs.other)};}
   });
   return result;
 }
 
-function computePlayerStatus(name) {
+function computePlayerStatus(name){
   const pid=nameToId[norm(name)];
   const rosters=loadCachedRosters();
-  if (!rosters||!pid) return null;
+  if(!rosters||!pid)return null;
   const ls={};
   LEAGUES.forEach(cfg=>{
     const rs=rosters[cfg.id];
-    if (!rs)                   ls[cfg.id]="error";
-    else if (rs.mine.has(pid)) ls[cfg.id]="mine";
-    else if (rs.other.has(pid))ls[cfg.id]="taken";
-    else                       ls[cfg.id]="available";
+    if(!rs){ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";}
+    else if(!pid){ls[cfg.id]=cfg.twoCopy?["unknown","unknown"]:"unknown";}
+    else if(cfg.twoCopy){
+      ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0);
+    }else{
+      if(rs.mine.has(pid))ls[cfg.id]="mine";
+      else if(rs.other.has(pid))ls[cfg.id]="taken";
+      else ls[cfg.id]="available";
+    }
   });
   return ls;
 }
 
-function addFromPool(name, pos) {
-  if (watchlist.some(p=>norm(p.name)===norm(name))) return;
-  watchlist.push({name,pos});
-  localStorage.setItem("wl",JSON.stringify(watchlist));
-  // Auto-check status from cached roster data
-  const status=computePlayerStatus(name);
-  if (status) {
-    playerStatus[norm(name)]=status;
-    localStorage.setItem("ps",JSON.stringify(playerStatus));
-  }
-  document.getElementById("add-search").value="";
-  document.getElementById("add-results").style.display="none";
-  buildNameDropdown();
-  buildTeamFilter();
-  renderList();
-}
-
-// Refresh availability
-async function doRefresh() {
+// Refresh
+async function doRefresh(){
   const btn=document.getElementById("refresh-btn");
-  btn.disabled=true; btn.textContent="… Refreshing";
-
+  btn.disabled=true;btn.textContent="… Refreshing";
   const rosterErrors=[],newNames={},leagueRosters={};
 
-  for (const cfg of LEAGUES) {
+  for(const cfg of LEAGUES){
     let fetched=false;
-    for (const year of ["2026","2025"]) {
-      try {
+    for(const year of ["2026","2025"]){
+      try{
         const rData=await mfl(cfg.server,cfg.id,"rosters",year);
         let myFranchiseId=null;
-        try {
+        try{
           const lg=await mfl(cfg.server,cfg.id,"league",year);
           newNames[cfg.id]=lg?.league?.name||cfg.id;
           const frs=toArr(lg?.league?.franchises?.franchise);
           const myFr=frs.find(fr=>norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
           myFranchiseId=myFr?.id||null;
-        } catch {newNames[cfg.id]=cfg.id;}
+        }catch{newNames[cfg.id]=cfg.id;}
         const allFr=toArr(rData?.rosters?.franchise);
-        const mine=new Set(),other=new Set();
-        allFr.forEach(fr=>{
-          const isMe=myFranchiseId&&fr.id===myFranchiseId;
-          toArr(fr.player).forEach(p=>isMe?mine.add(p.id):other.add(p.id));
-        });
-        leagueRosters[cfg.id]={mine,other};fetched=true;break;
-      } catch(e){
+
+        if(cfg.twoCopy){
+          // Count occurrences for 2-copy league
+          const mineCount={},otherCount={};
+          allFr.forEach(fr=>{
+            const isMe=myFranchiseId&&fr.id===myFranchiseId;
+            toArr(fr.player).forEach(p=>{
+              if(isMe) mineCount[p.id]=(mineCount[p.id]||0)+1;
+              else     otherCount[p.id]=(otherCount[p.id]||0)+1;
+            });
+          });
+          leagueRosters[cfg.id]={mineCount,otherCount,twoCopy:true};
+        }else{
+          const mine=new Set(),other=new Set();
+          allFr.forEach(fr=>{
+            const isMe=myFranchiseId&&fr.id===myFranchiseId;
+            toArr(fr.player).forEach(p=>isMe?mine.add(p.id):other.add(p.id));
+          });
+          leagueRosters[cfg.id]={mine,other};
+        }
+        fetched=true;break;
+      }catch(e){
         rosterErrors.push(cfg.id+"/"+year+": "+e.message);
         leagueRosters[cfg.id]=null;
       }
@@ -429,25 +397,32 @@ async function doRefresh() {
 
   leagueNames=newNames;
 
-  // Persist roster data so newly added players can be auto-checked instantly
-  const rostersForStorage={};
+  // Persist roster data
+  const rfs={};
   LEAGUES.forEach(cfg=>{
     const rs=leagueRosters[cfg.id];
-    rostersForStorage[cfg.id]=rs?{mine:[...rs.mine],other:[...rs.other]}:null;
+    if(!rs)rfs[cfg.id]=null;
+    else if(cfg.twoCopy)rfs[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,twoCopy:true};
+    else rfs[cfg.id]={mine:[...rs.mine],other:[...rs.other]};
   });
-  localStorage.setItem("leagueRostersData",JSON.stringify(rostersForStorage));
+  localStorage.setItem("leagueRostersData",JSON.stringify(rfs));
 
+  // Build status
   const statusMap={};
   watchlist.forEach(player=>{
     const pid=nameToId[norm(player.name)];
     const ls={};
     LEAGUES.forEach(cfg=>{
       const rs=leagueRosters[cfg.id];
-      if(!rs)                   ls[cfg.id]="error";
-      else if(!pid)             ls[cfg.id]="unknown";
-      else if(rs.mine.has(pid)) ls[cfg.id]="mine";
-      else if(rs.other.has(pid))ls[cfg.id]="taken";
-      else                      ls[cfg.id]="available";
+      if(!rs){ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";}
+      else if(!pid){ls[cfg.id]=cfg.twoCopy?["unknown","unknown"]:"unknown";}
+      else if(cfg.twoCopy){
+        ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0);
+      }else{
+        if(rs.mine.has(pid))ls[cfg.id]="mine";
+        else if(rs.other.has(pid))ls[cfg.id]="taken";
+        else ls[cfg.id]="available";
+      }
     });
     statusMap[norm(player.name)]=ls;
   });
@@ -466,48 +441,84 @@ async function doRefresh() {
   renderLeagueKey();renderList();
 }
 
-function renderLeagueKey() {
-  document.getElementById("league-key").textContent =
-    LEAGUES.map((c,i)=>`[${i+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ");
+function renderLeagueKey(){
+  const groups=[
+    {label:"SF",   ids:LEAGUES.filter(c=>c.label==="SF")},
+    {label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")},
+    {label:"2-Copy",ids:LEAGUES.filter(c=>c.label==="2-Copy")},
+  ];
+  document.getElementById("league-key").innerHTML=groups.map(g=>{
+    const items=g.ids.map((c,i)=>{
+      const num=LEAGUES.indexOf(c)+1;
+      return `[${num}] ${MY_TEAM_NAMES[c.id]||c.id}`;
+    }).join("  ");
+    return `<div class="league-group"><span class="league-group-label">${g.label}</span>${items}</div>`;
+  }).join("");
 }
 
-function renderList() {
-  const nameF  = document.getElementById("wl-name").value;
-  const posF   = document.getElementById("wl-pos").value;
-  const teamF  = document.getElementById("wl-team").value;
-  const statusF= document.getElementById("wl-status").value;
-  const el     = document.getElementById("player-list");
+function buildTeamFilter(){
+  const teams=new Set();
+  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});
+  const sorted=[...teams].sort();
+  const sel=document.getElementById("wl-team");
+  const cur=sel.value;
+  sel.innerHTML='<option value="">All Teams</option>'+sorted.map(t=>`<option${t===cur?" selected":""}>${t}</option>`).join("");
+}
 
-  const sorted = watchlist
+function buildNameDropdown(){
+  const sel=document.getElementById("wl-name");
+  const cur=sel.value;
+  const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));
+  sel.innerHTML='<option value="">All Players</option>'+
+    sorted.map(p=>`<option value="${norm(p.name)}"${norm(p.name)===cur?" selected":""}>${flipName(p.name)}</option>`).join("");
+}
+
+function renderList(){
+  const nameF  =document.getElementById("wl-name").value;
+  const posF   =document.getElementById("wl-pos").value;
+  const teamF  =document.getElementById("wl-team").value;
+  const statusF=document.getElementById("wl-status").value;
+  const el     =document.getElementById("player-list");
+
+  const sorted=watchlist
     .map((p,i)=>({...p,i}))
     .sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)))
     .filter(p=>{
-      if (nameF && norm(p.name)!==nameF) return false;
-      if (posF && p.pos!==posF) return false;
-      if (teamF) {
-        const meta=getPlayerMeta(p.name);
-        if ((meta?.team||"")!==teamF) return false;
-      }
-      if (statusF) {
+      if(nameF&&norm(p.name)!==nameF)return false;
+      if(posF&&p.pos!==posF)return false;
+      if(teamF){const m=getPlayerMeta(p.name);if((m?.team||"")!==teamF)return false;}
+      if(statusF){
         const st=playerStatus[norm(p.name)]||{};
-        if (!Object.values(st).some(v=>v===statusF)) return false;
+        const all=Object.values(st).flatMap(v=>Array.isArray(v)?v:[v]);
+        if(!all.some(v=>v===statusF))return false;
       }
       return true;
     });
 
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
-
   if(!sorted.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
 
   el.innerHTML=sorted.map(({name,pos,i})=>{
     const status=playerStatus[norm(name)]||{};
     const meta=getPlayerMeta(name);
     const team=meta?.team||"";
+
     const icons=LEAGUES.map((cfg,j)=>{
-      const s=status[cfg.id],ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
-      return `<span class="league-icon" style="background:${iconColor(s)}" title="[${j+1}] ${ln} — ${iconLabel(s)}">${j+1}</span>`;
+      const s=status[cfg.id];
+      const num=j+1;
+      const ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
+
+      if(cfg.twoCopy&&Array.isArray(s)){
+        // Two bubbles side by side for nWo
+        return`<span class="icon-pair">`+
+          s.map((si,k)=>`<span class="league-icon" style="background:${iconColor(si)}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(si)}">${num}</span>`).join("")+
+        `</span>`;
+      }
+      const sv=typeof s==="string"?s:"unknown";
+      return`<span class="league-icon" style="background:${iconColor(sv)}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
     }).join("");
-    return `<div class="player-row">
+
+    return`<div class="player-row">
       <div class="player-name-row">
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
         <span class="player-name">${flipName(name)}</span>
@@ -522,16 +533,12 @@ function renderList() {
 function removePlayer(i){
   watchlist=watchlist.filter((_,j)=>j!==i);
   localStorage.setItem("wl",JSON.stringify(watchlist));
-  buildNameDropdown();
-  buildTeamFilter();
-  renderList();
+  buildNameDropdown();buildTeamFilter();renderList();
 }
 
 // Init
-if(lastRefresh) document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-renderLeagueKey();
-buildNameDropdown();
-renderList();
+if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+renderLeagueKey();buildNameDropdown();renderList();
 loadPlayerPool();
 </script>
 </body>
