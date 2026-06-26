@@ -205,10 +205,14 @@ const LEAGUES = [
   { server:"www47", id:"69382",             label:"SF/TE+" },
   { server:"www47", id:"64818", twoCopy:true, label:"SF/TE+" },
 ];
-const MY_TEAM_NAMES = {
+const MY_TEAM_NAMES = {  // display names shown in the UI
   "71526":"QC at the Kratom Factory","13133":"Mediocre Morsov",
   "52453":"Cleon LIX","68291":"The Undertaker","69382":"Shotgun Shai-Hulud",
   "64818":"The Undertaker (nWo)",
+};
+// Actual franchise names as they appear in MFL (used for roster matching only)
+const MY_TEAM_MATCH = {
+  "64818":"The Undertaker",  // nWo franchise is named "The Undertaker" in MFL
 };
 const DEFAULT_WATCHLIST = [
   {name:"Brandon Aiyuk",pos:"WR"},{name:"Erick All",pos:"TE"},{name:"Cyrus Allen",pos:"WR"},
@@ -472,7 +476,8 @@ async function doRefresh() {
           const lg=await mfl(cfg.server,cfg.id,"league",year);
           newNames[cfg.id]=lg?.league?.name||cfg.id;
           const frs=toArr(lg?.league?.franchises?.franchise);
-          const myFr=frs.find(fr=>norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
+          const matchName=MY_TEAM_MATCH[cfg.id]||MY_TEAM_NAMES[cfg.id]||"";
+          const myFr=frs.find(fr=>norm(fr.name)===norm(matchName));
           myFranchiseId=myFr?.id||null;
         } catch {newNames[cfg.id]=cfg.id;}
         const allFr=toArr(rData?.rosters?.franchise);
