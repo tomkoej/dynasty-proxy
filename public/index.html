@@ -266,6 +266,9 @@ async function loadPlayerPool() {
     }
   }
 
+  // Filter to offensive positions only
+  mflPlayers = mflPlayers.filter(p => ["QB","RB","WR","TE"].includes(p.position));
+
   // Build name→id map (handles "Last, First" and "First Last")
   mflPlayers.forEach(p => {
     if (!p.name||!p.id) return;
@@ -346,10 +349,42 @@ function updateAddResults() {
   box.style.display="block";
 }
 
+function loadCachedRosters() {
+  const data=JSON.parse(localStorage.getItem("leagueRostersData")||"null");
+  if (!data) return null;
+  const result={};
+  LEAGUES.forEach(cfg=>{
+    const rs=data[cfg.id];
+    result[cfg.id]=rs?{mine:new Set(rs.mine),other:new Set(rs.other)}:null;
+  });
+  return result;
+}
+
+function computePlayerStatus(name) {
+  const pid=nameToId[norm(name)];
+  const rosters=loadCachedRosters();
+  if (!rosters||!pid) return null;
+  const ls={};
+  LEAGUES.forEach(cfg=>{
+    const rs=rosters[cfg.id];
+    if (!rs)                   ls[cfg.id]="error";
+    else if (rs.mine.has(pid)) ls[cfg.id]="mine";
+    else if (rs.other.has(pid))ls[cfg.id]="taken";
+    else                       ls[cfg.id]="available";
+  });
+  return ls;
+}
+
 function addFromPool(name, pos) {
   if (watchlist.some(p=>norm(p.name)===norm(name))) return;
   watchlist.push({name,pos});
   localStorage.setItem("wl",JSON.stringify(watchlist));
+  // Auto-check status from cached roster data
+  const status=computePlayerStatus(name);
+  if (status) {
+    playerStatus[norm(name)]=status;
+    localStorage.setItem("ps",JSON.stringify(playerStatus));
+  }
   document.getElementById("add-search").value="";
   document.getElementById("add-results").style.display="none";
   buildNameDropdown();
@@ -393,6 +428,15 @@ async function doRefresh() {
   }
 
   leagueNames=newNames;
+
+  // Persist roster data so newly added players can be auto-checked instantly
+  const rostersForStorage={};
+  LEAGUES.forEach(cfg=>{
+    const rs=leagueRosters[cfg.id];
+    rostersForStorage[cfg.id]=rs?{mine:[...rs.mine],other:[...rs.other]}:null;
+  });
+  localStorage.setItem("leagueRostersData",JSON.stringify(rostersForStorage));
+
   const statusMap={};
   watchlist.forEach(player=>{
     const pid=nameToId[norm(player.name)];
