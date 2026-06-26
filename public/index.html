@@ -14,12 +14,13 @@
     }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; min-height:100vh; }
 
+    /* Header */
     #header {
       display:flex; justify-content:space-between; align-items:flex-start;
-      padding:20px 24px 16px; border-bottom:1px solid var(--border);
-      background:var(--surface); position:sticky; top:0; z-index:10;
+      padding:16px 24px; border-bottom:1px solid var(--border);
+      background:var(--surface); position:sticky; top:0; z-index:20;
     }
-    #header h1 { font-size:18px; font-weight:700; letter-spacing:-0.01em; }
+    #header h1 { font-size:18px; font-weight:700; }
     #header h1 span { color:var(--green-hi); }
     #header p  { color:var(--dim); font-size:12px; margin-top:3px; }
     #refresh-wrap { text-align:right; }
@@ -33,29 +34,73 @@
     #timestamp { color:#fff; font-size:11px; margin-top:5px; }
     #debug     { color:var(--muted); font-size:10px; margin-top:2px; }
 
-    #main { max-width:680px; margin:0 auto; padding:20px 24px 48px; }
+    /* Main */
+    #main { max-width:680px; margin:0 auto; padding:20px 24px 60px; }
 
-    #search {
-      width:100%; background:var(--surface); border:1px solid var(--border);
+    /* Add player section */
+    #add-section { margin-bottom:20px; }
+    #add-section label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
+    #add-row { display:flex; gap:8px; position:relative; }
+    #add-search {
+      flex:1; background:var(--surface); border:1px solid var(--border);
       color:var(--text); padding:9px 14px; border-radius:6px;
-      font-family:var(--font); font-size:14px; margin-bottom:18px;
+      font-family:var(--font); font-size:14px;
     }
-    #search:focus { outline:none; border-color:var(--green); }
-    #search::placeholder { color:var(--muted); }
-
-    #error-box {
-      background:#1f0a0a; border:1px solid #7f1d1d; color:#fca5a5;
-      padding:10px 14px; border-radius:6px; font-size:12px; line-height:1.6;
-      margin-bottom:16px; display:none;
+    #add-search:focus { outline:none; border-color:var(--green); }
+    #add-search::placeholder { color:var(--muted); }
+    #add-pos-filter {
+      background:var(--surface); border:1px solid var(--border); color:var(--dim);
+      padding:8px 10px; border-radius:6px; font-family:var(--font); font-size:13px; width:80px;
     }
+    #pool-status { color:var(--muted); font-size:11px; margin-top:5px; }
 
-    #legend { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:12px; }
+    /* Autocomplete dropdown */
+    #add-results {
+      position:absolute; top:calc(100% + 4px); left:0; right:88px;
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:6px; overflow:hidden; z-index:100; display:none;
+      max-height:280px; overflow-y:auto;
+    }
+    .add-result {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:9px 14px; cursor:pointer; gap:8px;
+    }
+    .add-result:hover { background:var(--muted); }
+    .add-result-info { display:flex; align-items:center; gap:8px; }
+    .add-result-name { color:var(--text); }
+    .add-result-meta { color:var(--dim); font-size:12px; }
+    .add-result-already { color:var(--muted); font-size:11px; }
+    .add-btn-small {
+      background:var(--green); color:white; border:none; padding:3px 10px;
+      border-radius:4px; font-family:var(--font); font-size:12px; cursor:pointer;
+      flex-shrink:0; white-space:nowrap;
+    }
+    .add-btn-small:disabled { background:var(--muted); cursor:default; }
+
+    /* Divider */
+    .section-divider { border:none; border-top:1px solid var(--border); margin:18px 0; }
+
+    /* Legend */
+    #legend { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
     .legend-item { display:flex; align-items:center; gap:5px; }
     .legend-dot  { width:11px; height:11px; border-radius:50%; border:1px solid var(--border); flex-shrink:0; }
     .legend-label { color:var(--dim); font-size:12px; }
 
-    #league-key { color:var(--muted); font-size:11px; margin-bottom:20px; line-height:1.9; }
+    /* League key */
+    #league-key { color:var(--muted); font-size:11px; margin-bottom:16px; line-height:1.9; }
 
+    /* Watchlist filters */
+    #filter-bar { display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; }
+    .filter-input {
+      background:var(--surface); border:1px solid var(--border); color:var(--text);
+      padding:7px 12px; border-radius:6px; font-family:var(--font); font-size:13px;
+    }
+    .filter-input:focus { outline:none; border-color:var(--green); }
+    .filter-input::placeholder { color:var(--muted); }
+    #wl-search { flex:1; min-width:140px; }
+    #wl-pos, #wl-status { width:auto; color:var(--dim); }
+
+    /* Player list */
     .player-row { margin-bottom:14px; }
     .player-name-row { display:flex; align-items:center; gap:8px; }
     .remove-btn {
@@ -63,7 +108,9 @@
       font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0;
     }
     .remove-btn:hover { color:var(--red); }
-    .player-pos { color:var(--dim); }
+    .player-name { color:var(--text); }
+    .player-pos  { color:var(--dim); }
+    .player-team { color:var(--muted); font-size:12px; }
     .icon-row { display:flex; gap:5px; margin-top:5px; padding-left:20px; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
@@ -71,20 +118,6 @@
       font-size:10px; font-weight:700; border:1px solid var(--border);
       cursor:default; flex-shrink:0;
     }
-
-    #add-bar { display:flex; gap:8px; flex-wrap:wrap; padding-top:16px; border-top:1px solid var(--border); }
-    .add-input {
-      background:var(--surface); border:1px solid var(--border); color:var(--text);
-      padding:6px 10px; border-radius:4px; font-family:var(--font); font-size:13px;
-    }
-    .add-input:focus { outline:none; border-color:var(--green); }
-    #add-name { width:200px; }
-    #add-pos  { width:70px; }
-    #add-btn {
-      background:var(--surface); border:1px solid var(--border); color:var(--green-hi);
-      padding:6px 12px; border-radius:4px; font-family:var(--font); font-size:13px; cursor:pointer;
-    }
-    #add-btn:hover { border-color:var(--green); }
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
   </style>
 </head>
@@ -103,47 +136,68 @@
 </div>
 
 <div id="main">
-  <input id="search" type="text" placeholder="Search players…" oninput="renderList()">
-  <div id="error-box"></div>
+
+  <!-- Add Player -->
+  <div id="add-section">
+    <label>Add from MFL player pool</label>
+    <div id="add-row">
+      <input id="add-search" type="text" placeholder="Search by name…" autocomplete="off"
+        oninput="onAddInput()" onfocus="onAddInput()" onblur="hideResultsDelayed()">
+      <select id="add-pos-filter" onchange="onAddInput()">
+        <option value="">All pos</option>
+        <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
+      </select>
+      <div id="add-results"></div>
+    </div>
+    <div id="pool-status">Loading player pool…</div>
+  </div>
+
+  <hr class="section-divider">
+
+  <!-- Legend -->
   <div id="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-label">My Team</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div><span class="legend-label">Rostered</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#1f2937"></div><span class="legend-label">Unknown</span></div>
   </div>
+
+  <!-- League key -->
   <div id="league-key">—</div>
-  <div id="player-list"></div>
-  <div id="add-bar">
-    <input id="add-name" class="add-input" type="text" placeholder="Add player…" onkeydown="if(event.key==='Enter')addPlayer()">
-    <select id="add-pos" class="add-input">
-      <option>QB</option><option>RB</option><option selected>WR</option><option>TE</option>
+
+  <!-- Watchlist filters -->
+  <div id="filter-bar">
+    <input id="wl-search" class="filter-input" type="text" placeholder="Filter watchlist…" oninput="renderList()">
+    <select id="wl-pos" class="filter-input" onchange="renderList()">
+      <option value="">All positions</option>
+      <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
     </select>
-    <button id="add-btn" onclick="addPlayer()">+ Add</button>
+    <select id="wl-status" class="filter-input" onchange="renderList()">
+      <option value="">All statuses</option>
+      <option value="available">Available</option>
+      <option value="mine">My Team</option>
+      <option value="taken">Rostered</option>
+      <option value="unknown">Unknown</option>
+    </select>
   </div>
+
+  <!-- Player list -->
+  <div id="player-list"></div>
+
 </div>
 
 <script>
 const LEAGUES = [
-  { server:"www42", id:"71526" },
   { server:"www47", id:"52453" },
+  { server:"www42", id:"71526" },
   { server:"www48", id:"68291" },
   { server:"www47", id:"13133" },
   { server:"www47", id:"69382" },
   { server:"www47", id:"64818" },
 ];
 const MY_TEAM_NAMES = {
-  "71526":"QC at the Kratom Factory","52453":"Cleon LIX","68291":"The Undertaker",
+  "52453":"Cleon LIX","71526":"QC at the Kratom Factory","68291":"The Undertaker",
   "13133":"Mediocre Morsov","69382":"Shotgun Shai-Hulud","64818":"The Undertaker",
-};
-const NAME_TO_ID = {
-  "brandonaiyuk":"14840","erickall":"16645","cyrusallen":"17518","lequintallen":"17061",
-  "tysonbagent":"16384","malikbenson":"17706","nateboerkircher":"17591","isaiahbond":"17076",
-  "deionburks":"17510","keoncoleman":"16617","mitchellevans":"17109","ryanflournoy":"16778",
-  "theojohnson":"16649","colekmet":"14867","charliekolar":"15795","brycelance":"17519",
-  "kendremiller":"16171","jalenmilroe":"17033","joemixon":"13131","tyrenmontgomery":"17715",
-  "devinneal":"17046","garrettnussmeier":"17465","adamrandall":"17652","jtavionsanders":"16643",
-  "brenenthompson":"17529","cedrictillman":"16191","darnellwashington":"16216",
-  "deshaunwatson":"13113","jordanwhittington":"16633",
 };
 const DEFAULT_WATCHLIST = [
   {name:"Brandon Aiyuk",pos:"WR"},{name:"Erick All",pos:"TE"},{name:"Cyrus Allen",pos:"WR"},
@@ -158,11 +212,15 @@ const DEFAULT_WATCHLIST = [
   {name:"Deshaun Watson",pos:"QB"},{name:"Jordan Whittington",pos:"WR"},
 ];
 
+// State
 let watchlist    = JSON.parse(localStorage.getItem("wl") || "null") || DEFAULT_WATCHLIST;
 let playerStatus = JSON.parse(localStorage.getItem("ps") || "{}");
 let leagueNames  = JSON.parse(localStorage.getItem("ln") || "{}");
 let lastRefresh  = localStorage.getItem("lr") || null;
+let mflPlayers   = [];  // full player pool [{id, name, position, team}]
+let nameToId     = {};  // norm(name) -> id, built from mflPlayers
 
+// Helpers
 const norm     = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
 const flipName = n => { const p=(n||"").trim().split(" "); return p.length<2?n:`${p[p.length-1]}, ${p.slice(0,-1).join(" ")}`; };
 const sortKey  = n => flipName(n).toLowerCase();
@@ -175,6 +233,7 @@ function iconLabel(s) {
   return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":"Unknown";
 }
 
+// MFL API call (same-origin)
 async function mfl(server, leagueId, type, year="2026") {
   const p = new URLSearchParams({ server, TYPE:type, year });
   if (leagueId) p.set("L", leagueId);
@@ -185,93 +244,226 @@ async function mfl(server, leagueId, type, year="2026") {
   return d;
 }
 
+// Load MFL player pool — cached 24hr in localStorage
+async function loadPlayerPool() {
+  const cached     = localStorage.getItem("mflPool");
+  const cachedTime = parseInt(localStorage.getItem("mflPoolTime")||"0");
+  const age        = Date.now() - cachedTime;
+
+  if (cached && age < 86400000) {
+    mflPlayers = JSON.parse(cached);
+  } else {
+    document.getElementById("pool-status").textContent = "Fetching player pool from MFL…";
+    try {
+      // Use the first www47 league for context
+      const d = await mfl("www47", "52453", "players", "2026");
+      const raw = toArr(d?.players?.player);
+      if (raw.length > 100) {
+        mflPlayers = raw;
+        localStorage.setItem("mflPool",     JSON.stringify(raw));
+        localStorage.setItem("mflPoolTime", Date.now().toString());
+      }
+    } catch(e) {
+      document.getElementById("pool-status").textContent = "Could not load player pool: "+e.message;
+      return;
+    }
+  }
+
+  // Build name→id map, handling MFL's "Last, First" format
+  mflPlayers.forEach(p => {
+    if (!p.name || !p.id) return;
+    nameToId[norm(p.name)] = p.id;
+    const parts = p.name.split(", ");
+    if (parts.length === 2) nameToId[norm(parts[1]+" "+parts[0])] = p.id;
+  });
+
+  const ts = new Date(parseInt(localStorage.getItem("mflPoolTime")||Date.now()));
+  document.getElementById("pool-status").textContent =
+    `${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleDateString()}`;
+}
+
+// Add player search
+let addTimer;
+function onAddInput() {
+  clearTimeout(addTimer);
+  addTimer = setTimeout(updateAddResults, 120);
+}
+function hideResultsDelayed() {
+  setTimeout(() => { document.getElementById("add-results").style.display="none"; }, 200);
+}
+
+function updateAddResults() {
+  const q      = norm(document.getElementById("add-search").value);
+  const posF   = document.getElementById("add-pos-filter").value.toUpperCase();
+  const box    = document.getElementById("add-results");
+  const inWl   = new Set(watchlist.map(p => norm(p.name)));
+
+  if (!q || q.length < 2) { box.style.display="none"; return; }
+
+  // Filter & score: prefer starts-with over contains
+  const results = mflPlayers
+    .filter(p => {
+      if (!p.name) return false;
+      const n1 = norm(p.name);
+      // MFL: "Last, First" — also check "First Last"
+      const parts = (p.name||"").split(", ");
+      const flipped = parts.length===2 ? norm(parts[1]+" "+parts[0]) : n1;
+      const matches = n1.includes(q) || flipped.includes(q);
+      const posOk = !posF || (p.position||"").toUpperCase()===posF;
+      return matches && posOk;
+    })
+    .sort((a,b) => {
+      const an = norm(a.name), bn = norm(b.name);
+      const as = an.startsWith(q)?0:1, bs = bn.startsWith(q)?0:1;
+      return as-bs || an.localeCompare(bn);
+    })
+    .slice(0, 12);
+
+  if (!results.length) { box.style.display="none"; return; }
+
+  // Display name in "First Last" format
+  const displayName = p => {
+    const parts = (p.name||"").split(", ");
+    return parts.length===2 ? parts[1]+" "+parts[0] : p.name;
+  };
+
+  box.innerHTML = results.map(p => {
+    const already = inWl.has(norm(displayName(p)));
+    return `<div class="add-result">
+      <div class="add-result-info">
+        <span class="add-result-name">${flipName(displayName(p))}</span>
+        <span class="add-result-meta">${p.position||""}${p.team?" · "+p.team:""}</span>
+      </div>
+      <button class="add-btn-small" ${already?"disabled":""} onclick="addFromPool('${(displayName(p)).replace(/'/g,"\\'")}','${p.position||""}')">
+        ${already?"Added":"+ Add"}
+      </button>
+    </div>`;
+  }).join("");
+  box.style.display = "block";
+}
+
+function addFromPool(name, pos) {
+  if (watchlist.some(p => norm(p.name)===norm(name))) return;
+  watchlist.push({name, pos});
+  localStorage.setItem("wl", JSON.stringify(watchlist));
+  // Clear search
+  document.getElementById("add-search").value = "";
+  document.getElementById("add-results").style.display = "none";
+  renderList();
+  updateAddResults();
+}
+
+// Refresh availability
 async function doRefresh() {
   const btn = document.getElementById("refresh-btn");
-  btn.disabled = true; btn.textContent = "… Refreshing";
-  showError(null);
+  btn.disabled=true; btn.textContent="… Refreshing";
 
-  const rosterErrors = [], newNames = {}, leagueRosters = {};
+  const rosterErrors=[], newNames={}, leagueRosters={};
 
   for (const cfg of LEAGUES) {
-    let fetched = false;
+    let fetched=false;
     for (const year of ["2026","2025"]) {
       try {
         const rData = await mfl(cfg.server, cfg.id, "rosters", year);
-        let myFranchiseId = null;
+        let myFranchiseId=null;
         try {
           const lg = await mfl(cfg.server, cfg.id, "league", year);
           newNames[cfg.id] = lg?.league?.name || cfg.id;
           const frs = toArr(lg?.league?.franchises?.franchise);
           const myFr = frs.find(fr => norm(fr.name)===norm(MY_TEAM_NAMES[cfg.id]||""));
-          myFranchiseId = myFr?.id || null;
-        } catch { newNames[cfg.id] = cfg.id; }
+          myFranchiseId = myFr?.id||null;
+        } catch { newNames[cfg.id]=cfg.id; }
         const allFr = toArr(rData?.rosters?.franchise);
         const mine=new Set(), other=new Set();
         allFr.forEach(fr => {
           const isMe = myFranchiseId && fr.id===myFranchiseId;
           toArr(fr.player).forEach(p => isMe?mine.add(p.id):other.add(p.id));
         });
-        leagueRosters[cfg.id] = {mine, other};
-        fetched = true; break;
+        leagueRosters[cfg.id]={mine,other}; fetched=true; break;
       } catch(e) {
         rosterErrors.push(cfg.id+"/"+year+": "+e.message);
-        leagueRosters[cfg.id] = null;
+        leagueRosters[cfg.id]=null;
       }
     }
-    if (!fetched) { newNames[cfg.id]=cfg.id; leagueRosters[cfg.id]=null; }
+    if (!fetched){newNames[cfg.id]=cfg.id;leagueRosters[cfg.id]=null;}
   }
 
-  leagueNames = newNames;
-  const statusMap = {};
+  leagueNames=newNames;
+  const statusMap={};
   watchlist.forEach(player => {
-    const pid = NAME_TO_ID[norm(player.name)];
-    const ls  = {};
+    const pid = nameToId[norm(player.name)];
+    const ls={};
     LEAGUES.forEach(cfg => {
-      const rs = leagueRosters[cfg.id];
-      if (!rs)                ls[cfg.id]="error";
-      else if (!pid)          ls[cfg.id]="unknown";
-      else if (rs.mine.has(pid))  ls[cfg.id]="mine";
-      else if (rs.other.has(pid)) ls[cfg.id]="taken";
-      else                        ls[cfg.id]="available";
+      const rs=leagueRosters[cfg.id];
+      if (!rs)                   ls[cfg.id]="error";
+      else if (!pid)             ls[cfg.id]="unknown";
+      else if (rs.mine.has(pid)) ls[cfg.id]="mine";
+      else if (rs.other.has(pid))ls[cfg.id]="taken";
+      else                       ls[cfg.id]="available";
     });
-    statusMap[norm(player.name)] = ls;
+    statusMap[norm(player.name)]=ls;
   });
-  playerStatus = statusMap;
+  playerStatus=statusMap;
 
-  const now = new Date();
-  lastRefresh = now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
+  const now=new Date();
+  lastRefresh=now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
+  localStorage.setItem("ps",JSON.stringify(playerStatus));
+  localStorage.setItem("ln",JSON.stringify(leagueNames));
+  localStorage.setItem("lr",lastRefresh);
 
-  localStorage.setItem("ps", JSON.stringify(playerStatus));
-  localStorage.setItem("ln", JSON.stringify(leagueNames));
-  localStorage.setItem("lr", lastRefresh);
-
-  const loaded = Object.values(leagueRosters).filter(r=>r!==null).length;
-  document.getElementById("debug").textContent = loaded+"/6 leagues"+(rosterErrors.length?" · "+rosterErrors[0]:"");
-  document.getElementById("timestamp").textContent = "Updated "+lastRefresh;
-
+  const loaded=Object.values(leagueRosters).filter(r=>r!==null).length;
+  document.getElementById("debug").textContent=loaded+"/6 leagues"+(rosterErrors.length?" · "+rosterErrors[0]:"");
+  document.getElementById("timestamp").textContent="Updated "+lastRefresh;
   btn.disabled=false; btn.textContent="↻ Refresh";
   renderLeagueKey(); renderList();
 }
 
+// Get player info from pool
+function getPlayerMeta(name) {
+  const n = norm(name);
+  return mflPlayers.find(p => {
+    if (!p.name) return false;
+    const parts=(p.name||"").split(", ");
+    const flipped=parts.length===2?norm(parts[1]+" "+parts[0]):norm(p.name);
+    return norm(p.name)===n||flipped===n;
+  });
+}
+
 function renderLeagueKey() {
-  document.getElementById("league-key").textContent =
+  document.getElementById("league-key").textContent=
     LEAGUES.map((c,i)=>`[${i+1}] ${leagueNames[c.id]||c.id}`).join("  ");
 }
 
 function renderList() {
-  const query = norm(document.getElementById("search").value);
-  const el    = document.getElementById("player-list");
+  const q      = norm(document.getElementById("wl-search").value);
+  const posF   = document.getElementById("wl-pos").value;
+  const statusF= document.getElementById("wl-status").value;
+  const el     = document.getElementById("player-list");
+
   const sorted = watchlist
     .map((p,i)=>({...p,i}))
     .sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)))
-    .filter(p=>!query||norm(p.name).includes(query)||p.pos.toLowerCase().includes(query));
+    .filter(p => {
+      if (q && !norm(p.name).includes(q)) return false;
+      if (posF && p.pos!==posF) return false;
+      if (statusF) {
+        const st=playerStatus[norm(p.name)]||{};
+        const vals=Object.values(st);
+        if (!vals.some(v=>v===statusF)) return false;
+      }
+      return true;
+    });
 
-  if (!sorted.length) { el.innerHTML='<p class="no-results">No players match.</p>'; return; }
+  document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
 
-  el.innerHTML = sorted.map(({name,pos,i})=>{
-    const status = playerStatus[norm(name)]||{};
-    const icons  = LEAGUES.map((cfg,j)=>{
-      const s=status[cfg.id], ln=leagueNames[cfg.id]||cfg.id;
+  if (!sorted.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
+
+  el.innerHTML=sorted.map(({name,pos,i})=>{
+    const status=playerStatus[norm(name)]||{};
+    const meta=getPlayerMeta(name);
+    const team=meta?.team||"";
+    const icons=LEAGUES.map((cfg,j)=>{
+      const s=status[cfg.id],ln=leagueNames[cfg.id]||cfg.id;
       return `<span class="league-icon" style="background:${iconColor(s)}" title="[${j+1}] ${ln} — ${iconLabel(s)}">${j+1}</span>`;
     }).join("");
     return `<div class="player-row">
@@ -279,38 +471,24 @@ function renderList() {
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
         <span class="player-name">${flipName(name)}</span>
         <span class="player-pos">${pos}</span>
+        ${team?`<span class="player-team">${team}</span>`:""}
       </div>
       <div class="icon-row">${icons}</div>
     </div>`;
   }).join("");
-
-  document.getElementById("subtitle").textContent = watchlist.length+" players · 6 leagues";
 }
 
-function removePlayer(i) {
+function removePlayer(i){
   watchlist=watchlist.filter((_,j)=>j!==i);
   localStorage.setItem("wl",JSON.stringify(watchlist));
   renderList();
 }
-function addPlayer() {
-  const name=document.getElementById("add-name").value.trim();
-  const pos=document.getElementById("add-pos").value;
-  if (!name) return;
-  watchlist.push({name,pos});
-  localStorage.setItem("wl",JSON.stringify(watchlist));
-  document.getElementById("add-name").value="";
-  renderList();
-}
-function showError(msg) {
-  const el=document.getElementById("error-box");
-  if (msg){el.textContent="⚠ "+msg;el.style.display="block";}
-  else el.style.display="none";
-}
 
 // Init
-if (lastRefresh) document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+if(lastRefresh) document.getElementById("timestamp").textContent="Updated "+lastRefresh;
 renderLeagueKey();
 renderList();
+loadPlayerPool();
 </script>
 </body>
 </html>
