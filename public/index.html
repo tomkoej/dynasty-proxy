@@ -15,8 +15,8 @@
     html, body { height:100%; background:#0d1117; }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
     #page-wrap   { display:flex; flex-direction:column; height:100vh; background:#0d1117; }
-    #frozen-top  { flex-shrink:0; background:var(--bg); overflow:visible; position:relative; z-index:10; }
-    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; position:relative; z-index:1; }
+    #frozen-top  { flex-shrink:0; background:var(--bg); }
+    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:16px 24px 60px; }
 
     #header {
@@ -38,7 +38,7 @@
     #timestamp { color:#fff; font-size:11px; }
     #debug     { color:var(--muted); font-size:10px; }
 
-    #main { max-width:680px; margin:0 auto; padding:20px 24px 0; overflow:visible; }
+    #main { max-width:680px; margin:0 auto; padding:20px 24px 0; }
     .sec-label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
     .section-divider { border:none; border-top:1px solid var(--border); margin:18px 0; }
 
@@ -77,13 +77,16 @@
     .cs-btn:hover { border-color:var(--dim); }
     .cs-btn.has-val { border-color:var(--green); }
     .cs-arr { font-size:9px; color:var(--dim); flex-shrink:0; }
-    .cs-list {
-      position:absolute; top:calc(100% + 3px); left:0; min-width:100%;
-      background:var(--surface); border:1px solid var(--border); border-radius:6px;
-      z-index:9999; display:none; max-height:240px; overflow-y:auto;
-      box-shadow:0 4px 12px rgba(0,0,0,0.4);
-    }
+    .cs-list { display:none; }
     .cs-list.open { display:block; }
+    #filter-panel {
+      background:var(--surface); border:1px solid var(--border); border-radius:6px;
+      margin-top:6px; display:none; max-height:220px; overflow-y:auto;
+    }
+    #filter-panel .cs-list {
+      display:block; border:none; box-shadow:none; max-height:none; border-radius:0;
+    }
+    .cs-btn.panel-open { border-color:var(--green); }
     .cs-opt {
       padding:8px 12px; cursor:pointer; font-size:13px; color:var(--text);
       white-space:nowrap;
@@ -230,6 +233,7 @@
       </div>
     </div>
   </div>
+  <div id="filter-panel"></div>
 
   <div id="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
@@ -523,32 +527,32 @@ const csCfg={
   status:{multi:true},format:{multi:true},league:{multi:true},sort:{multi:false}
 };
 
+let _panelKey=null;
+function closePanel(){
+  if(!_panelKey)return;
+  const panel=document.getElementById("filter-panel");
+  const list=document.getElementById("csl-"+_panelKey);
+  if(list){list.classList.remove("open");document.getElementById("csf-"+_panelKey)?.appendChild(list);}
+  panel.style.display="none";
+  document.querySelectorAll(".cs-btn.panel-open").forEach(b=>b.classList.remove("panel-open"));
+  _panelKey=null;
+}
 function csToggle(btn){
-  const list=document.getElementById(btn.dataset.list);
-  const wasOpen=list.classList.contains("open");
-  document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
-  if(!wasOpen){
-    // Align right edge to button right if it would overflow viewport
-    const r=btn.getBoundingClientRect();
-    const minW=Math.max(r.width,220);
-    list.style.minWidth=minW+"px";
-    if(r.left+minW>window.innerWidth-8){
-      list.style.left="auto";
-      list.style.right="0";
-    } else {
-      list.style.left="0";
-      list.style.right="auto";
-    }
-    list.classList.add("open");
-    setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);
-  }
+  const key=btn.closest(".cs-wrap").id.replace("csf-","");
+  if(_panelKey===key){closePanel();return;}
+  closePanel();
+  _panelKey=key;
+  const panel=document.getElementById("filter-panel");
+  const list=document.getElementById("csl-"+key);
+  panel.appendChild(list);
+  list.classList.add("open");
+  panel.style.display="block";
+  btn.classList.add("panel-open");
+  setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);
 }
 
-// Close dropdowns on scroll so they don't drift
-window.addEventListener("scroll",()=>document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open")),true);
 document.addEventListener("click",e=>{
-  if(!e.target.closest(".cs-wrap")&&!e.target.closest(".cs-list"))
-    document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
+  if(!e.target.closest(".cs-wrap")&&!e.target.closest("#filter-panel"))closePanel();
 });
 
 function csRender(key){
