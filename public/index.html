@@ -107,7 +107,7 @@
     .avail-grid      { display:flex; gap:20px; padding-left:36px; margin-top:3px; }
     .avail-col       { display:flex; flex-direction:column; gap:2px; }
     .avail-col-label { color:#fff; font-size:10px; margin-bottom:4px; }
-    .owner-line      { color:var(--text); font-size:11px; line-height:1.6; }
+    .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
 
@@ -561,7 +561,7 @@ function renderList(){
         ${rookie?'<span class="rookie-badge">R</span>':""}
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
-      <span class="player-section-label">Availability</span>
+      <span class="player-section-label">Status</span>
       <div class="icon-row-group">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
