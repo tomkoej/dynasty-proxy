@@ -671,18 +671,29 @@ function renderList(){
   if(!rows.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
 
   const dimColor="#374151";
-  const isDimmed=s=>fv.status.size>0&&!fv.status.has(typeof s==="string"?s:"unknown");
+  // Which league IDs are "in scope" for the current Format/League filter
+  const scopeIds=(()=>{
+    if(fv.league.size>0)return new Set([...fv.league].map(n=>LEAGUES[parseInt(n)-1]?.id).filter(Boolean));
+    if(fv.format.size>0)return new Set(LEAGUES.filter(c=>fv.format.has(c.label)).map(c=>c.id));
+    return null; // all in scope
+  })();
+  const shouldDim=(cfg,s)=>{
+    const sv=typeof s==="string"?s:"unknown";
+    if(fv.status.size>0&&!fv.status.has(sv))return true;   // status mismatch
+    if(scopeIds!==null&&!scopeIds.has(cfg.id))return true;  // out of scope league/format
+    return false;
+  };
   const makeIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const sv=typeof s==="string"?s:"unknown";
-    const bg=isDimmed(sv)?dimColor:iconColor(sv);
+    const bg=shouldDim(cfg,sv)?dimColor:iconColor(sv);
     return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
   };
   const makeNwoIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const st=Array.isArray(s)?s:["unknown","unknown"];
     return`<span class="nwo-oval">${st.map((si,k)=>{
-      const bg=isDimmed(si)?dimColor:iconColor(si);
+      const bg=shouldDim(cfg,si)?dimColor:iconColor(si);
       return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(si)}">${num}</span>`;
     }).join("")}</span>`;
   };
