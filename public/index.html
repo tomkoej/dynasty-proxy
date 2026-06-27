@@ -537,8 +537,8 @@ function renderList(){
     const sfLines  =LEAGUES.filter(c=>c.label==="SF"   ).map(lineFor).join("");
     const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
     return`<div class="avail-grid">
-      <div class="avail-col"><div class="avail-col-label">SF</div>${sfLines}</div>
-      <div class="avail-col"><div class="avail-col-label">SF/TE+</div>${sfteLines}</div>
+      <div class="avail-col">${sfLines}</div>
+      <div class="avail-col">${sfteLines}</div>
     </div>`;
   };
 
@@ -561,7 +561,7 @@ function renderList(){
         ${rookie?'<span class="rookie-badge">R</span>':""}
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
-      <span class="player-section-label">Status</span>
+      <span class="player-section-label">Availability</span>
       <div class="icon-row-group">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
