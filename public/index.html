@@ -505,7 +505,9 @@ function renderList(){
         const st=Array.isArray(status[cfg.id])?status[cfg.id]:["unknown","unknown"];
         const rawOwners=rosters[cfg.id]?.nwoOwners?.[pid]||[];
         let takenIdx=0;
-        st.forEach(s=>{ if(s==="taken"){ const n=rawOwners[takenIdx++]||""; if(n)lines.push(`[${num}] ${n}`); } });
+        const takenNames=[];
+        st.forEach(s=>{ if(s==="taken"){ const n=rawOwners[takenIdx++]||""; if(n)takenNames.push(n); } });
+        if(takenNames.length>0) lines.push(`[${num}] ${takenNames.join(" & ")}`);
       }else{
         const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";
         if(sv==="taken"){ const n=rosters[cfg.id]?.owners?.[pid]||""; if(n)lines.push(`[${num}] ${n}`); }
