@@ -78,9 +78,9 @@
     .cs-btn.has-val { border-color:var(--green); }
     .cs-arr { font-size:9px; color:var(--dim); flex-shrink:0; }
     .cs-list {
-      position:absolute; top:calc(100% + 3px); left:0; min-width:100%;
+      position:fixed;
       background:var(--surface); border:1px solid var(--border); border-radius:6px;
-      z-index:200; display:none; max-height:240px; overflow-y:auto;
+      z-index:1000; display:none; max-height:240px; overflow-y:auto;
       box-shadow:0 4px 12px rgba(0,0,0,0.4);
     }
     .cs-list.open { display:block; }
@@ -527,8 +527,18 @@ function csToggle(btn){
   const list=btn.nextElementSibling;
   const wasOpen=list.classList.contains("open");
   document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
-  if(!wasOpen){list.classList.add("open");setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);}
+  if(!wasOpen){
+    const r=btn.getBoundingClientRect();
+    list.style.top=(r.bottom+3)+"px";
+    list.style.left=r.left+"px";
+    list.style.minWidth=Math.max(r.width,180)+"px";
+    list.classList.add("open");
+    setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);
+  }
 }
+
+// Close dropdowns on scroll so they don't drift
+window.addEventListener("scroll",()=>document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open")),true);
 document.addEventListener("click",e=>{
   if(!e.target.closest(".cs-wrap"))
     document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
