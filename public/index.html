@@ -16,8 +16,7 @@
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
     #page-wrap   { display:flex; flex-direction:column; height:100vh; background:#0d1117; }
     #frozen-top  { flex-shrink:0; background:var(--bg); }
-    #filter-panel-outer { flex-shrink:0; padding:0 24px; background:var(--bg); }
-    #filter-panel { display:none; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; margin-bottom:4px; }
+    #filter-panel { display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; box-shadow:0 4px 16px rgba(0,0,0,.5); }
     #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:16px 24px 60px; }
 
@@ -240,7 +239,7 @@
   <div id="league-key"></div>
 </div>
 </div>
-<div id="filter-panel-outer"><div id="filter-panel"></div></div>
+<div id="filter-panel-outer" onclick="event.stopPropagation()"><div id="filter-panel"></div></div>
 <div id="scroll-list">
   <div id="list-inner">
     <div id="player-list"></div>
@@ -534,8 +533,46 @@ function csShowPanel(key){
   const list=document.getElementById("csl-"+key);
   const panel=document.getElementById("filter-panel");
   if(!list||!panel)return;
+  const btn=document.querySelector("#csf-"+key+" .cs-btn");
+  if(!btn)return;
+  const r=btn.getBoundingClientRect();
+  const minW=Math.max(r.width,220);
+  const left=r.left+minW>window.innerWidth-8?Math.max(8,r.right-minW):r.left;
+  panel.style.top=(r.bottom+2)+"px";
+  panel.style.left=left+"px";
+  panel.style.minWidth=minW+"px";
+  panel.dataset.key=key;
   panel.innerHTML=list.innerHTML;
   panel.style.display="block";
+}
+function updatePanelState(key){
+  const panel=document.getElementById("filter-panel");
+  if(!panel||panel.dataset.key!==key)return;
+  const multi=csCfg[key]?.multi;
+  if(multi){
+    const sel=fv[key];
+    const allVals=(csData[key]||[]).filter(o=>o.val).map(o=>o.val);
+    const allOn=allVals.length>0&&allVals.every(v=>sel.has(v));
+    const someOn=sel.size>0&&!allOn;
+    panel.querySelectorAll(".cs-opt").forEach(opt=>{
+      if(opt.classList.contains("cs-selall")){
+        opt.querySelector(".cs-chk").textContent=allOn?"☑":someOn?"⊡":"☐";
+        opt.classList.toggle("active",allOn);
+      }else{
+        const v=opt.dataset.val;
+        if(v){const on=sel.has(v);opt.classList.toggle("active",on);opt.querySelector(".cs-chk").textContent=on?"☑":"☐";}
+      }
+    });
+  }else{
+    const cur=fv[key];
+    panel.querySelectorAll(".cs-opt").forEach(opt=>{
+      const v=opt.dataset.val;
+      const on=v===cur;
+      opt.classList.toggle("active",on);
+      const chk=opt.querySelector(".cs-chk");
+      if(chk)chk.textContent=on?"✓":"";
+    });
+  }
 }
 function csToggle(btn){
   const key=btn.closest(".cs-wrap").id.replace("csf-","");
@@ -578,7 +615,7 @@ function csRender(key){
     ).join("");
     list.innerHTML=searchBox+rows;
   }
-  if(_panelKey===key)csShowPanel(key);
+  if(_panelKey===key)updatePanelState(key);
 }
 
 function csQUpdate(key,val){csQ[key]=val;csRender(key);}
@@ -790,7 +827,9 @@ csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",lab
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"taken",label:"Rostered"},{val:"unknown",label:"Unknown"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
+document.body.appendChild(document.getElementById("filter-panel"));
 loadPlayerPool();
 </script>
+<div id="filter-panel"></div>
 </body>
 </html>
