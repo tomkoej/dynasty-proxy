@@ -16,6 +16,8 @@
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
     #page-wrap   { display:flex; flex-direction:column; height:100vh; background:#0d1117; }
     #frozen-top  { flex-shrink:0; background:var(--bg); }
+    #filter-panel-outer { flex-shrink:0; padding:0 24px; background:var(--bg); }
+    #filter-panel { display:none; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; margin-bottom:4px; }
     #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:16px 24px 60px; }
 
@@ -79,13 +81,6 @@
     .cs-arr { font-size:9px; color:var(--dim); flex-shrink:0; }
     .cs-list { display:none; }
     .cs-list.open { display:block; }
-    #filter-panel {
-      background:var(--surface); border:1px solid var(--border); border-radius:6px;
-      margin-top:6px; display:none; max-height:220px; overflow-y:auto;
-    }
-    #filter-panel .cs-list {
-      display:block; border:none; box-shadow:none; max-height:none; border-radius:0;
-    }
     .cs-btn.panel-open { border-color:var(--green); }
     .cs-opt {
       padding:8px 12px; cursor:pointer; font-size:13px; color:var(--text);
@@ -233,7 +228,6 @@
       </div>
     </div>
   </div>
-  <div id="filter-panel"></div>
 
   <div id="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
@@ -246,7 +240,7 @@
   <div id="league-key"></div>
 </div>
 </div>
-
+<div id="filter-panel-outer"><div id="filter-panel"></div></div>
 <div id="scroll-list">
   <div id="list-inner">
     <div id="player-list"></div>
