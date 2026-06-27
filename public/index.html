@@ -100,7 +100,7 @@
     }
     .nwo-oval { display:inline-flex; gap:3px; align-items:center; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:1px 5px; }
     .owner-lines { padding-left:52px; display:flex; flex-direction:column; gap:1px; margin-top:-1px; margin-bottom:2px; }
-    .owner-line  { color:var(--dim); font-size:10px; line-height:1.6; }
+    .owner-line  { color:var(--text); font-size:10px; line-height:1.6; }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
 
@@ -504,10 +504,10 @@ function renderList(){
         const st=Array.isArray(status[cfg.id])?status[cfg.id]:["unknown","unknown"];
         const rawOwners=rosters[cfg.id]?.nwoOwners?.[pid]||[];
         let takenIdx=0;
-        st.forEach(s=>{ if(s==="taken"){ const n=rawOwners[takenIdx++]||""; if(n)lines.push(n); } });
+        st.forEach(s=>{ if(s==="taken"){ const n=rawOwners[takenIdx++]||""; if(n)lines.push(`[${num}] ${n}`); } });
       }else{
         const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";
-        if(sv==="taken"){ const n=rosters[cfg.id]?.owners?.[pid]||""; if(n)lines.push(n); }
+        if(sv==="taken"){ const n=rosters[cfg.id]?.owners?.[pid]||""; if(n)lines.push(`[${num}] ${n}`); }
       }
     });
     return lines.map(n=>`<div class="owner-line">› ${n}</div>`).join("");
