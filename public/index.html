@@ -68,19 +68,30 @@
     .clear-btn { background:none; border:none; color:var(--dim); font-family:var(--font); font-size:11px; cursor:pointer; padding:0; }
     .clear-btn:hover { color:var(--text); text-decoration:underline; }
     #filter-bar { display:flex; gap:8px; flex-wrap:wrap; }
-    .cs-wrap { position:relative; flex:1; min-width:110px; }
-    .cs-btn {
-      width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text);
+    .filter-btn {
+      background:var(--surface); border:1px solid var(--border); color:var(--text);
       padding:7px 10px; border-radius:6px; font-family:var(--font); font-size:13px;
-      cursor:pointer; display:flex; justify-content:space-between; align-items:center;
-      text-align:left; gap:6px; white-space:nowrap;
+      cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;
     }
-    .cs-btn:hover { border-color:var(--dim); }
-    .cs-btn.has-val { border-color:var(--green); }
-    .cs-arr { font-size:9px; color:var(--dim); flex-shrink:0; }
-    .cs-list { display:none; }
-    .cs-list.open { display:block; }
-    .cs-btn.panel-open { border-color:var(--green); }
+    .filter-btn:hover { border-color:var(--dim); }
+    .filter-btn.active { border-color:var(--green); }
+    .fb-badge { background:var(--green); color:white; font-size:10px; font-weight:700; padding:1px 6px; border-radius:10px; }
+    #filter-panel {
+      display:none; position:fixed; z-index:9999;
+      background:var(--surface); border:1px solid var(--border); border-radius:8px;
+      box-shadow:0 6px 20px rgba(0,0,0,.6); min-width:220px; max-width:320px;
+    }
+    #fp-search-wrap { padding:10px 12px 6px; border-bottom:1px solid var(--border); }
+    #fp-search {
+      width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
+      padding:6px 10px; border-radius:4px; font-family:var(--font); font-size:12px; outline:none;
+    }
+    #fp-search:focus { border-color:var(--green); }
+    #fp-opts { max-height:200px; overflow-y:auto; padding:4px 0; }
+    .fp-item { display:flex; align-items:center; gap:10px; padding:7px 14px; cursor:pointer; }
+    .fp-item:hover { background:var(--muted); }
+    .fp-item input[type="checkbox"] { accent-color:var(--green); width:14px; height:14px; flex-shrink:0; cursor:pointer; }
+    .fp-item label { color:var(--text); font-size:13px; cursor:pointer; user-select:none; }
     .cs-opt {
       padding:8px 12px; cursor:pointer; font-size:13px; color:var(--text);
       white-space:nowrap;
@@ -197,34 +208,13 @@
       <button id="clear-filters-btn" class="clear-btn" onclick="clearFilters()" style="display:none">Clear all</button>
     </div>
     <div id="filter-bar">
-      <div class="cs-wrap" id="csf-name">
-        <button class="cs-btn" data-list="csl-name" onclick="csToggle(this)">Players<span class="cs-arr">▾</span></button>
-        <div class="cs-list" id="csl-name" onclick="event.stopPropagation()"></div>
-      </div>
-      <div class="cs-wrap" id="csf-pos">
-        <button class="cs-btn" data-list="csl-pos" onclick="csToggle(this)">Position<span class="cs-arr">▾</span></button>
-        <div class="cs-list" id="csl-pos" onclick="event.stopPropagation()"></div>
-      </div>
-      <div class="cs-wrap" id="csf-nflteam">
-        <button class="cs-btn" data-list="csl-nflteam" onclick="csToggle(this)">NFL Team<span class="cs-arr">▾</span></button>
-        <div class="cs-list" id="csl-nflteam" onclick="event.stopPropagation()"></div>
-      </div>
-      <div class="cs-wrap" id="csf-status">
-        <button class="cs-btn" data-list="csl-status" onclick="csToggle(this)">Status<span class="cs-arr">▾</span></button>
-        <div class="cs-list" id="csl-status" onclick="event.stopPropagation()"></div>
-      </div>
-      <div class="cs-wrap" id="csf-format">
-        <button class="cs-btn" data-list="csl-format" onclick="csToggle(this)">Format<span class="cs-arr">▾</span></button>
-        <div class="cs-list" id="csl-format" onclick="event.stopPropagation()"></div>
-      </div>
-      <div class="cs-wrap" id="csf-league">
-        <button class="cs-btn" data-list="csl-league" onclick="csToggle(this)">League<span class="cs-arr">▾</span></button>
-        <div class="cs-list" id="csl-league" onclick="event.stopPropagation()"></div>
-      </div>
-      <div class="cs-wrap" id="csf-sort">
-        <button class="cs-btn" data-list="csl-sort" onclick="csToggle(this)">Sort<span class="cs-arr">▾</span></button>
-        <div class="cs-list" id="csl-sort" onclick="event.stopPropagation()"></div>
-      </div>
+      <div class="cs-wrap" id="csf-name"><button class="cs-btn" onclick="csToggle(this)">Players<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-name" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-pos"><button class="cs-btn" onclick="csToggle(this)">Position<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-pos" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-nflteam"><button class="cs-btn" onclick="csToggle(this)">NFL Team<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-nflteam" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-status"><button class="cs-btn" onclick="csToggle(this)">Status<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-status" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-format"><button class="cs-btn" onclick="csToggle(this)">Format<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-format" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-league"><button class="cs-btn" onclick="csToggle(this)">League<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-league" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-sort"><button class="cs-btn" onclick="csToggle(this)">Sort<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-sort" onclick="event.stopPropagation()"></div></div>
     </div>
   </div>
 
@@ -239,7 +229,6 @@
   <div id="league-key"></div>
 </div>
 </div>
-<div id="filter-panel-outer" onclick="event.stopPropagation()"><div id="filter-panel"></div></div>
 <div id="scroll-list">
   <div id="list-inner">
     <div id="player-list"></div>
@@ -500,6 +489,8 @@ function toggleOwners(idx){
 
 function clearFilters(){
   [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league].forEach(s=>s.clear());
+  fv.sort="az";
+  closePanel();
   Object.keys(csQ).forEach(k=>csQ[k]="");
   ["name","pos","nflteam","status","format","league","sort"].forEach(k=>{csUpdateBtn(k);csRender(k);});
   buildLeagueFilter();
@@ -511,10 +502,11 @@ function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
 }
+// ── Filter state ─────────────────────────────────────────────────────────────
 // ── Custom select — Excel-style with search + multi-select ───────────────────
 const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),sort:"az"};
-const csData={};       // key → [{val,label}]
-const csQ={};          // key → search string
+const csData={};
+const csQ={};
 const csCfg={
   name:{multi:true},pos:{multi:true},nflteam:{multi:true},
   status:{multi:true},format:{multi:true},league:{multi:true},sort:{multi:false}
@@ -529,6 +521,15 @@ function closePanel(){
   document.querySelectorAll(".cs-btn.panel-open").forEach(b=>b.classList.remove("panel-open"));
   _panelKey=null;
 }
+function csRefreshPanel(key){
+  const list=document.getElementById("csl-"+key);
+  const panel=document.getElementById("filter-panel");
+  if(!list||!panel||_panelKey!==key)return;
+  const sv=panel.querySelector(".cs-search-input")?.value||"";
+  if(sv)csQ[key]=sv;
+  panel.innerHTML=list.innerHTML;
+  if(sv){const inp=panel.querySelector(".cs-search-input");if(inp)inp.value=sv;}
+}
 function csShowPanel(key){
   const list=document.getElementById("csl-"+key);
   const panel=document.getElementById("filter-panel");
@@ -536,7 +537,7 @@ function csShowPanel(key){
   const btn=document.querySelector("#csf-"+key+" .cs-btn");
   if(!btn)return;
   const r=btn.getBoundingClientRect();
-  const minW=Math.max(r.width,220);
+  const minW=Math.max(btn.offsetWidth,220);
   const left=r.left+minW>window.innerWidth-8?Math.max(8,r.right-minW):r.left;
   panel.style.top=(r.bottom+2)+"px";
   panel.style.left=left+"px";
@@ -544,35 +545,6 @@ function csShowPanel(key){
   panel.dataset.key=key;
   panel.innerHTML=list.innerHTML;
   panel.style.display="block";
-}
-function updatePanelState(key){
-  const panel=document.getElementById("filter-panel");
-  if(!panel||panel.dataset.key!==key)return;
-  const multi=csCfg[key]?.multi;
-  if(multi){
-    const sel=fv[key];
-    const allVals=(csData[key]||[]).filter(o=>o.val).map(o=>o.val);
-    const allOn=allVals.length>0&&allVals.every(v=>sel.has(v));
-    const someOn=sel.size>0&&!allOn;
-    panel.querySelectorAll(".cs-opt").forEach(opt=>{
-      if(opt.classList.contains("cs-selall")){
-        opt.querySelector(".cs-chk").textContent=allOn?"☑":someOn?"⊡":"☐";
-        opt.classList.toggle("active",allOn);
-      }else{
-        const v=opt.dataset.val;
-        if(v){const on=sel.has(v);opt.classList.toggle("active",on);opt.querySelector(".cs-chk").textContent=on?"☑":"☐";}
-      }
-    });
-  }else{
-    const cur=fv[key];
-    panel.querySelectorAll(".cs-opt").forEach(opt=>{
-      const v=opt.dataset.val;
-      const on=v===cur;
-      opt.classList.toggle("active",on);
-      const chk=opt.querySelector(".cs-chk");
-      if(chk)chk.textContent=on?"✓":"";
-    });
-  }
 }
 function csToggle(btn){
   const key=btn.closest(".cs-wrap").id.replace("csf-","");
@@ -596,7 +568,6 @@ function csRender(key){
   const multi=csCfg[key]?.multi;
   const filtered=opts.filter(o=>!o.val||!q||o.label.toLowerCase().includes(q));
   const searchBox=`<div class="cs-search-wrap" onclick="event.stopPropagation()"><input class="cs-search-input" type="text" placeholder="Search..." value="${csQ[key]||""}" oninput="csQUpdate('${key}',this.value)" onkeydown="event.stopPropagation()"></div>`;
-
   if(multi){
     const sel=fv[key];
     const allVals=opts.filter(o=>o.val).map(o=>o.val);
@@ -605,17 +576,17 @@ function csRender(key){
     const rows=filtered.map(o=>{
       if(!o.val)return`<div class="cs-opt cs-selall" onclick="csToggleAll('${key}')"><span class="cs-chk">${allOn?"☑":someOn?"⊡":"☐"}</span>Select All</div>`;
       const on=sel.has(o.val);
-      return`<div class="cs-opt${on?" active":""}" onclick="csToggleOpt('${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${on?"☑":"☐"}</span>${o.label}</div>`;
+      return`<div class="cs-opt${on?" active":""}" data-val="${o.val}" onclick="csToggleOpt('${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${on?"☑":"☐"}</span>${o.label}</div>`;
     }).join("");
     list.innerHTML=searchBox+rows;
   }else{
     const cur=fv[key];
     const rows=filtered.map(o=>
-      `<div class="cs-opt${o.val===cur?" active":""}" onclick="csSelect(this,'${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${o.val===cur?"✓":""}</span>${o.label}</div>`
+      `<div class="cs-opt${o.val===cur?" active":""}" data-val="${o.val}" onclick="csSelect(this,'${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${o.val===cur?"✓":""}</span>${o.label}</div>`
     ).join("");
     list.innerHTML=searchBox+rows;
   }
-  if(_panelKey===key)updatePanelState(key);
+  if(_panelKey===key)csRefreshPanel(key);
 }
 
 function csQUpdate(key,val){csQ[key]=val;csRender(key);}
@@ -623,7 +594,7 @@ function csQUpdate(key,val){csQ[key]=val;csRender(key);}
 function csSelect(el,key,val){
   fv[key]=val;
   csQ[key]="";
-  el.closest(".cs-list").classList.remove("open");
+  closePanel();
   csUpdateBtn(key);csRender(key);
   renderList();
 }
@@ -665,27 +636,19 @@ function buildFormatFilter(){
   const formats=[...new Set(LEAGUES.map(c=>c.label))];
   csOptions("format",[{val:"",label:"Select All"},...formats.map(f=>({val:f,label:f}))]);
 }
-function buildLeagueFilter(formatFilter){
-  if(fv.league){
-    const idx=parseInt(fv.league)-1;
-    const cfg=LEAGUES[idx];
-    if(cfg&&formatFilter&&cfg.label!==formatFilter) fv.league="";
-  }
-  const pool=formatFilter?LEAGUES.filter(c=>c.label===formatFilter):LEAGUES;
+function buildLeagueFilter(){
+  const pool=fv.format.size>0?LEAGUES.filter(c=>fv.format.has(c.label)):LEAGUES;
+  const validNums=new Set(pool.map(c=>String(LEAGUES.indexOf(c)+1)));
+  fv.league.forEach(n=>{if(!validNums.has(n))fv.league.delete(n);});
   csOptions("league",[{val:"",label:"Select All"},...pool.map(c=>{
     const num=LEAGUES.indexOf(c)+1;
     return{val:String(num),label:`[${num}] ${MY_TEAM_NAMES[c.id]||c.id}`};
   })]);
+  if(activeKey==="league")renderPanel("league",document.getElementById("fp-search")?.value||"");
 }
 function buildTeamFilter(){
   const teams=new Set(); watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});
   csOptions("nflteam",[{val:"",label:"Select All"},...[...teams].sort().map(t=>({val:t,label:t}))]);
-}
-function buildLeagueFilter(){
-  const sel=document.getElementById("wl-league"); if(!sel)return;
-  const cur=sel.value;
-  sel.innerHTML='<option value="">Leagues</option>'+
-    LEAGUES.map(c=>`<option value="${c.id}"${c.id===cur?" selected":""}>${MY_TEAM_NAMES[c.id]||c.id}</option>`).join("");
 }
 
 function buildNameDropdown(){
@@ -827,9 +790,11 @@ csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",lab
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"taken",label:"Rostered"},{val:"unknown",label:"Unknown"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
-document.body.appendChild(document.getElementById("filter-panel"));
 loadPlayerPool();
 </script>
-<div id="filter-panel"></div>
+<div id="filter-panel" onclick="event.stopPropagation()">
+  <div id="fp-search-wrap"><input id="fp-search" type="text" placeholder="Search..." oninput="fpSearch(this.value)" onclick="event.stopPropagation()"></div>
+  <div id="fp-opts"></div>
+</div>
 </body>
 </html>
