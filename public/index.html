@@ -63,12 +63,29 @@
 
     #filter-section { margin-bottom:16px; }
     #filter-bar { display:flex; gap:8px; flex-wrap:wrap; }
-    .filter-select {
-      background:var(--surface); border:1px solid var(--border); color:var(--text);
+    .cs-wrap { position:relative; flex:1; min-width:110px; }
+    .cs-btn {
+      width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text);
       padding:7px 10px; border-radius:6px; font-family:var(--font); font-size:13px;
-      cursor:pointer; flex:1; min-width:110px;
+      cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+      text-align:left; gap:6px; white-space:nowrap;
     }
-    .filter-select:focus { outline:none; border-color:var(--green); }
+    .cs-btn:hover { border-color:var(--dim); }
+    .cs-btn.has-val { border-color:var(--green); }
+    .cs-arr { font-size:9px; color:var(--dim); flex-shrink:0; }
+    .cs-list {
+      position:absolute; top:calc(100% + 3px); left:0; min-width:100%;
+      background:var(--surface); border:1px solid var(--border); border-radius:6px;
+      z-index:200; display:none; max-height:240px; overflow-y:auto;
+      box-shadow:0 4px 12px rgba(0,0,0,0.4);
+    }
+    .cs-list.open { display:block; }
+    .cs-opt {
+      padding:8px 12px; cursor:pointer; font-size:13px; color:var(--text);
+      white-space:nowrap;
+    }
+    .cs-opt:hover { background:var(--muted); }
+    .cs-opt.active { color:var(--green-hi); }
 
     #legend { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
     .legend-item { display:flex; align-items:center; gap:5px; }
@@ -164,26 +181,34 @@
   <div id="filter-section">
     <span class="sec-label">Filter &amp; sort</span>
     <div id="filter-bar">
-      <select id="wl-name"   class="filter-select" onchange="renderList()"><option value="">Players</option></select>
-      <select id="wl-pos"    class="filter-select" onchange="renderList()">
-        <option value="">Positions</option>
-        <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
-      </select>
-      <select id="wl-nflteam" class="filter-select" onchange="renderList()"><option value="">NFL Team</option></select>
-      <select id="wl-status" class="filter-select" onchange="renderList()">
-        <option value="">Statuses</option>
-        <option value="available">Available</option>
-        <option value="mine">My Team</option>
-        <option value="taken">Rostered</option>
-        <option value="unknown">Unknown</option>
-      </select>
-      <select id="wl-format" class="filter-select" onchange="onFormatChange()"><option value="">Select All</option></select>
-      <select id="wl-league" class="filter-select" onchange="renderList()"><option value="">Select All</option></select>
-      <select id="wl-sort"   class="filter-select" onchange="renderList()">
-        <option value="az">A–Z</option>
-        <option value="rookies">Rookies First</option>
-        <option value="vets">Veterans First</option>
-      </select>
+      <div class="cs-wrap" id="csf-name">
+        <button class="cs-btn" onclick="csToggle(this)">Players<span class="cs-arr">▾</span></button>
+        <div class="cs-list"></div>
+      </div>
+      <div class="cs-wrap" id="csf-pos">
+        <button class="cs-btn" onclick="csToggle(this)">Position<span class="cs-arr">▾</span></button>
+        <div class="cs-list"></div>
+      </div>
+      <div class="cs-wrap" id="csf-nflteam">
+        <button class="cs-btn" onclick="csToggle(this)">NFL Team<span class="cs-arr">▾</span></button>
+        <div class="cs-list"></div>
+      </div>
+      <div class="cs-wrap" id="csf-status">
+        <button class="cs-btn" onclick="csToggle(this)">Status<span class="cs-arr">▾</span></button>
+        <div class="cs-list"></div>
+      </div>
+      <div class="cs-wrap" id="csf-format">
+        <button class="cs-btn" onclick="csToggle(this)">Format<span class="cs-arr">▾</span></button>
+        <div class="cs-list"></div>
+      </div>
+      <div class="cs-wrap" id="csf-league">
+        <button class="cs-btn" onclick="csToggle(this)">League<span class="cs-arr">▾</span></button>
+        <div class="cs-list"></div>
+      </div>
+      <div class="cs-wrap" id="csf-sort">
+        <button class="cs-btn" onclick="csToggle(this)">Sort<span class="cs-arr">▾</span></button>
+        <div class="cs-list"></div>
+      </div>
     </div>
   </div>
 
@@ -461,32 +486,54 @@ function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
 }
+// ── Custom select state & helpers ────────────────────────────────────────────
+const fv={name:"",pos:"",nflteam:"",status:"",format:"",league:"",sort:"az"};
+
+function csToggle(btn){
+  const list=btn.nextElementSibling;
+  const wasOpen=list.classList.contains("open");
+  document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
+  if(!wasOpen)list.classList.add("open");
+}
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".cs-wrap"))
+    document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
+});
+function csSelect(el,key,val){
+  fv[key]=val;
+  const wrap=el.closest(".cs-wrap");
+  wrap.querySelectorAll(".cs-opt").forEach(o=>o.classList.toggle("active",o.dataset.val===val));
+  wrap.querySelector(".cs-btn").classList.toggle("has-val",val!==""&&key!=="sort");
+  el.closest(".cs-list").classList.remove("open");
+  if(key==="format")buildLeagueFilter(val);
+  renderList();
+}
+function csOptions(key,opts){
+  const list=document.querySelector("#csf-"+key+" .cs-list");
+  if(!list)return;
+  const cur=fv[key];
+  list.innerHTML=opts.map(o=>`<div class="cs-opt${o.val===cur?" active":""}" data-val="${o.val.replace(/"/g,"&quot;")}" onclick="csSelect(this,'${key}','${o.val.replace(/'/g,"\'")}')">${o.label}</div>`).join("");
+}
+
 function buildFormatFilter(){
-  const sel=document.getElementById("wl-format"),cur=sel.value;
   const formats=[...new Set(LEAGUES.map(c=>c.label))];
-  sel.innerHTML='<option value="">Select All</option>'+
-    formats.map(f=>`<option value="${f}"${f===cur?" selected":""}>${f}</option>`).join("");
+  csOptions("format",[{val:"",label:"Select All"},...formats.map(f=>({val:f,label:f}))]);
 }
 function buildLeagueFilter(formatFilter){
-  const sel=document.getElementById("wl-league"),cur=sel.value;
+  if(fv.league){
+    const idx=parseInt(fv.league)-1;
+    const cfg=LEAGUES[idx];
+    if(cfg&&formatFilter&&cfg.label!==formatFilter) fv.league="";
+  }
   const pool=formatFilter?LEAGUES.filter(c=>c.label===formatFilter):LEAGUES;
-  sel.innerHTML='<option value="">Select All</option>'+
-    pool.map(c=>{
-      const num=LEAGUES.indexOf(c)+1;
-      return`<option value="${num}"${String(num)===cur?" selected":""}>[${num}] ${MY_TEAM_NAMES[c.id]||c.id}</option>`;
-    }).join("");
-  // Clear league selection if it's no longer in the filtered pool
-  const valid=new Set(pool.map(c=>String(LEAGUES.indexOf(c)+1)));
-  if(cur&&!valid.has(cur)) sel.value="";
-}
-function onFormatChange(){
-  buildLeagueFilter(document.getElementById("wl-format").value);
-  renderList();
+  csOptions("league",[{val:"",label:"Select All"},...pool.map(c=>{
+    const num=LEAGUES.indexOf(c)+1;
+    return{val:String(num),label:`[${num}] ${MY_TEAM_NAMES[c.id]||c.id}`};
+  })]);
 }
 function buildTeamFilter(){
   const teams=new Set(); watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});
-  const sel=document.getElementById("wl-nflteam"),cur=sel.value;
-  sel.innerHTML='<option value="">NFL Team</option>'+[...teams].sort().map(t=>`<option${t===cur?" selected":""}>${t}</option>`).join("");
+  csOptions("nflteam",[{val:"",label:"Select All"},...[...teams].sort().map(t=>({val:t,label:t}))]);
 }
 function buildLeagueFilter(){
   const sel=document.getElementById("wl-league"); if(!sel)return;
@@ -496,19 +543,18 @@ function buildLeagueFilter(){
 }
 
 function buildNameDropdown(){
-  const sel=document.getElementById("wl-name"),cur=sel.value;
   const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));
-  sel.innerHTML='<option value="">Players</option>'+sorted.map(p=>`<option value="${norm(p.name)}"${norm(p.name)===cur?" selected":""}>${p.name}</option>`).join("");
+  csOptions("name",[{val:"",label:"Select All"},...sorted.map(p=>({val:norm(p.name),label:p.name}))]);
 }
 
 function renderList(){
-  const nameF  =document.getElementById("wl-name").value;
-  const posF   =document.getElementById("wl-pos").value;
-  const teamF  =document.getElementById("wl-nflteam").value;
-  const statusF=document.getElementById("wl-status").value;
-  const formatF=document.getElementById("wl-format").value;
-  const leagueF=document.getElementById("wl-league").value;
-  const sortV  =document.getElementById("wl-sort").value;
+  const nameF  =fv.name;
+  const posF   =fv.pos;
+  const teamF  =fv.nflteam;
+  const statusF=fv.status;
+  const formatF=fv.format;
+  const leagueF=fv.league;
+  const sortV  =fv.sort||"az";
   const el     =document.getElementById("player-list");
   const rosters=loadCachedRosters();  // load once for owner lookups
 
@@ -620,7 +666,11 @@ function removePlayer(i){
 }
 
 if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-renderLeagueKey();buildNameDropdown();buildFormatFilter();buildLeagueFilter("");renderList();renderHistory();
+renderLeagueKey();
+csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
+csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"taken",label:"Rostered"},{val:"unknown",label:"Unknown"}]);
+csOptions("sort",[{val:"az",label:"A–Z"},{val:"rookies",label:"Rookies First"},{val:"vets",label:"Veterans First"}]);
+buildNameDropdown();buildFormatFilter();buildLeagueFilter("");buildTeamFilter();renderList();renderHistory();
 loadPlayerPool();
 </script>
 </body>
