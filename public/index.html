@@ -276,18 +276,18 @@ function twoCopyStatuses(mc,oc){ const st=[]; for(let i=0;i<mc;i++)st.push("mine
 
 // ── Player Pool ───────────────────────────────────────────────────────────────
 async function loadPlayerPool(){
-  const cached=localStorage.getItem("mflPool"),cachedTime=parseInt(localStorage.getItem("mflPoolTime")||"0");
+  const cached=localStorage.getItem("mflPoolV2"),cachedTime=parseInt(localStorage.getItem("mflPoolTimeV2")||"0");
   if(cached&&(Date.now()-cachedTime)<86400000){ mflPlayers=JSON.parse(cached); }
   else{
     document.getElementById("pool-status").textContent="Fetching player pool from MFL…";
     try{
       const d=await mfl("www47","52453","players","2026");
       const raw=toArr(d?.players?.player);
-      if(raw.length>100){ mflPlayers=raw.filter(p=>["QB","RB","WR","TE"].includes(p.position)); localStorage.setItem("mflPool",JSON.stringify(mflPlayers)); localStorage.setItem("mflPoolTime",Date.now().toString()); }
+      if(raw.length>100){ mflPlayers=raw.filter(p=>["QB","RB","WR","TE"].includes(p.position)); localStorage.setItem("mflPoolV2",JSON.stringify(mflPlayers)); localStorage.setItem("mflPoolTimeV2",Date.now().toString()); }
     }catch(e){ document.getElementById("pool-status").textContent="Could not load pool: "+e.message; return; }
   }
   mflPlayers.forEach(p=>{ if(!p.name||!p.id)return; nameToId[norm(p.name)]=p.id; nameToId[norm(displayName(p.name))]=p.id; });
-  const ts=new Date(parseInt(localStorage.getItem("mflPoolTime")||Date.now()));
+  const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV2")||Date.now()));
   document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} Players · Pool Updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
   buildTeamFilter(); renderList();
 }
