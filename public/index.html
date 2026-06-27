@@ -177,6 +177,20 @@
         <option value="taken">Rostered</option>
         <option value="unknown">Unknown</option>
       </select>
+      <select id="wl-format" class="filter-select" onchange="renderList()">
+        <option value="">Formats</option>
+        <option value="SF">SF</option>
+        <option value="SF/TE+">SF/TE+</option>
+      </select>
+      <select id="wl-league" class="filter-select" onchange="renderList()">
+        <option value="">Leagues</option>
+      </select>
+      <select id="wl-format" class="filter-select" onchange="renderList()">
+        <option value="">Formats</option>
+        <option value="SF">SF</option>
+        <option value="SF/TE+">SF/TE+</option>
+      </select>
+      <select id="wl-league" class="filter-select" onchange="renderList()"><option value="">Leagues</option></select>
       <select id="wl-sort"   class="filter-select" onchange="renderList()">
         <option value="az">A–Z</option>
         <option value="rookies">Rookies First</option>
@@ -459,11 +473,23 @@ function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
 }
+function buildLeagueFilter(){
+  const sel=document.getElementById("wl-league"),cur=sel.value;
+  sel.innerHTML='<option value="">Leagues</option>'+
+    LEAGUES.map((c,i)=>`<option value="${i+1}"${String(i+1)===cur?" selected":""}>[${i+1}] ${MY_TEAM_NAMES[c.id]||c.id}</option>`).join("");
+}
 function buildTeamFilter(){
   const teams=new Set(); watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});
   const sel=document.getElementById("wl-team"),cur=sel.value;
   sel.innerHTML='<option value="">Teams</option>'+[...teams].sort().map(t=>`<option${t===cur?" selected":""}>${t}</option>`).join("");
 }
+function buildLeagueFilter(){
+  const sel=document.getElementById("wl-league"); if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Leagues</option>'+
+    LEAGUES.map(c=>`<option value="${c.id}"${c.id===cur?" selected":""}>${MY_TEAM_NAMES[c.id]||c.id}</option>`).join("");
+}
+
 function buildNameDropdown(){
   const sel=document.getElementById("wl-name"),cur=sel.value;
   const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));
@@ -475,6 +501,8 @@ function renderList(){
   const posF   =document.getElementById("wl-pos").value;
   const teamF  =document.getElementById("wl-team").value;
   const statusF=document.getElementById("wl-status").value;
+  const formatF=document.getElementById("wl-format").value;
+  const leagueF=document.getElementById("wl-league").value;
   const sortV  =document.getElementById("wl-sort").value;
   const el     =document.getElementById("player-list");
   const rosters=loadCachedRosters();  // load once for owner lookups
@@ -483,7 +511,15 @@ function renderList(){
     if(nameF&&norm(p.name)!==nameF)return false;
     if(posF&&p.pos!==posF)return false;
     if(teamF){const m=getPlayerMeta(p.name);if((m?.team||"")!==teamF)return false;}
-    if(statusF){const st=playerStatus[norm(p.name)]||{};if(!Object.values(st).flatMap(v=>Array.isArray(v)?v:[v]).some(v=>v===statusF))return false;}
+    if(statusF){
+        const st=playerStatus[norm(p.name)]||{};
+        let cfgs;
+        if(leagueF) cfgs=[LEAGUES[parseInt(leagueF)-1]].filter(Boolean);
+        else if(formatF) cfgs=LEAGUES.filter(c=>c.label===formatF);
+        else cfgs=LEAGUES;
+        const vals=cfgs.flatMap(c=>{const s=st[c.id];return Array.isArray(s)?s:[s];});
+        if(!vals.some(v=>v===statusF))return false;
+      }
     return true;
   });
 
@@ -579,7 +615,7 @@ function removePlayer(i){
 }
 
 if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-renderLeagueKey();buildNameDropdown();renderList();renderHistory();
+renderLeagueKey();buildNameDropdown();buildLeagueFilter();renderList();renderHistory();
 loadPlayerPool();
 </script>
 </body>
