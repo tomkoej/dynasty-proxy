@@ -12,11 +12,11 @@
       --blue:#2563eb; --red:#dc2626;
       --font:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
     }
-    html, body { height:100%; overflow:hidden; background:#0d1117; }
+    html, body { height:100%; background:#0d1117; }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
-    #page-wrap   { display:flex; flex-direction:column; height:100vh; overflow:hidden; background:#0d1117; }
+    #page-wrap   { display:flex; flex-direction:column; height:100vh; background:#0d1117; }
     #frozen-top  { flex-shrink:0; background:var(--bg); }
-    #scroll-list { flex:1; overflow-y:auto; background:#0d1117; overscroll-behavior:none; }
+    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:16px 24px 60px; }
 
     #header {
