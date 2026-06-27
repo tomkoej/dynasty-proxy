@@ -502,10 +502,10 @@ function toggleOwners(idx){
 }
 
 function clearFilters(){
-  fv.name.clear(); fv.pos=""; fv.nflteam=""; fv.status=""; fv.format=""; fv.league="";
+  [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league].forEach(s=>s.clear());
   Object.keys(csQ).forEach(k=>csQ[k]="");
   ["name","pos","nflteam","status","format","league","sort"].forEach(k=>{csUpdateBtn(k);csRender(k);});
-  buildLeagueFilter("");
+  buildLeagueFilter();
   document.getElementById("clear-filters-btn").style.display="none";
   renderList();
 }
@@ -515,12 +515,12 @@ function renderLeagueKey(){
   document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
 }
 // ── Custom select — Excel-style with search + multi-select ───────────────────
-const fv={name:new Set(),pos:"",nflteam:"",status:"",format:"",league:"",sort:"az"};
+const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),sort:"az"};
 const csData={};       // key → [{val,label}]
 const csQ={};          // key → search string
 const csCfg={
-  name:{multi:true},pos:{multi:false},nflteam:{multi:false},
-  status:{multi:false},format:{multi:false},league:{multi:false},sort:{multi:false}
+  name:{multi:true},pos:{multi:true},nflteam:{multi:true},
+  status:{multi:true},format:{multi:true},league:{multi:true},sort:{multi:false}
 };
 
 function csToggle(btn){
@@ -570,20 +570,23 @@ function csSelect(el,key,val){
   csQ[key]="";
   el.closest(".cs-list").classList.remove("open");
   csUpdateBtn(key);csRender(key);
-  if(key==="format")buildLeagueFilter(val);
   renderList();
 }
 function csToggleOpt(key,val){
   const sel=fv[key];
   sel.has(val)?sel.delete(val):sel.add(val);
-  csUpdateBtn(key);csRender(key);renderList();
+  csUpdateBtn(key);csRender(key);
+  if(key==="format")buildLeagueFilter();
+  renderList();
 }
 function csToggleAll(key){
   const sel=fv[key];
   const allVals=(csData[key]||[]).filter(o=>o.val).map(o=>o.val);
   if(allVals.every(v=>sel.has(v)))sel.clear();
   else allVals.forEach(v=>sel.add(v));
-  csUpdateBtn(key);csRender(key);renderList();
+  csUpdateBtn(key);csRender(key);
+  if(key==="format")buildLeagueFilter();
+  renderList();
 }
 function csUpdateBtn(key){
   const btn=document.querySelector("#csf-"+key+" .cs-btn");
@@ -636,29 +639,23 @@ function buildNameDropdown(){
 }
 
 function renderList(){
-  const nameF  =fv.name;
-  const posF   =fv.pos;
-  const teamF  =fv.nflteam;
-  const statusF=fv.status;
-  const formatF=fv.format;
-  const leagueF=fv.league;
-  const sortV  =fv.sort||"az";
-  const el     =document.getElementById("player-list");
-  const rosters=loadCachedRosters();  // load once for owner lookups
+  const sortV=fv.sort||"az";
+  const el=document.getElementById("player-list");
+  const rosters=loadCachedRosters();
 
   let rows=watchlist.map((p,i)=>({...p,i})).filter(p=>{
     if(fv.name.size>0&&!fv.name.has(norm(p.name)))return false;
-    if(posF&&p.pos!==posF)return false;
-    if(teamF){const m=getPlayerMeta(p.name);if((m?.team||"")!==teamF)return false;}
-    if(statusF){
-        const st=playerStatus[norm(p.name)]||{};
-        let cfgs;
-        if(leagueF) cfgs=[LEAGUES[parseInt(leagueF)-1]].filter(Boolean);
-        else if(formatF) cfgs=LEAGUES.filter(c=>c.label===formatF);
-        else cfgs=LEAGUES;
-        const vals=cfgs.flatMap(c=>{const s=st[c.id];return Array.isArray(s)?s:[s];});
-        if(!vals.some(v=>v===statusF))return false;
-      }
+    if(fv.pos.size>0&&!fv.pos.has(p.pos))return false;
+    if(fv.nflteam.size>0){const m=getPlayerMeta(p.name);if(!fv.nflteam.has(m?.team||""))return false;}
+    if(fv.status.size>0){
+      const st=playerStatus[norm(p.name)]||{};
+      let cfgs;
+      if(fv.league.size>0) cfgs=[...fv.league].map(n=>LEAGUES[parseInt(n)-1]).filter(Boolean);
+      else if(fv.format.size>0) cfgs=LEAGUES.filter(c=>fv.format.has(c.label));
+      else cfgs=LEAGUES;
+      const vals=cfgs.flatMap(c=>{const s=st[c.id];return Array.isArray(s)?s:[s];});
+      if(!vals.some(v=>fv.status.has(v)))return false;
+    }
     return true;
   });
 
@@ -672,7 +669,7 @@ function renderList(){
   });
 
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
-  const anyFilter=fv.name.size>0||fv.pos||fv.nflteam||fv.status||fv.format||fv.league;
+  const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
   if(!rows.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
 
@@ -760,7 +757,7 @@ renderLeagueKey();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"taken",label:"Rostered"},{val:"unknown",label:"Unknown"}]);
 csOptions("sort",[{val:"az",label:"A–Z"},{val:"rookies",label:"Rookies First"},{val:"vets",label:"Veterans First"}]);
-buildNameDropdown();buildFormatFilter();buildLeagueFilter("");buildTeamFilter();renderList();renderHistory();
+buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
 loadPlayerPool();
 </script>
 </body>
