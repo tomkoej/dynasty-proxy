@@ -177,8 +177,8 @@
         <option value="taken">Rostered</option>
         <option value="unknown">Unknown</option>
       </select>
-      <select id="wl-format" class="filter-select" onchange="renderList()"><option value="">Formats</option></select>
-      <select id="wl-league" class="filter-select" onchange="renderList()"><option value="">Leagues</option></select>
+      <select id="wl-format" class="filter-select" onchange="onFormatChange()"><option value="">Select All</option></select>
+      <select id="wl-league" class="filter-select" onchange="renderList()"><option value="">Select All</option></select>
       <select id="wl-sort"   class="filter-select" onchange="renderList()">
         <option value="az">A–Z</option>
         <option value="rookies">Rookies First</option>
@@ -464,12 +464,24 @@ function renderLeagueKey(){
 function buildFormatFilter(){
   const sel=document.getElementById("wl-format"),cur=sel.value;
   const formats=[...new Set(LEAGUES.map(c=>c.label))];
-  sel.innerHTML='<option value="">Formats</option>'+formats.map(f=>`<option value="${f}"${f===cur?" selected":""}>${f}</option>`).join("");
+  sel.innerHTML='<option value="">Select All</option>'+
+    formats.map(f=>`<option value="${f}"${f===cur?" selected":""}>${f}</option>`).join("");
 }
-function buildLeagueFilter(){
+function buildLeagueFilter(formatFilter){
   const sel=document.getElementById("wl-league"),cur=sel.value;
-  sel.innerHTML='<option value="">Leagues</option>'+
-    LEAGUES.map((c,i)=>`<option value="${i+1}"${String(i+1)===cur?" selected":""}>[${i+1}] ${MY_TEAM_NAMES[c.id]||c.id}</option>`).join("");
+  const pool=formatFilter?LEAGUES.filter(c=>c.label===formatFilter):LEAGUES;
+  sel.innerHTML='<option value="">Select All</option>'+
+    pool.map(c=>{
+      const num=LEAGUES.indexOf(c)+1;
+      return`<option value="${num}"${String(num)===cur?" selected":""}>[${num}] ${MY_TEAM_NAMES[c.id]||c.id}</option>`;
+    }).join("");
+  // Clear league selection if it's no longer in the filtered pool
+  const valid=new Set(pool.map(c=>String(LEAGUES.indexOf(c)+1)));
+  if(cur&&!valid.has(cur)) sel.value="";
+}
+function onFormatChange(){
+  buildLeagueFilter(document.getElementById("wl-format").value);
+  renderList();
 }
 function buildTeamFilter(){
   const teams=new Set(); watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});
@@ -608,7 +620,7 @@ function removePlayer(i){
 }
 
 if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-renderLeagueKey();buildNameDropdown();buildFormatFilter();buildLeagueFilter();renderList();renderHistory();
+renderLeagueKey();buildNameDropdown();buildFormatFilter();buildLeagueFilter("");renderList();renderHistory();
 loadPlayerPool();
 </script>
 </body>
