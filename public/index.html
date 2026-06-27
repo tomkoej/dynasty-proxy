@@ -15,8 +15,8 @@
     html, body { height:100%; background:#0d1117; }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
     #page-wrap   { display:flex; flex-direction:column; height:100vh; background:#0d1117; }
-    #frozen-top  { flex-shrink:0; background:var(--bg); }
-    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; }
+    #frozen-top  { flex-shrink:0; background:var(--bg); overflow:visible; position:relative; z-index:10; }
+    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; position:relative; z-index:1; }
     #list-inner  { max-width:680px; margin:0 auto; padding:16px 24px 60px; }
 
     #header {
@@ -38,7 +38,7 @@
     #timestamp { color:#fff; font-size:11px; }
     #debug     { color:var(--muted); font-size:10px; }
 
-    #main { max-width:680px; margin:0 auto; padding:20px 24px 0; }
+    #main { max-width:680px; margin:0 auto; padding:20px 24px 0; overflow:visible; }
     .sec-label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
     .section-divider { border:none; border-top:1px solid var(--border); margin:18px 0; }
 
@@ -78,9 +78,9 @@
     .cs-btn.has-val { border-color:var(--green); }
     .cs-arr { font-size:9px; color:var(--dim); flex-shrink:0; }
     .cs-list {
-      position:fixed;
+      position:absolute; top:calc(100% + 3px); left:0; min-width:100%;
       background:var(--surface); border:1px solid var(--border); border-radius:6px;
-      z-index:1000; display:none; max-height:240px; overflow-y:auto;
+      z-index:9999; display:none; max-height:240px; overflow-y:auto;
       box-shadow:0 4px 12px rgba(0,0,0,0.4);
     }
     .cs-list.open { display:block; }
@@ -488,9 +488,7 @@ async function doRefresh(){
   document.getElementById("debug").textContent=loaded+"/6 leagues · "+ownerCount+" ownership records"+(rosterErrors.length?" · "+rosterErrors[0]:"");
   document.getElementById("timestamp").textContent="Updated "+lastRefresh;
   btn.disabled=false;btn.textContent="↻ Refresh";
-  // Move all dropdowns to body so they escape any overflow:hidden parent
-document.querySelectorAll(".cs-list").forEach(l=>document.body.appendChild(l));
-renderLeagueKey();renderList();
+  renderLeagueKey();renderList();
 }
 
 // ── Render ─────────────────────────────────────────────────────────────────────
@@ -530,10 +528,17 @@ function csToggle(btn){
   const wasOpen=list.classList.contains("open");
   document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
   if(!wasOpen){
+    // Align right edge to button right if it would overflow viewport
     const r=btn.getBoundingClientRect();
-    list.style.top=(r.bottom+3)+"px";
-    list.style.left=r.left+"px";
-    list.style.minWidth=Math.max(r.width,200)+"px";
+    const minW=Math.max(r.width,220);
+    list.style.minWidth=minW+"px";
+    if(r.left+minW>window.innerWidth-8){
+      list.style.left="auto";
+      list.style.right="0";
+    } else {
+      list.style.left="0";
+      list.style.right="auto";
+    }
     list.classList.add("open");
     setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);
   }
