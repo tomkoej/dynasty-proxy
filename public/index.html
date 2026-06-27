@@ -80,7 +80,7 @@
     .league-group-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; }
 
     /* Player rows */
-    .player-row { margin-bottom:14px; }
+    .player-row { margin-bottom:0; padding:14px 0; border-bottom:1px solid var(--border); }
     .player-name-row { display:flex; align-items:center; gap:8px; }
     .remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0; margin-left:auto; }
     .remove-btn:hover { color:var(--red); }
@@ -306,7 +306,7 @@ function updateAddResults(){
   box.innerHTML=results.map(p=>{ const dn=displayName(p.name),already=inWl.has(norm(dn));
     const rook=p.status==="R"||p.rook==="1";
     return`<div class="add-result${already?" already":""}" ${already?"":`onclick="addFromPool('${dn.replace(/'/g,"\\'")}','${p.position||""}')"`}>
-      <span class="add-result-name">${flipName(dn)}${rook?' <span class="rookie-badge">R</span>':""}</span>
+      <span class="add-result-name">${dn}${rook?' <span class="rookie-badge">R</span>':""}</span>
       <span class="add-result-meta">${p.position||""}${p.team?" · "+p.team:""}</span></div>`;
   }).join("");
   box.style.display="block";
@@ -316,7 +316,7 @@ function addFromPool(name,pos){
   recordChange(); watchlist.push({name,pos}); localStorage.setItem("wl",JSON.stringify(watchlist));
   const status=computePlayerStatus(name);
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
-  saveHistory("Added "+flipName(name));
+  saveHistory("Added "+name);
   document.getElementById("add-search").value=""; document.getElementById("add-results").style.display="none";
   buildNameDropdown();buildTeamFilter();renderList();
 }
@@ -452,7 +452,7 @@ function buildTeamFilter(){
 function buildNameDropdown(){
   const sel=document.getElementById("wl-name"),cur=sel.value;
   const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));
-  sel.innerHTML='<option value="">Players</option>'+sorted.map(p=>`<option value="${norm(p.name)}"${norm(p.name)===cur?" selected":""}>${flipName(p.name)}</option>`).join("");
+  sel.innerHTML='<option value="">Players</option>'+sorted.map(p=>`<option value="${norm(p.name)}"${norm(p.name)===cur?" selected":""}>${p.name}</option>`).join("");
 }
 
 function renderList(){
@@ -531,7 +531,7 @@ function renderList(){
 
     return`<div class="player-row">
       <div class="player-name-row">
-        <span class="player-name">${flipName(name)}</span>
+        <span class="player-name">${name}</span>
         <span class="player-pos">${pos}</span>
         ${team?`<span class="player-team">${team}</span>`:""}
         ${rookie?'<span class="rookie-badge">R</span>':""}
@@ -551,7 +551,7 @@ function removePlayer(i){
   const name=watchlist[i]?.name||"Player";
   recordChange(); watchlist=watchlist.filter((_,j)=>j!==i);
   localStorage.setItem("wl",JSON.stringify(watchlist));
-  saveHistory("Removed "+flipName(name));
+  saveHistory("Removed "+name);
   buildNameDropdown();buildTeamFilter();renderList();
 }
 
