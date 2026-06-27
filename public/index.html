@@ -429,7 +429,12 @@ async function doRefresh(){
   lastRefresh=now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
   localStorage.setItem("ps",JSON.stringify(playerStatus)); localStorage.setItem("ln",JSON.stringify(leagueNames)); localStorage.setItem("lr",lastRefresh);
   const loaded=Object.values(leagueRosters).filter(r=>r!==null).length;
-  document.getElementById("debug").textContent=loaded+"/6 leagues"+(rosterErrors.length?" · "+rosterErrors[0]:"");
+  const ownerCount=Object.values(leagueRosters).reduce((sum,rs)=>{
+    if(!rs)return sum;
+    if(rs.twoCopy)return sum+Object.keys(rs.nwoOwners||{}).length;
+    return sum+Object.keys(rs.owners||{}).length;
+  },0);
+  document.getElementById("debug").textContent=loaded+"/6 leagues · "+ownerCount+" ownership records"+(rosterErrors.length?" · "+rosterErrors[0]:"");
   document.getElementById("timestamp").textContent="Updated "+lastRefresh;
   btn.disabled=false;btn.textContent="↻ Refresh";
   renderLeagueKey();renderList();
@@ -497,9 +502,10 @@ function renderList(){
     const statuses=Array.isArray(s)?s:["unknown","unknown"];
     const rawOwners=(rosters&&pid)?rosters[cfg.id]?.nwoOwners?.[pid]||[]:[];
     const bubbles=statuses.map((si,k)=>`<span class="league-icon" style="background:${iconColor(si)}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(si)}">${num}</span>`).join("");
-    // Owner names: only for "taken" copies, matching by index
-    const n0=statuses[0]==="taken"?trunc(rawOwners[0]||""):"";
-    const n1=statuses[1]==="taken"?trunc(rawOwners[1]||""):"";
+    // rawOwners only has entries for "taken" copies; walk it sequentially
+    let takenIdx=0;
+    const n0=statuses[0]==="taken"?trunc(rawOwners[takenIdx++]||""):"";
+    const n1=statuses[1]==="taken"?trunc(rawOwners[takenIdx++]||""):"";
     const hasNames=n0||n1;
     return`<div class="nwo-col">
       <span class="nwo-oval">${bubbles}</span>
