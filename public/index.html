@@ -510,24 +510,30 @@ function renderList(){
   };
 
   // Build "> Team Name" lines for a group of leagues — only when someone else owns the player
-  const buildOwnerLines=(leagues,status,pid)=>{
-    if(!pid||!rosters)return"";
+  const buildStatusLines=(status,pid)=>{
     const lines=[];
-    leagues.forEach(cfg=>{
+    LEAGUES.forEach(cfg=>{
       const num=LEAGUES.indexOf(cfg)+1;
       if(cfg.twoCopy){
         const st=Array.isArray(status[cfg.id])?status[cfg.id]:["unknown","unknown"];
-        const rawOwners=rosters[cfg.id]?.nwoOwners?.[pid]||[];
+        const rawOwners=(rosters&&pid)?rosters[cfg.id]?.nwoOwners?.[pid]||[]:[];
         let takenIdx=0;
-        const takenNames=[];
-        st.forEach(s=>{ if(s==="taken"){ const n=rawOwners[takenIdx++]||""; if(n)takenNames.push(n); } });
-        if(takenNames.length>0) lines.push(`[${num}] ${takenNames.join(" & ")}`);
+        const parts=st.map(s=>{
+          if(s==="taken"){ const n=rawOwners[takenIdx++]||""; return n||"Rostered"; }
+          return s==="mine"?"My Team":s==="available"?"Available":"Unknown";
+        });
+        lines.push(`[${num}] ${parts.join(" & ")}`);
       }else{
         const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";
-        if(sv==="taken"){ const n=rosters[cfg.id]?.owners?.[pid]||""; if(n)lines.push(`[${num}] ${n}`); }
+        let display;
+        if(sv==="taken"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; display=n||"Rostered"; }
+        else if(sv==="mine") display="My Team";
+        else if(sv==="available") display="Available";
+        else display="Unknown";
+        lines.push(`[${num}] ${display}`);
       }
     });
-    return lines.map(n=>`<div class="owner-line">${n}</div>`).join("");
+    return lines.map(l=>`<div class="owner-line">${l}</div>`).join("");
   };
 
   el.innerHTML=rows.map(({name,pos,i})=>{
@@ -536,31 +542,25 @@ function renderList(){
     const team=meta?.team||"";
     const rookie=isRookie(name);
     const pid=nameToId[norm(name)];
-    const sfL   =LEAGUES.filter(c=>c.label==="SF");
-    const sfteL =LEAGUES.filter(c=>c.label==="SF/TE+");
-    const sfIcons   =sfL.map(c=>makeIcon(c,status[c.id])).join("");
-    const sfteIcons =sfteL.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
-    const sfOwners  =buildOwnerLines(sfL,status,pid);
-    const sfteOwners=buildOwnerLines(sfteL,status,pid);
-    const allOwners =(sfOwners+sfteOwners).trim();
+    const sfIcons  =LEAGUES.filter(c=>c.label==="SF").map(c=>makeIcon(c,status[c.id])).join("");
+    const sfteIcons=LEAGUES.filter(c=>c.label==="SF/TE+").map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
+    const allStatuses=buildStatusLines(status,pid);
 
     return`<div class="player-row">
       <div class="player-name-row">
-        ${allOwners
-          ?`<button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>`
-          :`<span class="owner-toggle-ph"></span>`}
+        <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
         <span class="player-name">${name}</span>
         <span class="player-pos">${pos}</span>
         ${team?`<span class="player-team">${team}</span>`:""}
         ${rookie?'<span class="rookie-badge">R</span>':""}
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
-      <span class="player-section-label">Availability</span>
+      <span class="player-section-label">Status</span>
       <div class="icon-row-group">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
       </div>
-      ${allOwners?`<div id="owners-${i}" style="display:none"><span class="player-section-label">Owned By</span><div class="owner-lines">${allOwners}</div></div>`:""}
+      <div id="owners-${i}" style="display:none"><span class="player-section-label">Availability</span><div class="owner-lines">${allStatuses}</div></div>
     </div>`;
   }).join("");
 }
