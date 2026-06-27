@@ -99,7 +99,11 @@
       font-size:10px; font-weight:700; border:1px solid var(--border); cursor:default; flex-shrink:0;
     }
     .nwo-oval { display:inline-flex; gap:3px; align-items:center; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:1px 5px; }
-    .owner-lines { padding-left:52px; display:flex; flex-direction:column; gap:1px; margin-top:-1px; margin-bottom:2px; }
+    .owner-toggle { background:none; border:none; color:var(--dim); cursor:pointer; font-family:var(--font); font-size:10px; padding:0; line-height:1; flex-shrink:0; width:16px; text-align:center; transition:transform .15s; display:inline-block; }
+    .owner-toggle:hover { color:var(--text); }
+    .owner-toggle.open { transform:rotate(90deg); }
+    .owner-toggle-ph { width:16px; flex-shrink:0; display:inline-block; }
+    .owner-lines { padding-left:52px; display:flex; flex-direction:column; gap:1px; margin-top:4px; }
     .owner-line  { color:var(--text); font-size:10px; line-height:1.6; }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
@@ -440,6 +444,15 @@ async function doRefresh(){
 }
 
 // ── Render ─────────────────────────────────────────────────────────────────────
+function toggleOwners(idx){
+  const el=document.getElementById("owners-"+idx);
+  const btn=document.getElementById("owntoggle-"+idx);
+  if(!el)return;
+  const opening=el.style.display==="none";
+  el.style.display=opening?"block":"none";
+  btn.classList.toggle("open",opening);
+}
+
 function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
@@ -528,9 +541,13 @@ function renderList(){
     const sfteIcons =sfteL.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
     const sfOwners  =buildOwnerLines(sfL,status,pid);
     const sfteOwners=buildOwnerLines(sfteL,status,pid);
+    const allOwners =(sfOwners+sfteOwners).trim();
 
     return`<div class="player-row">
       <div class="player-name-row">
+        ${allOwners
+          ?`<button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>`
+          :`<span class="owner-toggle-ph"></span>`}
         <span class="player-name">${name}</span>
         <span class="player-pos">${pos}</span>
         ${team?`<span class="player-team">${team}</span>`:""}
@@ -539,10 +556,9 @@ function renderList(){
       </div>
       <div class="icon-row-group">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
-        ${sfOwners?`<div class="owner-lines">${sfOwners}</div>`:""}
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
-        ${sfteOwners?`<div class="owner-lines">${sfteOwners}</div>`:""}
       </div>
+      ${allOwners?`<div id="owners-${i}" class="owner-lines" style="display:none">${allOwners}</div>`:""}
     </div>`;
   }).join("");
 }
