@@ -241,6 +241,7 @@ const sortKey  = n=>flipName(n).toLowerCase();
 const toArr    = v=>!v?[]:Array.isArray(v)?v:[v];
 const clone    = o=>JSON.parse(JSON.stringify(o));
 const trunc    = (s,n=9)=>!s?"":s.length<=n?s:s.slice(0,n-1)+"…";
+const stripHtml = s=>(s||"").replace(/<[^>]*>/g,"").trim();
 
 function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":"#1f2937";}
 function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":"Unknown";}
@@ -360,7 +361,7 @@ async function doRefresh(){
           const lg=await mfl(cfg.server,cfg.id,"league",year);
           newNames[cfg.id]=lg?.league?.name||cfg.id;
           const frs=toArr(lg?.league?.franchises?.franchise);
-          frs.forEach(fr=>{ frNames[fr.id]=fr.name; });
+          frs.forEach(fr=>{ frNames[fr.id]=stripHtml(fr.name); });
           const matchName=MY_TEAM_MATCH[cfg.id]||MY_TEAM_NAMES[cfg.id]||"";
           const myFr=frs.find(fr=>norm(fr.name)===norm(matchName));
           myFranchiseId=myFr?.id||null;
