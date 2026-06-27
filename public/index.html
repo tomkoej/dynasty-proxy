@@ -531,24 +531,26 @@ let _panelKey=null;
 function closePanel(){
   if(!_panelKey)return;
   const panel=document.getElementById("filter-panel");
-  const list=document.getElementById("csl-"+_panelKey);
-  if(list){list.classList.remove("open");document.getElementById("csf-"+_panelKey)?.appendChild(list);}
   panel.style.display="none";
+  panel.innerHTML="";
   document.querySelectorAll(".cs-btn.panel-open").forEach(b=>b.classList.remove("panel-open"));
   _panelKey=null;
+}
+function csShowPanel(key){
+  const list=document.getElementById("csl-"+key);
+  const panel=document.getElementById("filter-panel");
+  if(!list||!panel)return;
+  panel.innerHTML=list.innerHTML;
+  panel.style.display="block";
 }
 function csToggle(btn){
   const key=btn.closest(".cs-wrap").id.replace("csf-","");
   if(_panelKey===key){closePanel();return;}
   closePanel();
   _panelKey=key;
-  const panel=document.getElementById("filter-panel");
-  const list=document.getElementById("csl-"+key);
-  panel.appendChild(list);
-  list.classList.add("open");
-  panel.style.display="block";
   btn.classList.add("panel-open");
-  setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);
+  csShowPanel(key);
+  setTimeout(()=>document.querySelector("#filter-panel .cs-search-input")?.focus(),30);
 }
 
 document.addEventListener("click",e=>{
@@ -582,6 +584,7 @@ function csRender(key){
     ).join("");
     list.innerHTML=searchBox+rows;
   }
+  if(_panelKey===key)csShowPanel(key);
 }
 
 function csQUpdate(key,val){csQ[key]=val;csRender(key);}
