@@ -169,7 +169,7 @@
         <option value="">Positions</option>
         <option>QB</option><option>RB</option><option>WR</option><option>TE</option>
       </select>
-      <select id="wl-team"   class="filter-select" onchange="renderList()"><option value="">Teams</option></select>
+      <select id="wl-nflteam" class="filter-select" onchange="renderList()"><option value="">NFL Team</option></select>
       <select id="wl-status" class="filter-select" onchange="renderList()">
         <option value="">Statuses</option>
         <option value="available">Available</option>
@@ -177,19 +177,7 @@
         <option value="taken">Rostered</option>
         <option value="unknown">Unknown</option>
       </select>
-      <select id="wl-format" class="filter-select" onchange="renderList()">
-        <option value="">Formats</option>
-        <option value="SF">SF</option>
-        <option value="SF/TE+">SF/TE+</option>
-      </select>
-      <select id="wl-league" class="filter-select" onchange="renderList()">
-        <option value="">Leagues</option>
-      </select>
-      <select id="wl-format" class="filter-select" onchange="renderList()">
-        <option value="">Formats</option>
-        <option value="SF">SF</option>
-        <option value="SF/TE+">SF/TE+</option>
-      </select>
+      <select id="wl-format" class="filter-select" onchange="renderList()"><option value="">Formats</option></select>
       <select id="wl-league" class="filter-select" onchange="renderList()"><option value="">Leagues</option></select>
       <select id="wl-sort"   class="filter-select" onchange="renderList()">
         <option value="az">A–Z</option>
@@ -473,6 +461,11 @@ function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
 }
+function buildFormatFilter(){
+  const sel=document.getElementById("wl-format"),cur=sel.value;
+  const formats=[...new Set(LEAGUES.map(c=>c.label))];
+  sel.innerHTML='<option value="">Formats</option>'+formats.map(f=>`<option value="${f}"${f===cur?" selected":""}>${f}</option>`).join("");
+}
 function buildLeagueFilter(){
   const sel=document.getElementById("wl-league"),cur=sel.value;
   sel.innerHTML='<option value="">Leagues</option>'+
@@ -480,8 +473,8 @@ function buildLeagueFilter(){
 }
 function buildTeamFilter(){
   const teams=new Set(); watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});
-  const sel=document.getElementById("wl-team"),cur=sel.value;
-  sel.innerHTML='<option value="">Teams</option>'+[...teams].sort().map(t=>`<option${t===cur?" selected":""}>${t}</option>`).join("");
+  const sel=document.getElementById("wl-nflteam"),cur=sel.value;
+  sel.innerHTML='<option value="">NFL Team</option>'+[...teams].sort().map(t=>`<option${t===cur?" selected":""}>${t}</option>`).join("");
 }
 function buildLeagueFilter(){
   const sel=document.getElementById("wl-league"); if(!sel)return;
@@ -499,7 +492,7 @@ function buildNameDropdown(){
 function renderList(){
   const nameF  =document.getElementById("wl-name").value;
   const posF   =document.getElementById("wl-pos").value;
-  const teamF  =document.getElementById("wl-team").value;
+  const teamF  =document.getElementById("wl-nflteam").value;
   const statusF=document.getElementById("wl-status").value;
   const formatF=document.getElementById("wl-format").value;
   const leagueF=document.getElementById("wl-league").value;
@@ -615,7 +608,7 @@ function removePlayer(i){
 }
 
 if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-renderLeagueKey();buildNameDropdown();buildLeagueFilter();renderList();renderHistory();
+renderLeagueKey();buildNameDropdown();buildFormatFilter();buildLeagueFilter();renderList();renderHistory();
 loadPlayerPool();
 </script>
 </body>
