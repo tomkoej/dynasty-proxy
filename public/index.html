@@ -104,8 +104,10 @@
     .owner-toggle.open { transform:rotate(90deg); }
     .owner-toggle-ph { width:16px; flex-shrink:0; display:inline-block; }
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
-    .owner-lines { padding-left:36px; display:flex; flex-direction:column; gap:2px; margin-top:3px; }
-    .owner-line  { color:var(--text); font-size:11px; line-height:1.6; }
+    .avail-grid      { display:flex; gap:20px; padding-left:36px; margin-top:3px; }
+    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; }
+    .avail-col-label { color:#fff; font-size:10px; margin-bottom:4px; }
+    .owner-line      { color:var(--text); font-size:11px; line-height:1.6; }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
 
@@ -511,29 +513,33 @@ function renderList(){
 
   // Build "> Team Name" lines for a group of leagues — only when someone else owns the player
   const buildStatusLines=(status,pid)=>{
-    const lines=[];
-    LEAGUES.forEach(cfg=>{
+    const lineFor=(cfg)=>{
       const num=LEAGUES.indexOf(cfg)+1;
       if(cfg.twoCopy){
         const st=Array.isArray(status[cfg.id])?status[cfg.id]:["unknown","unknown"];
         const rawOwners=(rosters&&pid)?rosters[cfg.id]?.nwoOwners?.[pid]||[]:[];
-        let takenIdx=0;
+        let ti=0;
         const parts=st.map(s=>{
-          if(s==="taken"){ const n=rawOwners[takenIdx++]||""; return n||"Rostered"; }
+          if(s==="taken"){ const n=rawOwners[ti++]||""; return n||"Rostered"; }
           return s==="mine"?"My Team":s==="available"?"Available":"Unknown";
         });
-        lines.push(`[${num}] ${parts.join(" & ")}`);
+        return`<div class="owner-line">[${num}] ${parts.join(" & ")}</div>`;
       }else{
         const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";
-        let display;
-        if(sv==="taken"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; display=n||"Rostered"; }
-        else if(sv==="mine") display="My Team";
-        else if(sv==="available") display="Available";
-        else display="Unknown";
-        lines.push(`[${num}] ${display}`);
+        let d;
+        if(sv==="taken"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; d=n||"Rostered"; }
+        else if(sv==="mine") d="My Team";
+        else if(sv==="available") d="Available";
+        else d="Unknown";
+        return`<div class="owner-line">[${num}] ${d}</div>`;
       }
-    });
-    return lines.map(l=>`<div class="owner-line">${l}</div>`).join("");
+    };
+    const sfLines  =LEAGUES.filter(c=>c.label==="SF"   ).map(lineFor).join("");
+    const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
+    return`<div class="avail-grid">
+      <div class="avail-col"><div class="avail-col-label">SF</div>${sfLines}</div>
+      <div class="avail-col"><div class="avail-col-label">SF/TE+</div>${sfteLines}</div>
+    </div>`;
   };
 
   el.innerHTML=rows.map(({name,pos,i})=>{
@@ -560,7 +566,7 @@ function renderList(){
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
       </div>
-      <div id="owners-${i}" style="display:none"><span class="player-section-label">Availability</span><div class="owner-lines">${allStatuses}</div></div>
+      <div id="owners-${i}" style="display:none"><span class="player-section-label">Availability</span>${allStatuses}</div>
     </div>`;
   }).join("");
 }
