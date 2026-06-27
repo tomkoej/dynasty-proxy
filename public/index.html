@@ -105,7 +105,7 @@
     .owner-toggle-ph { width:16px; flex-shrink:0; display:inline-block; }
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:flex; gap:20px; padding-left:36px; margin-top:3px; }
-    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; }
+    .avail-col       { display:flex; flex-direction:column; gap:2px; }
     .avail-col-label { color:#fff; font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--text); font-size:11px; line-height:1.6; }
 
@@ -566,7 +566,7 @@ function renderList(){
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
       </div>
-      <div id="owners-${i}" style="display:none"><span class="player-section-label">Availability</span>${allStatuses}</div>
+      <div id="owners-${i}" style="display:none">${allStatuses}</div>
     </div>`;
   }).join("");
 }
