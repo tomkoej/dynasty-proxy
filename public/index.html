@@ -162,7 +162,7 @@
   </div>
 
   <div id="filter-section">
-    <span class="sec-label">Filter &amp; Sort Watchlist</span>
+    <span class="sec-label">Filter &amp; sort</span>
     <div id="filter-bar">
       <select id="wl-name"   class="filter-select" onchange="renderList()"><option value="">Players</option></select>
       <select id="wl-pos"    class="filter-select" onchange="renderList()">
@@ -294,7 +294,7 @@ async function loadPlayerPool(){
   }
   mflPlayers.forEach(p=>{ if(!p.name||!p.id)return; nameToId[norm(p.name)]=p.id; nameToId[norm(displayName(p.name))]=p.id; });
   const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV2")||Date.now()));
-  document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} Players · Pool Updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
+  document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
   buildTeamFilter(); renderList();
 }
 
