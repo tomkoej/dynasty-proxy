@@ -201,32 +201,32 @@
     </div>
     <div id="filter-bar">
       <div class="cs-wrap" id="csf-name">
-        <button class="cs-btn" onclick="csToggle(this)">Players<span class="cs-arr">▾</span></button>
-        <div class="cs-list" onclick="event.stopPropagation()"></div>
+        <button class="cs-btn" data-list="csl-name" onclick="csToggle(this)">Players<span class="cs-arr">▾</span></button>
+        <div class="cs-list" id="csl-name" onclick="event.stopPropagation()"></div>
       </div>
       <div class="cs-wrap" id="csf-pos">
-        <button class="cs-btn" onclick="csToggle(this)">Position<span class="cs-arr">▾</span></button>
-        <div class="cs-list" onclick="event.stopPropagation()"></div>
+        <button class="cs-btn" data-list="csl-pos" onclick="csToggle(this)">Position<span class="cs-arr">▾</span></button>
+        <div class="cs-list" id="csl-pos" onclick="event.stopPropagation()"></div>
       </div>
       <div class="cs-wrap" id="csf-nflteam">
-        <button class="cs-btn" onclick="csToggle(this)">NFL Team<span class="cs-arr">▾</span></button>
-        <div class="cs-list" onclick="event.stopPropagation()"></div>
+        <button class="cs-btn" data-list="csl-nflteam" onclick="csToggle(this)">NFL Team<span class="cs-arr">▾</span></button>
+        <div class="cs-list" id="csl-nflteam" onclick="event.stopPropagation()"></div>
       </div>
       <div class="cs-wrap" id="csf-status">
-        <button class="cs-btn" onclick="csToggle(this)">Status<span class="cs-arr">▾</span></button>
-        <div class="cs-list" onclick="event.stopPropagation()"></div>
+        <button class="cs-btn" data-list="csl-status" onclick="csToggle(this)">Status<span class="cs-arr">▾</span></button>
+        <div class="cs-list" id="csl-status" onclick="event.stopPropagation()"></div>
       </div>
       <div class="cs-wrap" id="csf-format">
-        <button class="cs-btn" onclick="csToggle(this)">Format<span class="cs-arr">▾</span></button>
-        <div class="cs-list" onclick="event.stopPropagation()"></div>
+        <button class="cs-btn" data-list="csl-format" onclick="csToggle(this)">Format<span class="cs-arr">▾</span></button>
+        <div class="cs-list" id="csl-format" onclick="event.stopPropagation()"></div>
       </div>
       <div class="cs-wrap" id="csf-league">
-        <button class="cs-btn" onclick="csToggle(this)">League<span class="cs-arr">▾</span></button>
-        <div class="cs-list" onclick="event.stopPropagation()"></div>
+        <button class="cs-btn" data-list="csl-league" onclick="csToggle(this)">League<span class="cs-arr">▾</span></button>
+        <div class="cs-list" id="csl-league" onclick="event.stopPropagation()"></div>
       </div>
       <div class="cs-wrap" id="csf-sort">
-        <button class="cs-btn" onclick="csToggle(this)">Sort<span class="cs-arr">▾</span></button>
-        <div class="cs-list" onclick="event.stopPropagation()"></div>
+        <button class="cs-btn" data-list="csl-sort" onclick="csToggle(this)">Sort<span class="cs-arr">▾</span></button>
+        <div class="cs-list" id="csl-sort" onclick="event.stopPropagation()"></div>
       </div>
     </div>
   </div>
@@ -488,7 +488,9 @@ async function doRefresh(){
   document.getElementById("debug").textContent=loaded+"/6 leagues · "+ownerCount+" ownership records"+(rosterErrors.length?" · "+rosterErrors[0]:"");
   document.getElementById("timestamp").textContent="Updated "+lastRefresh;
   btn.disabled=false;btn.textContent="↻ Refresh";
-  renderLeagueKey();renderList();
+  // Move all dropdowns to body so they escape any overflow:hidden parent
+document.querySelectorAll(".cs-list").forEach(l=>document.body.appendChild(l));
+renderLeagueKey();renderList();
 }
 
 // ── Render ─────────────────────────────────────────────────────────────────────
@@ -524,14 +526,14 @@ const csCfg={
 };
 
 function csToggle(btn){
-  const list=btn.nextElementSibling;
+  const list=document.getElementById(btn.dataset.list);
   const wasOpen=list.classList.contains("open");
   document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
   if(!wasOpen){
     const r=btn.getBoundingClientRect();
     list.style.top=(r.bottom+3)+"px";
     list.style.left=r.left+"px";
-    list.style.minWidth=Math.max(r.width,180)+"px";
+    list.style.minWidth=Math.max(r.width,200)+"px";
     list.classList.add("open");
     setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);
   }
@@ -540,12 +542,12 @@ function csToggle(btn){
 // Close dropdowns on scroll so they don't drift
 window.addEventListener("scroll",()=>document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open")),true);
 document.addEventListener("click",e=>{
-  if(!e.target.closest(".cs-wrap"))
+  if(!e.target.closest(".cs-wrap")&&!e.target.closest(".cs-list"))
     document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
 });
 
 function csRender(key){
-  const list=document.querySelector("#csf-"+key+" .cs-list");
+  const list=document.getElementById("csl-"+key);
   if(!list)return;
   const q=(csQ[key]||"").toLowerCase();
   const opts=csData[key]||[];
