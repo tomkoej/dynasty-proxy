@@ -90,19 +90,17 @@
     .rookie-badge { background:#d97706; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
 
     /* Icon rows */
-    .icon-row-group { margin-top:6px; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
-    .icon-row-line  { display:flex; align-items:flex-start; gap:5px; }
-    .row-label { color:#fff; font-size:10px; min-width:46px; margin-top:4px; }
-    .icon-col  { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    .icon-row-group { margin-top:6px; padding-left:20px; display:flex; flex-direction:column; gap:4px; }
+    .icon-row-line  { display:flex; align-items:center; gap:5px; }
+    .row-label { color:#fff; font-size:10px; min-width:46px; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
       width:20px; height:20px; border-radius:50%; color:white;
       font-size:10px; font-weight:700; border:1px solid var(--border); cursor:default; flex-shrink:0;
     }
-    .icon-owner { font-size:9px; color:var(--dim); max-width:44px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; text-align:center; line-height:1.3; }
-    .nwo-col { display:flex; flex-direction:column; align-items:center; gap:2px; }
     .nwo-oval { display:inline-flex; gap:3px; align-items:center; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:1px 5px; }
-    .nwo-names { display:flex; gap:6px; }
+    .owner-lines { padding-left:52px; display:flex; flex-direction:column; gap:1px; margin-top:-1px; margin-bottom:2px; }
+    .owner-line  { color:var(--dim); font-size:10px; line-height:1.6; }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
 
@@ -485,32 +483,34 @@ function renderList(){
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
   if(!rows.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
 
-  // Build a single icon column (regular leagues)
-  const makeIconCol=(cfg,s,pid)=>{
+  const makeIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const sv=typeof s==="string"?s:"unknown";
-    const ownerName=sv==="taken"&&rosters&&pid?(rosters[cfg.id]?.owners?.[pid]||""):"";
-    return`<div class="icon-col">
-      <span class="league-icon" style="background:${iconColor(sv)}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>
-      ${ownerName?`<span class="icon-owner">${trunc(ownerName)}</span>`:""}
-    </div>`;
+    return`<span class="league-icon" style="background:${iconColor(sv)}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
+  };
+  const makeNwoIcon=(cfg,s)=>{
+    const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
+    const st=Array.isArray(s)?s:["unknown","unknown"];
+    return`<span class="nwo-oval">${st.map((si,k)=>`<span class="league-icon" style="background:${iconColor(si)}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(si)}">${num}</span>`).join("")}</span>`;
   };
 
-  // Build the nWo double-bubble column
-  const makeNwoCol=(cfg,s,pid)=>{
-    const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
-    const statuses=Array.isArray(s)?s:["unknown","unknown"];
-    const rawOwners=(rosters&&pid)?rosters[cfg.id]?.nwoOwners?.[pid]||[]:[];
-    const bubbles=statuses.map((si,k)=>`<span class="league-icon" style="background:${iconColor(si)}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(si)}">${num}</span>`).join("");
-    // rawOwners only has entries for "taken" copies; walk it sequentially
-    let takenIdx=0;
-    const n0=statuses[0]==="taken"?trunc(rawOwners[takenIdx++]||""):"";
-    const n1=statuses[1]==="taken"?trunc(rawOwners[takenIdx++]||""):"";
-    const hasNames=n0||n1;
-    return`<div class="nwo-col">
-      <span class="nwo-oval">${bubbles}</span>
-      ${hasNames?`<div class="nwo-names"><span class="icon-owner">${n0}</span><span class="icon-owner">${n1}</span></div>`:""}
-    </div>`;
+  // Build "> Team Name" lines for a group of leagues — only when someone else owns the player
+  const buildOwnerLines=(leagues,status,pid)=>{
+    if(!pid||!rosters)return"";
+    const lines=[];
+    leagues.forEach(cfg=>{
+      const num=LEAGUES.indexOf(cfg)+1;
+      if(cfg.twoCopy){
+        const st=Array.isArray(status[cfg.id])?status[cfg.id]:["unknown","unknown"];
+        const rawOwners=rosters[cfg.id]?.nwoOwners?.[pid]||[];
+        let takenIdx=0;
+        st.forEach(s=>{ if(s==="taken"){ const n=rawOwners[takenIdx++]||""; if(n)lines.push(n); } });
+      }else{
+        const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";
+        if(sv==="taken"){ const n=rosters[cfg.id]?.owners?.[pid]||""; if(n)lines.push(n); }
+      }
+    });
+    return lines.map(n=>`<div class="owner-line">› ${n}</div>`).join("");
   };
 
   el.innerHTML=rows.map(({name,pos,i})=>{
@@ -519,11 +519,12 @@ function renderList(){
     const team=meta?.team||"";
     const rookie=isRookie(name);
     const pid=nameToId[norm(name)];
-
-    const sfIcons   =LEAGUES.filter(c=>c.label==="SF"   ).map(c=>makeIconCol(c,status[c.id],pid)).join("");
-    const sfteIcons =LEAGUES.filter(c=>c.label==="SF/TE+").map(c=>
-      c.twoCopy ? makeNwoCol(c,status[c.id],pid) : makeIconCol(c,status[c.id],pid)
-    ).join("");
+    const sfL   =LEAGUES.filter(c=>c.label==="SF");
+    const sfteL =LEAGUES.filter(c=>c.label==="SF/TE+");
+    const sfIcons   =sfL.map(c=>makeIcon(c,status[c.id])).join("");
+    const sfteIcons =sfteL.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
+    const sfOwners  =buildOwnerLines(sfL,status,pid);
+    const sfteOwners=buildOwnerLines(sfteL,status,pid);
 
     return`<div class="player-row">
       <div class="player-name-row">
@@ -535,7 +536,9 @@ function renderList(){
       </div>
       <div class="icon-row-group">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
+        ${sfOwners?`<div class="owner-lines">${sfOwners}</div>`:""}
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
+        ${sfteOwners?`<div class="owner-lines">${sfteOwners}</div>`:""}
       </div>
     </div>`;
   }).join("");
