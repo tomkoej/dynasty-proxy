@@ -85,7 +85,19 @@
       white-space:nowrap;
     }
     .cs-opt:hover { background:var(--muted); }
-    .cs-opt.active { color:var(--green-hi); }
+    .cs-opt.active .cs-chk { color:var(--green-hi); }
+    .cs-opt.active { color:var(--text); }
+    .cs-chk  { display:inline-block; width:16px; color:var(--dim); font-size:11px; flex-shrink:0; }
+    .cs-search-wrap { padding:8px 10px 4px; border-bottom:1px solid var(--border); }
+    .cs-search-input {
+      width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
+      padding:5px 8px; border-radius:4px; font-family:var(--font); font-size:12px; outline:none;
+    }
+    .cs-search-input:focus { border-color:var(--green); }
+    .cs-badge {
+      background:var(--green); color:white; font-size:10px; font-weight:700;
+      padding:1px 6px; border-radius:10px; margin-right:2px; flex-shrink:0;
+    }
 
     #legend { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
     .legend-item { display:flex; align-items:center; gap:5px; }
@@ -486,33 +498,93 @@ function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
 }
-// ── Custom select state & helpers ────────────────────────────────────────────
-const fv={name:"",pos:"",nflteam:"",status:"",format:"",league:"",sort:"az"};
+// ── Custom select — Excel-style with search + multi-select ───────────────────
+const fv={name:new Set(),pos:"",nflteam:"",status:"",format:"",league:"",sort:"az"};
+const csData={};       // key → [{val,label}]
+const csQ={};          // key → search string
+const csCfg={
+  name:{multi:true},pos:{multi:false},nflteam:{multi:false},
+  status:{multi:false},format:{multi:false},league:{multi:false},sort:{multi:false}
+};
 
 function csToggle(btn){
   const list=btn.nextElementSibling;
   const wasOpen=list.classList.contains("open");
   document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
-  if(!wasOpen)list.classList.add("open");
+  if(!wasOpen){list.classList.add("open");setTimeout(()=>list.querySelector(".cs-search-input")?.focus(),30);}
 }
 document.addEventListener("click",e=>{
   if(!e.target.closest(".cs-wrap"))
     document.querySelectorAll(".cs-list.open").forEach(l=>l.classList.remove("open"));
 });
+
+function csRender(key){
+  const list=document.querySelector("#csf-"+key+" .cs-list");
+  if(!list)return;
+  const q=(csQ[key]||"").toLowerCase();
+  const opts=csData[key]||[];
+  const multi=csCfg[key]?.multi;
+  const filtered=opts.filter(o=>!o.val||!q||o.label.toLowerCase().includes(q));
+  const searchBox=`<div class="cs-search-wrap" onclick="event.stopPropagation()"><input class="cs-search-input" type="text" placeholder="Search..." value="${csQ[key]||""}" oninput="csQUpdate('${key}',this.value)" onkeydown="event.stopPropagation()"></div>`;
+
+  if(multi){
+    const sel=fv[key];
+    const allVals=opts.filter(o=>o.val).map(o=>o.val);
+    const allOn=allVals.length>0&&allVals.every(v=>sel.has(v));
+    const someOn=sel.size>0&&!allOn;
+    const rows=filtered.map(o=>{
+      if(!o.val)return`<div class="cs-opt cs-selall" onclick="csToggleAll('${key}')"><span class="cs-chk">${allOn?"☑":someOn?"⊡":"☐"}</span>Select All</div>`;
+      const on=sel.has(o.val);
+      return`<div class="cs-opt${on?" active":""}" onclick="csToggleOpt('${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${on?"☑":"☐"}</span>${o.label}</div>`;
+    }).join("");
+    list.innerHTML=searchBox+rows;
+  }else{
+    const cur=fv[key];
+    const rows=filtered.map(o=>
+      `<div class="cs-opt${o.val===cur?" active":""}" onclick="csSelect(this,'${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${o.val===cur?"✓":""}</span>${o.label}</div>`
+    ).join("");
+    list.innerHTML=searchBox+rows;
+  }
+}
+
+function csQUpdate(key,val){csQ[key]=val;csRender(key);}
+
 function csSelect(el,key,val){
   fv[key]=val;
-  const wrap=el.closest(".cs-wrap");
-  wrap.querySelectorAll(".cs-opt").forEach(o=>o.classList.toggle("active",o.dataset.val===val));
-  wrap.querySelector(".cs-btn").classList.toggle("has-val",val!==""&&key!=="sort");
+  csQ[key]="";
   el.closest(".cs-list").classList.remove("open");
+  csUpdateBtn(key);csRender(key);
   if(key==="format")buildLeagueFilter(val);
   renderList();
 }
+function csToggleOpt(key,val){
+  const sel=fv[key];
+  sel.has(val)?sel.delete(val):sel.add(val);
+  csUpdateBtn(key);csRender(key);renderList();
+}
+function csToggleAll(key){
+  const sel=fv[key];
+  const allVals=(csData[key]||[]).filter(o=>o.val).map(o=>o.val);
+  if(allVals.every(v=>sel.has(v)))sel.clear();
+  else allVals.forEach(v=>sel.add(v));
+  csUpdateBtn(key);csRender(key);renderList();
+}
+function csUpdateBtn(key){
+  const btn=document.querySelector("#csf-"+key+" .cs-btn");
+  if(!btn)return;
+  const multi=csCfg[key]?.multi;
+  if(multi){
+    const n=fv[key].size;
+    btn.classList.toggle("has-val",n>0);
+    let badge=btn.querySelector(".cs-badge");
+    if(n>0){if(!badge){badge=document.createElement("span");badge.className="cs-badge";btn.insertBefore(badge,btn.querySelector(".cs-arr"));}badge.textContent=n;}
+    else if(badge)badge.remove();
+  }else{
+    btn.classList.toggle("has-val",fv[key]!==""&&key!=="sort");
+  }
+}
 function csOptions(key,opts){
-  const list=document.querySelector("#csf-"+key+" .cs-list");
-  if(!list)return;
-  const cur=fv[key];
-  list.innerHTML=opts.map(o=>`<div class="cs-opt${o.val===cur?" active":""}" data-val="${o.val.replace(/"/g,"&quot;")}" onclick="csSelect(this,'${key}','${o.val.replace(/'/g,"\'")}')">${o.label}</div>`).join("");
+  csData[key]=opts;csRender(key);
 }
 
 function buildFormatFilter(){
@@ -559,7 +631,7 @@ function renderList(){
   const rosters=loadCachedRosters();  // load once for owner lookups
 
   let rows=watchlist.map((p,i)=>({...p,i})).filter(p=>{
-    if(nameF&&norm(p.name)!==nameF)return false;
+    if(fv.name.size>0&&!fv.name.has(norm(p.name)))return false;
     if(posF&&p.pos!==posF)return false;
     if(teamF){const m=getPlayerMeta(p.name);if((m?.team||"")!==teamF)return false;}
     if(statusF){
