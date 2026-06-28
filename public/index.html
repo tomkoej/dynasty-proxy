@@ -186,6 +186,11 @@
     .revert-btn:hover { border-color:var(--green); color:var(--green); }
     .history-players { margin-top:6px; padding:6px 8px; background:var(--bg); border-radius:4px; font-size:11px; color:var(--dim); line-height:1.7; }
     .history-empty { color:var(--dim); font-size:13px; }
+    #debug-ticker { position:fixed; bottom:0; left:0; right:0; z-index:9998; background:#0d1117; border-top:1px solid #2a3040; padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
+    #debug-ticker .dt-val { color:#6b7280; }
+    #debug-ticker .dt-key { color:#374151; margin-right:3px; }
+    #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
+    #debug-ticker .dt-sep { color:#2a3040; }
   </style>
 </head>
 <body>
@@ -264,6 +269,45 @@
 
 <script>
 const APP_VERSION = "1.17";
+
+// ── Debug Ticker ───────────────────────────────────────────────────────────────
+let _dbgErr=null,_dbgErrTime=null;
+window.onerror=(msg,src,line,col)=>{
+  _dbgErr=msg+" ("+(src||"").split("/").pop()+":"+line+":"+col+")";
+  _dbgErrTime=Date.now();
+  _dbgUpdate();return false;
+};
+window.onunhandledrejection=e=>{
+  _dbgErr="Promise rejection: "+(e.reason?.message||e.reason||"unknown");
+  _dbgErrTime=Date.now();
+  _dbgUpdate();
+};
+function _dbgUpdate(){
+  const el=document.getElementById("debug-ticker");
+  if(!el)return;
+  const safeLen=(key,parse=true)=>{
+    const v=localStorage.getItem(key);
+    if(v===null)return"null";
+    if(!parse)return v.length+"b";
+    try{const p=JSON.parse(v);return Array.isArray(p)?p.length+" items":typeof p==="object"&&p?Object.keys(p).length+" keys":JSON.stringify(p).slice(0,20);}
+    catch{return"ERR";}
+  };
+  const lrt=localStorage.getItem("lrTime");
+  const ago=lrt?Math.round((Date.now()-parseInt(lrt))/1000)+"s ago":"never";
+  const wlRaw=localStorage.getItem("wl");
+  const wlClass=wlRaw===null?"dt-val":wlRaw==="[]"?"dt-err":"dt-val";
+  const parts=[
+    `<span class="dt-key">wl:</span><span class="${wlClass}">${safeLen("wl")}</span>`,
+    `<span class="dt-key">history:</span><span class="dt-val">${safeLen("wlHistory")}</span>`,
+    `<span class="dt-key">ps:</span><span class="dt-val">${safeLen("ps")}</span>`,
+    `<span class="dt-key">pool:</span><span class="dt-val">${safeLen("mflPoolV2")}</span>`,
+    `<span class="dt-key">auth:</span><span class="dt-val">${localStorage.getItem("mflUserInfo")?"✓ set":"—"}</span>`,
+    `<span class="dt-key">refresh:</span><span class="dt-val">${ago}</span>`,
+    _dbgErr?`<span class="dt-err">⚠ ${_dbgErr}</span>`:`<span class="dt-val">✓ no JS err</span>`,
+  ];
+  el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
+}
+setInterval(_dbgUpdate,3000);
 
 // ── MFL Authentication ───────────────────────────────────────────────────────
 let mflUserInfo=localStorage.getItem("mflUserInfo")||null;
@@ -1002,7 +1046,7 @@ updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
-buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
+buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();_dbgUpdate();
 // Refresh rosters on load unless refreshed within the last 5 minutes
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>300000;
@@ -1010,5 +1054,6 @@ if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="U
 loadPlayerPool();
 </script>
 <div id="filter-panel" onclick="event.stopPropagation()"></div>
+<div id="debug-ticker"><span class="dt-val">loading…</span></div>
 </body>
 </html>
