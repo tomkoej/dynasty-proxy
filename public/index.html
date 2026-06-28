@@ -268,7 +268,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.17";
+const APP_VERSION = "1.18";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -959,7 +959,7 @@ function renderList(){
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const st=Array.isArray(s)?s:["unknown","unknown"];
     return`<span class="nwo-oval">${st.map((si,k)=>{
-      const sv=effStatus(cfg,si,nm);
+      const sv=effStatus(cfg,si);
       const bg=shouldDim(cfg,sv)?dimColor:iconColor(sv);
       return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
     }).join("")}</span>`;
