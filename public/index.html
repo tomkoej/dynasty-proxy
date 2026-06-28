@@ -241,7 +241,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.10";
+const APP_VERSION = "1.12";
 
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
@@ -440,10 +440,10 @@ async function doRefresh(){
         }
         // Fetch trade bait
         try{
-          const tbData=await mfl(cfg.server,cfg.id,"tradebait",year);
+          const tbData=await mfl("api",cfg.id,"tradebait",year);
+          leagueRosters[cfg.id]._tbRaw=JSON.stringify(tbData?.tradeBaits??"MISSING").slice(0,200);
           const tb=leagueRosters[cfg.id].tradeBait;
           // Store raw response for debugging
-          leagueRosters[cfg.id]._tbRaw=JSON.stringify(tbData?.tradeBaits??"MISSING").slice(0,200);
           toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
             if(item.franchise_id===myFranchiseId)return;
             toArr(item?.players?.player).forEach(p=>{
@@ -492,10 +492,9 @@ async function doRefresh(){
     return sum+Object.keys(rs.owners||{}).length;
   },0);
   const tbCounts=LEAGUES.map(c=>{const rs=leagueRosters[c.id];return rs?.tradeBait?.size??"-";}).join("/");
-  const tbTotal=LEAGUES.reduce((n,c)=>n+(leagueRosters[c.id]?.tradeBait?.size||0),0);
   const tbRaw=LEAGUES.map(c=>leagueRosters[c.id]?._tbRaw||"(empty)").join(" | ");
   document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-  document.getElementById("debug").textContent=`TB: ${tbCounts} | ${tbRaw.slice(0,200)}`;
+  document.getElementById("debug").textContent=`TB: ${tbCounts} | ${tbRaw.slice(0,250)}`;
   renderLeagueKey();renderList();
 }
 
@@ -852,7 +851,7 @@ csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Availabl
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
 // Refresh rosters on load unless refreshed within the last 5 minutes
-doRefresh(); // always refresh (temp: diagnosing tradebait)
+doRefresh(); // debug mode: always refresh
 loadPlayerPool();
 </script>
 <div id="filter-panel" onclick="event.stopPropagation()"></div>
