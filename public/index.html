@@ -206,6 +206,7 @@
   <div id="header-right">
     <div id="header-btns">
       <button class="hdr-btn" id="mfl-keys-btn" onclick="toggleMflKeys()">🔑 API Keys</button>
+      <button class="hdr-btn" id="refresh-btn" onclick="forceRefresh()">⟳ Refresh</button>
       <button class="hdr-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
       <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
@@ -269,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.24";
+const APP_VERSION = "1.25";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -582,6 +583,10 @@ function computePlayerStatus(name){
 }
 
 // ── Refresh ────────────────────────────────────────────────────────────────────
+function forceRefresh(){
+  localStorage.removeItem("lrTime");
+  doRefresh();
+}
 async function doRefresh(){
   const rosterErrors=[],newNames={},leagueRosters={};
 
