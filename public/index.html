@@ -240,7 +240,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.4";
+const APP_VERSION = "1.6";
 
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
@@ -839,16 +839,17 @@ function removePlayer(i){
   buildNameDropdown();buildTeamFilter();renderList();
 }
 
-if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+// timestamp set by refresh block below
 document.getElementById("app-version").textContent="v"+APP_VERSION;
 renderLeagueKey();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
-// Auto-refresh rosters if missing or stale (>1 hour)
+// Refresh rosters on load unless refreshed within the last 5 minutes
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
-if(!_lrTime||Date.now()-_lrTime>3600000){doRefresh();}
+const _stale=!_lrTime||Date.now()-_lrTime>300000;
+if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
 loadPlayerPool();
 </script>
 <div id="filter-panel" onclick="event.stopPropagation()"></div>
