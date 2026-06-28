@@ -268,7 +268,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.18";
+const APP_VERSION = "1.19";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -681,9 +681,14 @@ async function linkMFL(){
     const token=d?.userInfo?.userinfo;
     if(token){
       mflUserInfo=token;
+      mflUsername=user;
       localStorage.setItem("mflUserInfo",token);
+      localStorage.setItem("mflUsername",user);
       updateMFLBtn();
+      _dbgUpdate();
       doRefresh();
+    }else if(d?._mfl_debug){
+      alert("MFL diagnostic:\nHTTP "+d.httpStatus+"\nBody ("+d.bodyLength+" bytes): "+d.bodyPreview+"\nSet-Cookie: "+d.setCookieHeader);
     }else{
       alert("Login failed: "+(d?.error||JSON.stringify(d)));
     }
