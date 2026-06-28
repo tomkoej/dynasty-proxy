@@ -68,13 +68,13 @@
     .clear-btn { background:none; border:none; color:var(--dim); font-family:var(--font); font-size:11px; cursor:pointer; padding:0; }
     .clear-btn:hover { color:var(--text); text-decoration:underline; }
     #filter-bar { display:flex; gap:8px; flex-wrap:wrap; }
-    .cs-wrap { position:relative; flex:1; min-width:110px; }
+    .cs-wrap { position:relative; flex:0 0 auto; }
     .cs-btn {
-      width:100%; background:var(--surface); border:1px solid var(--border); color:var(--text);
-      padding:7px 10px; border-radius:6px; font-family:var(--font); font-size:13px;
-      cursor:pointer; display:flex; justify-content:space-between; align-items:center;
-      text-align:left; gap:6px; white-space:nowrap;
+      background:var(--surface); border:1px solid var(--border); color:var(--text);
+      padding:7px 12px; border-radius:6px; font-family:var(--font); font-size:13px;
+      cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap; width:100%;
     }
+    .cs-spacer { flex:1; min-width:12px; }
     .cs-btn:hover { border-color:var(--dim); }
     .cs-btn.has-val { border-color:var(--green); }
     .cs-arr { font-size:9px; color:var(--dim); flex-shrink:0; }
@@ -191,13 +191,13 @@
       <button id="clear-filters-btn" class="clear-btn" onclick="clearFilters()" style="display:none">Clear all</button>
     </div>
     <div id="filter-bar">
-      <div class="cs-wrap" id="csf-name"><button class="cs-btn" onclick="csToggle(this)">Players<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-name" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-pos"><button class="cs-btn" onclick="csToggle(this)">Position<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-pos" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-nflteam"><button class="cs-btn" onclick="csToggle(this)">NFL Team<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-nflteam" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-status"><button class="cs-btn" onclick="csToggle(this)">Status<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-status" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-format"><button class="cs-btn" onclick="csToggle(this)">Format<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-format" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-league"><button class="cs-btn" onclick="csToggle(this)">League<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-league" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-sort"><button class="cs-btn" onclick="csToggle(this)">Sort<span class="cs-arr">▾</span></button><div class="cs-list" id="csl-sort" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-name"><button class="cs-btn" onclick="csToggle(this)">Players<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-name" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-pos"><button class="cs-btn" onclick="csToggle(this)">Position<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-pos" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-nflteam"><button class="cs-btn" onclick="csToggle(this)">NFL Team<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-nflteam" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-status"><button class="cs-btn" onclick="csToggle(this)">Status<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-status" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-format"><button class="cs-btn" onclick="csToggle(this)">Format<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-format" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-league"><button class="cs-btn" onclick="csToggle(this)">League<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-league" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-sort"><button class="cs-btn" onclick="csToggle(this)">Sort<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-sort" onclick="event.stopPropagation()"></div></div>
     </div>
   </div>
 
