@@ -89,12 +89,22 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // tradeBait — TYPE is case-sensitive; auth via MFL_USER_ID cookie header
+  // tradeBait — TYPE is case-sensitive; auth via APIKEY (env var) or MFL_USER_ID cookie
   if (TYPE === "tradeBait") {
     const tbParams = new URLSearchParams({ TYPE: "tradeBait", JSON: "1" });
     if (L) tbParams.set("L", L);
+
+    // Prefer server-side env var key (set in Vercel dashboard, never in code)
+    const envKey = process.env[`MFL_APIKEY_${L}`];
     const tbHeaders = { ...headers };
-    if (rest.USERINFO) tbHeaders["Cookie"] = `MFL_USER_ID=${rest.USERINFO}`;
+    if (envKey) {
+      tbParams.set("APIKEY", envKey);
+    } else if (rest.APIKEY) {
+      tbParams.set("APIKEY", rest.APIKEY);           // fallback: key from frontend
+    } else if (rest.USERINFO) {
+      tbHeaders["Cookie"] = `MFL_USER_ID=${rest.USERINFO}`;  // fallback: login cookie
+    }
+
     const url = `https://api.myfantasyleague.com/${year}/export?${tbParams}`;
     try {
       const r = await fetch(url, { headers: tbHeaders });
