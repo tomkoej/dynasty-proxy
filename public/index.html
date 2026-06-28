@@ -182,6 +182,7 @@
       <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
     </div>
     <div id="timestamp">Not yet refreshed</div>
+    <div id="debug" style="color:var(--muted);font-size:9px;margin-top:2px;word-break:break-all;max-width:300px;"></div>
   </div>
 </div>
 
@@ -240,7 +241,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.7";
+const APP_VERSION = "1.8";
 
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
@@ -441,16 +442,17 @@ async function doRefresh(){
         try{
           const tbData=await mfl(cfg.server,cfg.id,"tradebait",year);
           const tb=leagueRosters[cfg.id].tradeBait;
+          // Store raw response for debugging
+          leagueRosters[cfg.id]._tbRaw=JSON.stringify(tbData?.tradeBaits).slice(0,200);
           toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
             if(item.franchise_id===myFranchiseId)return;
-            // MFL can return player as string, number, or object {id}
             toArr(item?.players?.player).forEach(p=>{
               const raw=typeof p==="object"?(p?.id??p?.player_id):p;
               const pid=raw!=null?String(raw):null;
               if(pid)tb.add(pid);
             });
           });
-        }catch(e){}
+        }catch(e){leagueRosters[cfg.id]._tbRaw="ERROR: "+e.message;}
         fetched=true;break;
       }catch(e){ rosterErrors.push(cfg.id+"/"+year+": "+e.message); leagueRosters[cfg.id]=null; }
     }
@@ -489,8 +491,11 @@ async function doRefresh(){
     if(rs.twoCopy)return sum+Object.keys(rs.nwoOwners||{}).length;
     return sum+Object.keys(rs.owners||{}).length;
   },0);
-  const tbTotal=Object.values(leagueRosters).reduce((n,rs)=>n+(rs?.tradeBait?.size||0),0);
-  document.getElementById("timestamp").textContent="Updated "+lastRefresh+(tbTotal?` · ${tbTotal} on trade block`:"");
+  const tbCounts=LEAGUES.map(c=>{const rs=leagueRosters[c.id];return rs?.tradeBait?.size??"-";}).join("/");
+  const tbTotal=LEAGUES.reduce((n,c)=>n+(leagueRosters[c.id]?.tradeBait?.size||0),0);
+  const tbRaw=LEAGUES.map(c=>leagueRosters[c.id]?._tbRaw||"no data").find(r=>r)||"";
+  document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+  document.getElementById("debug").textContent=`TB per league: ${tbCounts} | Raw[0]: ${tbRaw.slice(0,120)}`;
   renderLeagueKey();renderList();
 }
 
