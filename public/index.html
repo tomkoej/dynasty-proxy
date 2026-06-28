@@ -270,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.26";
+const APP_VERSION = "1.27";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -304,6 +304,7 @@ function _dbgUpdate(){
     `<span class="dt-key">ps:</span><span class="dt-val">${safeLen("ps")}</span>`,
     `<span class="dt-key">pool:</span><span class="dt-val">${safeLen("mflPoolV2")}</span>`,
     `<span class="dt-key">auth:</span><span class="dt-val">${localStorage.getItem("mflUserInfo")?"✓ set":"—"}</span>`,
+    `<span class="dt-key">apikeys:</span><span class="dt-val">${Object.keys(mflApiKeys).length}/6</span>`,
     `<span class="dt-key">refresh:</span><span class="dt-val">${ago}</span>`,
     _dbgErr?`<span class="dt-err">⚠ ${_dbgErr}</span>`:`<span class="dt-val">✓ no JS err</span>`,
     Object.keys(_tbStatus).length?`<span class="dt-key">tb:</span><span class="dt-val">${LEAGUES.map(l=>_tbStatus[l.id]!==undefined?String(_tbStatus[l.id]):"—").join("·")}</span>`:"",
