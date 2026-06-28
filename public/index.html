@@ -263,7 +263,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.16";
+const APP_VERSION = "1.17";
 
 // ── MFL Authentication ───────────────────────────────────────────────────────
 let mflUserInfo=localStorage.getItem("mflUserInfo")||null;
@@ -880,7 +880,17 @@ function renderList(){
   renderLeagueKey();
   const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
-  if(!rows.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
+  if(!rows.length){
+    if(!watchlist.length){
+      el.innerHTML=`<div style="padding:20px 0;display:flex;flex-direction:column;gap:10px;">
+        <p style="color:var(--dim);font-size:13px;">Your watchlist is empty.</p>
+        <button onclick="toggleHistory()" style="background:none;border:1px solid var(--green);color:var(--green);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;width:fit-content;">&#9733; Open History to restore a previous list</button>
+      </div>`;
+    } else {
+      el.innerHTML='<p class="no-results">No players match.</p>';
+    }
+    return;
+  }
 
   const dimColor="#374151";
   // Which league IDs are "in scope" for the current Format/League filter
