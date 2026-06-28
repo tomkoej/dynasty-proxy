@@ -138,20 +138,6 @@
     .owner-line.hl   { color:var(--text); }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
-    #mfl-auth-panel {
-      display:none; position:fixed; top:58px; right:24px; z-index:9999;
-      background:var(--surface); border:1px solid var(--border); border-radius:8px;
-      padding:16px; min-width:260px; box-shadow:0 4px 16px rgba(0,0,0,.6);
-    }
-    #mfl-auth-panel h4 { font-size:13px; font-weight:600; margin-bottom:4px; }
-    #mfl-auth-panel p  { color:var(--dim); font-size:11px; margin-bottom:12px; }
-    .auth-input {
-      width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
-      padding:7px 10px; border-radius:5px; font-family:var(--font); font-size:12px;
-      outline:none; margin-bottom:8px; display:block;
-    }
-    .auth-input:focus { border-color:var(--green); }
-    #mfl-auth-status { font-size:11px; color:var(--dim); margin-top:8px; min-height:16px; }
     .expand-toggle-label { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
     .expand-toggle-label input[type="checkbox"] { display:none; }
     .toggle-track {
@@ -191,13 +177,12 @@
   </div>
   <div id="header-right">
     <div id="header-btns">
-      <button class="hdr-btn" id="mfl-auth-btn" onclick="toggleMflAuth()">🔑 MFL</button>
       <button class="hdr-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
-      <button class="hdr-btn" id="mfl-link-btn" onclick="linkMFL()">Link MFL</button>
       <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
     </div>
     <div id="timestamp">Not yet refreshed</div>
+    <div id="debug" style="color:var(--dim);font-size:10px;margin-top:3px;word-break:break-all;max-width:340px;"></div>
   </div>
 </div>
 
@@ -256,51 +241,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.16";
-
-// ── MFL Authentication ───────────────────────────────────────────────────────
-let mflUserInfo=localStorage.getItem("mflUserInfo")||null;
-let mflUsername=localStorage.getItem("mflUsername")||null;
-
-function updateAuthBtn(){
-  const btn=document.getElementById("mfl-auth-btn");
-  if(!btn)return;
-  if(mflUserInfo){btn.textContent="✓ "+(mflUsername||"MFL");btn.style.borderColor="var(--green)";}
-  else{btn.textContent="🔑 MFL";btn.style.borderColor="";}
-}
-function toggleMflAuth(){
-  const p=document.getElementById("mfl-auth-panel");
-  p.style.display=p.style.display==="block"?"none":"block";
-  if(p.style.display==="block")document.getElementById("mfl-user").focus();
-}
-document.addEventListener("click",e=>{
-  const p=document.getElementById("mfl-auth-panel");
-  if(p&&p.style.display==="block"&&!e.target.closest("#mfl-auth-panel")&&!e.target.closest("#mfl-auth-btn"))
-    p.style.display="none";
-});
-async function doMflLogin(){
-  const user=document.getElementById("mfl-user").value.trim();
-  const pass=document.getElementById("mfl-pass").value;
-  const status=document.getElementById("mfl-auth-status");
-  if(!user||!pass){status.textContent="Enter username and password.";return;}
-  status.textContent="Connecting…";
-  try{
-    const p=new URLSearchParams({server:"api",TYPE:"login",year:"2026",USERNAME:user,PASSWORD:pass});
-    const r=await fetch("/api/mfl?"+p);
-    const d=await r.json();
-    const token=d?.userInfo?.userinfo;
-    if(token){
-      mflUserInfo=token; mflUsername=user;
-      localStorage.setItem("mflUserInfo",token); localStorage.setItem("mflUsername",user);
-      updateAuthBtn();
-      status.textContent="Connected! Refreshing data…";
-      setTimeout(()=>{document.getElementById("mfl-auth-panel").style.display="none";doRefresh();},800);
-    }else{
-      const msg=d?.userInfo?.message||d?.error||"Login failed — check credentials.";
-      status.textContent=typeof msg==="string"?msg:JSON.stringify(msg);
-    }
-  }catch(e){status.textContent="Error: "+e.message;}
-}
+const APP_VERSION = "1.14";
 
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
@@ -368,10 +309,8 @@ function renderHistory(){
 }
 
 // ── MFL API ───────────────────────────────────────────────────────────────────
-async function mfl(server,leagueId,type,year="2026",extra={}){
+async function mfl(server,leagueId,type,year="2026"){
   const p=new URLSearchParams({server,TYPE:type,year}); if(leagueId)p.set("L",leagueId);
-  Object.entries(extra).forEach(([k,v])=>p.set(k,v));
-  if(mflUserInfo&&type!=="login")p.set("USERINFO",mflUserInfo);
   const r=await fetch(`/api/mfl?${p}`); if(!r.ok)throw new Error("HTTP "+r.status);
   const d=await r.json(); if(d?.error){const em=typeof d.error==="string"?d.error:JSON.stringify(d.error);throw new Error(em);} return d;
 }
@@ -499,40 +438,24 @@ async function doRefresh(){
           });
           leagueRosters[cfg.id]={mine,other,owners,tradeBait:new Set()};
         }
-        // Fetch trade bait (requires MFL auth)
-        if(mflUserInfo){
-          try{
-            const tbData=await mfl("api",cfg.id,"tradebait",year);
-            const tb=leagueRosters[cfg.id].tradeBait;
-            toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
-              if(item.franchise_id===myFranchiseId)return;
-              toArr(item?.players?.player).forEach(p=>{
-                const raw=typeof p==="object"?(p?.id??p?.player_id):p;
-                const pid=raw!=null?String(raw):null;
-                if(pid)tb.add(pid);
-              });
+        // Fetch trade bait directly from browser (needs MFL session cookie)
+        try{
+          const tbResp=await fetch(
+            `https://api.myfantasyleague.com/${year}/export?TYPE=tradebait&L=${cfg.id}&JSON=1`,
+            {credentials:"include"}
+          );
+          const tbData=tbResp.ok?await tbResp.json():null;
+          leagueRosters[cfg.id]._tbRaw=JSON.stringify(tbData?.tradeBaits??"null").slice(0,200);
+          const tb=leagueRosters[cfg.id].tradeBait;
+          toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
+            if(item.franchise_id===myFranchiseId)return;
+            toArr(item?.players?.player).forEach(p=>{
+              const raw=typeof p==="object"?(p?.id??p?.player_id):p;
+              const pid=raw!=null?String(raw):null;
+              if(pid)tb.add(pid);
             });
-          }catch(e){
-            if(/expired|invalid|session/i.test(e.message)){
-              mflUserInfo=null;localStorage.removeItem("mflUserInfo");updateAuthBtn();
-            }
-          }
-        }
-        // Fetch trade bait using MFL USERINFO token
-        if(mflUserInfo){
-          try{
-            const tbData=await mfl("api",cfg.id,"tradebait",year,{USERINFO:mflUserInfo});
-            const tb=leagueRosters[cfg.id].tradeBait;
-            toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
-              if(item.franchise_id===myFranchiseId)return;
-              toArr(item?.players?.player).forEach(p=>{
-                const raw=typeof p==="object"?(p?.id??p?.player_id):p;
-                const pid=raw!=null?String(raw):null;
-                if(pid)tb.add(pid);
-              });
-            });
-          }catch(e){}
-        }
+          });
+        }catch(e){leagueRosters[cfg.id]._tbRaw="ERR:"+e.message;}
         fetched=true;break;
       }catch(e){ rosterErrors.push(cfg.id+"/"+year+": "+e.message); leagueRosters[cfg.id]=null; }
     }
@@ -571,6 +494,10 @@ async function doRefresh(){
     if(rs.twoCopy)return sum+Object.keys(rs.nwoOwners||{}).length;
     return sum+Object.keys(rs.owners||{}).length;
   },0);
+  const tbCounts=LEAGUES.map(c=>{const rs=leagueRosters[c.id];return rs?.tradeBait?.size??"-";}).join("/");
+  const tbRaw=LEAGUES.map(c=>leagueRosters[c.id]?._tbRaw||"(empty)").join(" | ");
+  document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+  document.getElementById("debug").textContent=`TB: ${tbCounts} | ${tbRaw.slice(0,250)}`;
   renderLeagueKey();renderList();
 }
 
@@ -593,42 +520,6 @@ function clearFilters(){
   buildLeagueFilter();
   document.getElementById("clear-filters-btn").style.display="none";
   renderList();
-}
-
-// ── MFL Auth ──────────────────────────────────────────────────────────────────
-let mflUserInfo=localStorage.getItem("mflUserInfo")||"";
-async function linkMFL(){
-  const user=prompt("MFL Username:");
-  if(!user)return;
-  const pass=prompt("MFL Password:");
-  if(!pass)return;
-  try{
-    const r=await fetch(`/api/mfl?server=api&TYPE=login&year=2026&USERNAME=${encodeURIComponent(user)}&PASSWORD=${encodeURIComponent(pass)}`);
-    const d=await r.json();
-    const token=d?.userInfo?.userinfo;
-    if(token){
-      mflUserInfo=token;
-      localStorage.setItem("mflUserInfo",token);
-      updateMFLBtn();
-      doRefresh();
-    }else{
-      alert("Login failed: "+(d?.error||JSON.stringify(d)));
-    }
-  }catch(e){alert("Error: "+e.message);}
-}
-function unlinkMFL(){
-  mflUserInfo="";
-  localStorage.removeItem("mflUserInfo");
-  updateMFLBtn();
-  renderList();
-}
-function updateMFLBtn(){
-  const btn=document.getElementById("mfl-link-btn");
-  if(!btn)return;
-  btn.textContent=mflUserInfo?"✓ MFL Linked":"Link MFL";
-  btn.style.borderColor=mflUserInfo?"var(--green)":"var(--border)";
-  btn.title=mflUserInfo?"Click to unlink MFL account":"Link MFL account for Trade Block data";
-  btn.onclick=mflUserInfo?unlinkMFL:linkMFL;
 }
 
 function renderLeagueKey(){
@@ -860,15 +751,15 @@ function renderList(){
     if(fv.format.size>0)return new Set(LEAGUES.filter(c=>fv.format.has(c.label)).map(c=>c.id));
     return null; // all in scope
   })();
-  const effStatus=(cfg,s)=>{return typeof s==="string"?s:"unknown";};
-  const shouldDim=(cfg,sv)=>{
-    if(fv.status.size>0&&!fv.status.has(sv))return true;
-    if(scopeIds!==null&&!scopeIds.has(cfg.id))return true;
+  const shouldDim=(cfg,s)=>{
+    const sv=typeof s==="string"?s:"unknown";
+    if(fv.status.size>0&&!fv.status.has(sv))return true;   // status mismatch
+    if(scopeIds!==null&&!scopeIds.has(cfg.id))return true;  // out of scope league/format
     return false;
   };
   const makeIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
-    const sv=effStatus(cfg,s);
+    const sv=typeof s==="string"?s:"unknown";
     const bg=shouldDim(cfg,sv)?dimColor:iconColor(sv);
     return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
   };
@@ -876,9 +767,8 @@ function renderList(){
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const st=Array.isArray(s)?s:["unknown","unknown"];
     return`<span class="nwo-oval">${st.map((si,k)=>{
-      const sv=effStatus(cfg,si,nm);
-      const bg=shouldDim(cfg,sv)?dimColor:iconColor(sv);
-      return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
+      const bg=shouldDim(cfg,si)?dimColor:iconColor(si);
+      return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(si)}">${num}</span>`;
     }).join("")}</span>`;
   };
 
@@ -959,15 +849,12 @@ function removePlayer(i){
 // timestamp set by refresh block below
 document.getElementById("app-version").textContent="v"+APP_VERSION;
 renderLeagueKey();
-updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
 // Refresh rosters on load unless refreshed within the last 5 minutes
-const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
-const _stale=!_lrTime||Date.now()-_lrTime>300000;
-if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
+doRefresh(); // debug mode: always refresh
 loadPlayerPool();
 </script>
 <div id="filter-panel" onclick="event.stopPropagation()"></div>
