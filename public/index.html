@@ -269,7 +269,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.22";
+const APP_VERSION = "1.23";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -342,7 +342,12 @@ const MY_TEAM_MATCH = {
 const norm    = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
 const clone   = v => JSON.parse(JSON.stringify(v));
 const toArr   = v => Array.isArray(v)?v:(v&&typeof v==="object"?[v]:[]);
-const sortKey = n => n.replace(/^(a |an |the )/i,"").toLowerCase();
+const sortKey = n => {
+  const w = (n||"").trim().split(/\s+/);
+  const sfx = /^(jr\.?|sr\.?|ii|iii|iv|v)$/i;
+  const last = [...w].reverse().find(p => !sfx.test(p)) || w[0];
+  return (last + " " + n).toLowerCase();
+};
 function stripHtml(s){ return (s||"").replace(/<[^>]*>/g,""); }
 
 // ── DEFAULT_WATCHLIST (29 dynasty targets) ─────────────────────────────────────
