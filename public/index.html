@@ -138,13 +138,6 @@
     .owner-line.hl   { color:var(--text); }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
-    #mfl-auth-panel {
-      display:none; position:fixed; top:58px; right:24px; z-index:9999;
-      background:var(--surface); border:1px solid var(--border); border-radius:8px;
-      padding:16px; min-width:260px; box-shadow:0 4px 16px rgba(0,0,0,.6);
-    }
-    #mfl-auth-panel h4 { font-size:13px; font-weight:600; margin-bottom:4px; }
-    #mfl-auth-panel p  { color:var(--dim); font-size:11px; margin-bottom:12px; }
     .auth-input {
       width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
       padding:7px 10px; border-radius:5px; font-family:var(--font); font-size:12px;
@@ -191,6 +184,15 @@
     #debug-ticker .dt-key { color:#374151; margin-right:3px; }
     #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
     #debug-ticker .dt-sep { color:#2a3040; }
+
+    #mfl-keys-panel { display:none; position:fixed; top:58px; right:24px; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; min-width:320px; box-shadow:0 4px 16px rgba(0,0,0,.6); }
+    #mfl-keys-panel h4 { font-size:12px; color:var(--dim); margin-bottom:12px; letter-spacing:.05em; }
+    #mfl-keys-panel .keys-instructions { font-size:11px; color:var(--dim); margin-bottom:12px; line-height:1.5; }
+    .keys-row { display:flex; flex-direction:column; gap:3px; margin-bottom:10px; }
+    .keys-label { font-size:11px; color:var(--dim); }
+    .keys-input { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:5px 8px; border-radius:4px; font-family:var(--font); font-size:11px; width:100%; }
+    .keys-input:focus { outline:none; border-color:var(--green); }
+    #mfl-keys-panel .keys-save { background:var(--green); color:#fff; border:none; padding:7px 16px; border-radius:5px; font-family:var(--font); font-size:12px; cursor:pointer; width:100%; margin-top:4px; }
   </style>
 </head>
 <body>
@@ -203,10 +205,9 @@
   </div>
   <div id="header-right">
     <div id="header-btns">
-      <button class="hdr-btn" id="mfl-auth-btn" onclick="toggleMflAuth()">🔑 MFL</button>
+      <button class="hdr-btn" id="mfl-keys-btn" onclick="toggleMflKeys()">🔑 API Keys</button>
       <button class="hdr-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
-      <button class="hdr-btn" id="mfl-link-btn" onclick="linkMFL()">Link MFL</button>
       <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
     </div>
     <div id="timestamp">Not yet refreshed</div>
@@ -268,7 +269,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.19";
+const APP_VERSION = "1.20";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -309,93 +310,42 @@ function _dbgUpdate(){
 }
 setInterval(_dbgUpdate,3000);
 
-// ── MFL Authentication ───────────────────────────────────────────────────────
-let mflUserInfo=localStorage.getItem("mflUserInfo")||null;
-let mflUsername=localStorage.getItem("mflUsername")||null;
+// ── MFL API Keys ─────────────────────────────────────────────────────────────
+let mflApiKeys=JSON.parse(localStorage.getItem("mflApiKeys")||"{}");
 
-function updateAuthBtn(){
-  const btn=document.getElementById("mfl-auth-btn");
-  if(!btn)return;
-  if(mflUserInfo){btn.textContent="✓ "+(mflUsername||"MFL");btn.style.borderColor="var(--green)";}
-  else{btn.textContent="🔑 MFL";btn.style.borderColor="";}
-}
-function toggleMflAuth(){
-  const p=document.getElementById("mfl-auth-panel");
+function toggleMflKeys(){
+  const p=document.getElementById("mfl-keys-panel");
+  if(!p)return;
   p.style.display=p.style.display==="block"?"none":"block";
-  if(p.style.display==="block")document.getElementById("mfl-user").focus();
+  if(p.style.display==="block") buildKeysPanel();
 }
 document.addEventListener("click",e=>{
-  const p=document.getElementById("mfl-auth-panel");
-  if(p&&p.style.display==="block"&&!e.target.closest("#mfl-auth-panel")&&!e.target.closest("#mfl-auth-btn"))
+  const p=document.getElementById("mfl-keys-panel");
+  if(p&&p.style.display==="block"&&!e.target.closest("#mfl-keys-panel")&&!e.target.closest("#mfl-keys-btn"))
     p.style.display="none";
 });
-async function doMflLogin(){
-  const user=document.getElementById("mfl-user").value.trim();
-  const pass=document.getElementById("mfl-pass").value;
-  const status=document.getElementById("mfl-auth-status");
-  if(!user||!pass){status.textContent="Enter username and password.";return;}
-  status.textContent="Connecting…";
-  try{
-    const p=new URLSearchParams({server:"api",TYPE:"login",year:"2026",USERNAME:user,PASSWORD:pass});
-    const r=await fetch("/api/mfl?"+p);
-    const d=await r.json();
-    const token=d?.userInfo?.userinfo;
-    if(token){
-      mflUserInfo=token; mflUsername=user;
-      localStorage.setItem("mflUserInfo",token); localStorage.setItem("mflUsername",user);
-      updateAuthBtn();
-      status.textContent="Connected! Refreshing data…";
-      setTimeout(()=>{document.getElementById("mfl-auth-panel").style.display="none";doRefresh();},800);
-    }else{
-      const msg=d?.userInfo?.message||d?.error||"Login failed — check credentials.";
-      status.textContent=typeof msg==="string"?msg:JSON.stringify(msg);
-    }
-  }catch(e){status.textContent="Error: "+e.message;}
+function buildKeysPanel(){
+  const body=document.getElementById("mfl-keys-body");
+  if(!body)return;
+  body.innerHTML=LEAGUES.map((c,i)=>{
+    const saved=mflApiKeys[c.id]||"";
+    return`<div class="keys-row">
+      <span class="keys-label">[${i+1}] ${MY_TEAM_NAMES[c.id]||"League "+(i+1)}</span>
+      <input class="keys-input" id="apikey-${c.id}" type="text" value="${saved}" placeholder="Paste APIKEY…" spellcheck="false"/>
+    </div>`;
+  }).join("");
 }
-
-const LEAGUES = [
-  { server:"www42", id:"71526",               label:"SF"     },
-  { server:"www47", id:"13133",               label:"SF"     },
-  { server:"www47", id:"52453",               label:"SF/TE+" },
-  { server:"www48", id:"68291",               label:"SF/TE+" },
-  { server:"www47", id:"69382",               label:"SF/TE+" },
-  { server:"www47", id:"64818", twoCopy:true, label:"SF/TE+" },
-];
-const MY_TEAM_NAMES = {
-  "71526":"QC at the Kratom Factory","13133":"Mediocre Morsov",
-  "52453":"Cleon LIX","68291":"The Undertaker","69382":"Shotgun Shai-Hulud",
-  "64818":"The Undertaker (nWo)",
-};
-const MY_TEAM_MATCH = { "64818":"The Undertaker" };
-const DEFAULT_WATCHLIST = [
-  {name:"Brandon Aiyuk",pos:"WR"},{name:"Erick All",pos:"TE"},{name:"Cyrus Allen",pos:"WR"},
-  {name:"LeQuint Allen",pos:"RB"},{name:"Tyson Bagent",pos:"QB"},{name:"Malik Benson",pos:"WR"},
-  {name:"Nate Boerkircher",pos:"TE"},{name:"Isaiah Bond",pos:"WR"},{name:"Deion Burks",pos:"WR"},
-  {name:"Keon Coleman",pos:"WR"},{name:"Mitchell Evans",pos:"TE"},{name:"Ryan Flournoy",pos:"WR"},
-  {name:"Theo Johnson",pos:"TE"},{name:"Cole Kmet",pos:"TE"},{name:"Charlie Kolar",pos:"TE"},
-  {name:"Bryce Lance",pos:"WR"},{name:"Kendre Miller",pos:"RB"},{name:"Jalen Milroe",pos:"QB"},
-  {name:"Joe Mixon",pos:"RB"},{name:"Tyren Montgomery",pos:"WR"},{name:"Devin Neal",pos:"RB"},
-  {name:"Garrett Nussmeier",pos:"QB"},{name:"Adam Randall",pos:"RB"},{name:"Ja'Tavion Sanders",pos:"TE"},
-  {name:"Brenen Thompson",pos:"WR"},{name:"Cedric Tillman",pos:"WR"},{name:"Darnell Washington",pos:"TE"},
-  {name:"Deshaun Watson",pos:"QB"},{name:"Jordan Whittington",pos:"WR"},
-];
-
-let watchlist    = JSON.parse(localStorage.getItem("wl")||"null") || DEFAULT_WATCHLIST;
-let playerStatus = JSON.parse(localStorage.getItem("ps")||"{}");
-let leagueNames  = JSON.parse(localStorage.getItem("ln")||"{}");
-let lastRefresh  = localStorage.getItem("lr")||null;
-let mflPlayers   = [];
-let nameToId     = {};
-let undoStack=[], redoStack=[];
-let history = JSON.parse(localStorage.getItem("wlHistory")||"[]");
-
-const norm     = s=>(s||"").toLowerCase().replace(/[^a-z]/g,"");
-const flipName = n=>{ const p=(n||"").trim().split(" "); return p.length<2?n:`${p[p.length-1]}, ${p.slice(0,-1).join(" ")}`; };
-const sortKey  = n=>flipName(n).toLowerCase();
-const toArr    = v=>!v?[]:Array.isArray(v)?v:[v];
-const clone    = o=>JSON.parse(JSON.stringify(o));
-const trunc    = (s,n=9)=>!s?"":s.length<=n?s:s.slice(0,n-1)+"…";
-const stripHtml = s=>(s||"").replace(/<[^>]*>/g,"").trim();
+function saveMflKeys(){
+  LEAGUES.forEach(c=>{
+    const el=document.getElementById("apikey-"+c.id);
+    if(!el)return;
+    const v=el.value.trim();
+    if(v) mflApiKeys[c.id]=v; else delete mflApiKeys[c.id];
+  });
+  localStorage.setItem("mflApiKeys",JSON.stringify(mflApiKeys));
+  document.getElementById("mfl-keys-panel").style.display="none";
+  _dbgUpdate();
+}
 
 function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":s==="tradeblock"?"#d97706":"#374151";}
 function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":s==="tradeblock"?"Trade Block":"Unknown";}
@@ -445,7 +395,6 @@ function renderHistory(){
 async function mfl(server,leagueId,type,year="2026",extra={}){
   const p=new URLSearchParams({server,TYPE:type,year}); if(leagueId)p.set("L",leagueId);
   Object.entries(extra).forEach(([k,v])=>p.set(k,v));
-  if(mflUserInfo&&type!=="login")p.set("USERINFO",mflUserInfo);
   const r=await fetch(`/api/mfl?${p}`); if(!r.ok)throw new Error("HTTP "+r.status);
   const d=await r.json(); if(d?.error){const em=typeof d.error==="string"?d.error:JSON.stringify(d.error);throw new Error(em);} return d;
 }
@@ -497,6 +446,16 @@ function addFromPool(name,pos){
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
   saveHistory("Added "+name);
   document.getElementById("add-search").value=""; document.getElementById("add-results").style.display="none";
+  buildNameDropdown();buildTeamFilter();renderList();
+}
+
+
+function resetToDefaults(){
+  if(!confirm("Reset watchlist to the 29 default players?"))return;
+  recordChange();
+  watchlist=clone(DEFAULT_WATCHLIST);
+  localStorage.setItem("wl",JSON.stringify(watchlist));
+  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");
   buildNameDropdown();buildTeamFilter();renderList();
 }
 
@@ -595,7 +554,7 @@ async function doRefresh(){
         // Fetch trade bait using MFL USERINFO token
         if(mflUserInfo){
           try{
-            const tbData=await mfl("api",cfg.id,"tradeBait",year,{USERINFO:mflUserInfo});
+            const tbData=await mfl(cfg.server,cfg.id,"tradeBait",year, mflApiKeys[cfg.id]?{APIKEY:mflApiKeys[cfg.id]}:{});
             const tb=leagueRosters[cfg.id].tradeBait;
             toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
               if(item.franchise_id===myFranchiseId)return;
@@ -669,46 +628,7 @@ function clearFilters(){
   renderList();
 }
 
-// ── MFL Auth (link/unlink) ────────────────────────────────────────────────────
-async function linkMFL(){
-  const user=prompt("MFL Username:");
-  if(!user)return;
-  const pass=prompt("MFL Password:");
-  if(!pass)return;
-  try{
-    const r=await fetch(`/api/mfl?server=api&TYPE=login&year=2026&USERNAME=${encodeURIComponent(user)}&PASSWORD=${encodeURIComponent(pass)}`);
-    const d=await r.json();
-    const token=d?.userInfo?.userinfo;
-    if(token){
-      mflUserInfo=token;
-      mflUsername=user;
-      localStorage.setItem("mflUserInfo",token);
-      localStorage.setItem("mflUsername",user);
-      updateMFLBtn();
-      _dbgUpdate();
-      doRefresh();
-    }else if(d?._mfl_debug){
-      alert("MFL diagnostic:\nHTTP "+d.httpStatus+"\nBody ("+d.bodyLength+" bytes): "+d.bodyPreview+"\nSet-Cookie: "+d.setCookieHeader);
-    }else{
-      alert("Login failed: "+(d?.error||JSON.stringify(d)));
-    }
-  }catch(e){alert("Error: "+e.message);}
-}
-function unlinkMFL(){
-  mflUserInfo="";
-  localStorage.removeItem("mflUserInfo");
-  updateMFLBtn();
-  renderList();
-}
-function updateMFLBtn(){
-  const btn=document.getElementById("mfl-link-btn");
-  if(!btn)return;
-  btn.textContent=mflUserInfo?"✓ MFL Linked":"Link MFL";
-  btn.style.borderColor=mflUserInfo?"var(--green)":"var(--border)";
-  btn.title=mflUserInfo?"Click to unlink MFL account":"Link MFL account for Trade Block data";
-  btn.onclick=mflUserInfo?unlinkMFL:linkMFL;
-}
-
+// ── Render helpers ──────────────────────────────────────────────────────────
 function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>{
@@ -932,8 +852,11 @@ function renderList(){
   if(!rows.length){
     if(!watchlist.length){
       el.innerHTML=`<div style="padding:20px 0;display:flex;flex-direction:column;gap:10px;">
-        <p style="color:var(--dim);font-size:13px;">Your watchlist is empty.</p>
-        <button onclick="toggleHistory()" style="background:none;border:1px solid var(--green);color:var(--green);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;width:fit-content;">&#9733; Open History to restore a previous list</button>
+        <p style="color:var(--dim);font-size:13px;">Your watchlist is empty — history has no saved snapshots.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="toggleHistory()" style="background:none;border:1px solid var(--border);color:var(--dim);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#9733; Open History</button>
+          <button onclick="resetToDefaults()" style="background:none;border:1px solid var(--blue);color:var(--blue);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#8635; Reset to default (29 players)</button>
+        </div>
       </div>`;
     } else {
       el.innerHTML='<p class="no-results">No players match.</p>';
@@ -1059,6 +982,12 @@ if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="U
 loadPlayerPool();
 </script>
 <div id="filter-panel" onclick="event.stopPropagation()"></div>
+<div id="mfl-keys-panel">
+  <h4>MFL API KEYS</h4>
+  <p class="keys-instructions">Find each key: log into your league on MFL → Help → Developer's API</p>
+  <div id="mfl-keys-body"></div>
+  <button class="keys-save" onclick="saveMflKeys()">Save Keys</button>
+</div>
 <div id="debug-ticker"><span class="dt-val">loading…</span></div>
 </body>
 </html>
