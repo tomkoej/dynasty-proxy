@@ -277,7 +277,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.40";
+const APP_VERSION = "1.41";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -400,11 +400,11 @@ function manualRefresh(){
   const elapsed=Date.now()-lrt;
   const warn=document.getElementById("refresh-warning");
   if(lrt&&elapsed<300000){
-    const remaining=Math.ceil((300000-elapsed)/60000);
-    warn.textContent="⚠ Refreshed "+Math.round(elapsed/1000)+"s ago — wait "+remaining+" more min to stay within MFL guidelines";
-    return;
+    const mins=Math.round(elapsed/60000);
+    warn.textContent="⚠ Last refresh was "+(mins<1?Math.round(elapsed/1000)+"s":"~"+mins+"min")+" ago — frequent refreshes may violate MFL guidelines";
+  }else{
+    warn.textContent="";
   }
-  warn.textContent="";
   localStorage.removeItem("lrTime");
   doRefresh();
 }
