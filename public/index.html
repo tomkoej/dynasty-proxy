@@ -134,7 +134,7 @@
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
-    #list-controls { padding:4px 0 10px; display:flex; align-items:center; }
+    #list-controls { padding:6px 0 2px; display:flex; align-items:center; }
     .expand-toggle-label { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
     .expand-toggle-label input[type="checkbox"] { display:none; }
     .toggle-track {
@@ -224,17 +224,17 @@
   </div>
 
   <div id="league-key"></div>
+  <div id="list-controls">
+    <label class="expand-toggle-label">
+      <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      <span class="toggle-text">Expand all</span>
+    </label>
+  </div>
 </div>
 </div>
 <div id="scroll-list">
   <div id="list-inner">
-    <div id="list-controls">
-      <label class="expand-toggle-label">
-        <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
-        <span class="toggle-track"><span class="toggle-thumb"></span></span>
-        <span class="toggle-text">Expand all</span>
-      </label>
-    </div>
     <div id="player-list"></div>
   </div>
 </div>
