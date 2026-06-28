@@ -241,7 +241,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.13";
+const APP_VERSION = "1.14";
 
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
@@ -438,12 +438,15 @@ async function doRefresh(){
           });
           leagueRosters[cfg.id]={mine,other,owners,tradeBait:new Set()};
         }
-        // Fetch trade bait
+        // Fetch trade bait directly from browser (needs MFL session cookie)
         try{
-          const tbData=await mfl(cfg.server,cfg.id,"tradebait",year);
-          leagueRosters[cfg.id]._tbRaw=tbData?._debug?tbData._debug.join(" || ").slice(0,300):JSON.stringify(tbData?.tradeBaits??"MISSING").slice(0,200);
+          const tbResp=await fetch(
+            `https://api.myfantasyleague.com/${year}/export?TYPE=tradebait&L=${cfg.id}&JSON=1`,
+            {credentials:"include"}
+          );
+          const tbData=tbResp.ok?await tbResp.json():null;
+          leagueRosters[cfg.id]._tbRaw=JSON.stringify(tbData?.tradeBaits??"null").slice(0,200);
           const tb=leagueRosters[cfg.id].tradeBait;
-          // Store raw response for debugging
           toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
             if(item.franchise_id===myFranchiseId)return;
             toArr(item?.players?.player).forEach(p=>{
