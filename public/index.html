@@ -37,6 +37,7 @@
     .hdr-btn:hover:not(:disabled) { border-color:var(--green); }
     .hdr-btn:disabled { opacity:.4; cursor:default; }
     #timestamp { color:#fff; font-size:11px; }
+    #version-label { color:var(--muted); font-size:10px; margin-top:2px; }
     #debug     { color:var(--muted); font-size:10px; }
 
     #main { max-width:680px; margin:0 auto; padding:20px 24px 0; }
@@ -149,7 +150,7 @@
       border-radius:50%; background:#fff; transition:transform .2s;
     }
     .expand-toggle-label input:checked ~ .toggle-track .toggle-thumb { transform:translateX(13px); }
-    .toggle-text { color:var(--dim); font-size:11px; font-family:var(--font); min-width:3.8em; display:inline-block; }
+    .toggle-text { color:var(--dim); font-size:11px; font-family:var(--font); }
 
     #history-panel {
       background:var(--surface); border:1px solid var(--border);
@@ -173,6 +174,7 @@
   <div>
     <h1>🏈 <span>Dynasty</span> Watchlist</h1>
     <p id="subtitle">—</p>
+    <p id="version-label">v<span id="app-version"></span></p>
   </div>
   <div id="header-right">
     <div id="header-btns">
@@ -223,8 +225,8 @@
     <div class="legend-item"><span class="rookie-badge">R</span><span class="legend-label">Rookie</span></div>
     <label class="expand-toggle-label" style="margin-left:auto">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
-      <span class="toggle-track"><span class="toggle-thumb"></span></span>
       <span class="toggle-text">Expand</span>
+      <span class="toggle-track"><span class="toggle-thumb"></span></span>
     </label>
   </div>
 
@@ -239,6 +241,8 @@
 </div>
 
 <script>
+const APP_VERSION = "1.0";
+
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
   { server:"www47", id:"13133",               label:"SF"     },
@@ -817,6 +821,7 @@ function removePlayer(i){
 }
 
 if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+document.getElementById("app-version").textContent=APP_VERSION;
 renderLeagueKey();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"taken",label:"Rostered"},{val:"unknown",label:"Unknown"}]);
