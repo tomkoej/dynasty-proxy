@@ -270,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.32";
+const APP_VERSION = "1.33";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -998,7 +998,12 @@ function renderList(){
     const lineFor=(cfg)=>{
       const num=LEAGUES.indexOf(cfg)+1;
       const numStr=String(num);
-      const hl=fv.league.size>0?fv.league.has(numStr):fv.format.size>0?fv.format.has(cfg.label):false;
+      const leagueSv=status[cfg.id];
+      const isTb=Array.isArray(leagueSv)?leagueSv.includes("tradeblock"):leagueSv==="tradeblock";
+      const hl=fv.league.size>0?fv.league.has(numStr)
+        :fv.format.size>0?fv.format.has(cfg.label)
+        :fv.status.size>0&&fv.status.has("tradeblock")?isTb
+        :false;
       const cls="owner-line"+(hl?" hl":"");
       if(cfg.twoCopy){
         const st=Array.isArray(status[cfg.id])?status[cfg.id]:["unknown","unknown"];
