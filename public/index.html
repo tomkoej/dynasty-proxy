@@ -224,7 +224,7 @@
     <label class="expand-toggle-label" style="margin-left:auto">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
       <span class="toggle-track"><span class="toggle-thumb"></span></span>
-      <span class="toggle-text">Expand all</span>
+      <span class="toggle-text">Expand</span>
     </label>
   </div>
 
@@ -669,15 +669,20 @@ function applyExpandAll(){
   document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.add("open"));
   const chk=document.getElementById("expand-all-toggle");
   if(chk)chk.checked=true;
+  const lbl=document.querySelector(".expand-toggle-label .toggle-text");
+  if(lbl)lbl.textContent="Collapse";
 }
 function toggleAllOwners(){
   const chk=document.getElementById("expand-all-toggle");
   allExpanded=chk?chk.checked:!allExpanded;
+  const lbl=document.querySelector(".expand-toggle-label .toggle-text");
   if(allExpanded){
     applyExpandAll();
+    if(lbl)lbl.textContent="Collapse";
   }else{
     document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");
     document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));
+    if(lbl)lbl.textContent="Expand";
   }
 }
 
