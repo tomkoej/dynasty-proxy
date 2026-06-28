@@ -269,7 +269,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.21";
+const APP_VERSION = "1.22";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -327,6 +327,81 @@ const MY_TEAM_NAMES = {
   "69382": "Shotgun Shai-Hulud",
   "64818": "The Undertaker (nWo)",
 };
+
+// ── MY_TEAM_MATCH (exact franchise name inside each league — edit if different) ─
+const MY_TEAM_MATCH = {
+  "71526": "QC at the Kratom Factory",
+  "13133": "Mediocre Morsov",
+  "52453": "Cleon LIX",
+  "68291": "The Undertaker",
+  "69382": "Shotgun Shai-Hulud",
+  "64818": "The Undertaker (nWo)",
+};
+
+// ── Utility functions ──────────────────────────────────────────────────────────
+const norm    = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
+const clone   = v => JSON.parse(JSON.stringify(v));
+const toArr   = v => Array.isArray(v)?v:(v&&typeof v==="object"?[v]:[]);
+const sortKey = n => n.replace(/^(a |an |the )/i,"").toLowerCase();
+function stripHtml(s){ return (s||"").replace(/<[^>]*>/g,""); }
+
+// ── DEFAULT_WATCHLIST (29 dynasty targets) ─────────────────────────────────────
+const DEFAULT_WATCHLIST=[
+  {name:"Caleb Williams",pos:"QB"},{name:"Jayden Daniels",pos:"QB"},
+  {name:"CJ Stroud",pos:"QB"},{name:"Anthony Richardson",pos:"QB"},
+  {name:"Bijan Robinson",pos:"RB"},{name:"Breece Hall",pos:"RB"},
+  {name:"Jahmyr Gibbs",pos:"RB"},{name:"Jonathon Brooks",pos:"RB"},
+  {name:"Ashton Jeanty",pos:"RB"},
+  {name:"Marvin Harrison Jr.",pos:"WR"},{name:"Malik Nabers",pos:"WR"},
+  {name:"Brian Thomas Jr.",pos:"WR"},{name:"Rome Odunze",pos:"WR"},
+  {name:"Puka Nacua",pos:"WR"},{name:"Rashee Rice",pos:"WR"},
+  {name:"Jaxon Smith-Njigba",pos:"WR"},{name:"Keon Coleman",pos:"WR"},
+  {name:"Emeka Egbuka",pos:"WR"},{name:"Tetairoa McMillan",pos:"WR"},
+  {name:"Luther Burden III",pos:"WR"},{name:"Ja'Lynn Polk",pos:"WR"},
+  {name:"Ladd McConkey",pos:"WR"},{name:"Xavier Worthy",pos:"WR"},
+  {name:"Adonai Mitchell",pos:"WR"},
+  {name:"Brock Bowers",pos:"TE"},{name:"Trey McBride",pos:"TE"},
+  {name:"Sam LaPorta",pos:"TE"},{name:"Tucker Kraft",pos:"TE"},
+  {name:"Cade Otton",pos:"TE"}
+];
+
+// ── State ──────────────────────────────────────────────────────────────────────
+let mflUserInfo  = localStorage.getItem("mflUserInfo") || null;
+let mflUsername  = localStorage.getItem("mflUsername") || null;
+let watchlist    = JSON.parse(localStorage.getItem("wl")||"null") || DEFAULT_WATCHLIST;
+let playerStatus = JSON.parse(localStorage.getItem("ps")||"{}");
+let leagueNames  = JSON.parse(localStorage.getItem("ln")||"{}");
+let lastRefresh  = localStorage.getItem("lr") || "Never";
+let undoStack    = [], redoStack = [];
+let history      = JSON.parse(localStorage.getItem("wlHistory")||"[]");
+let mflPlayers   = [];
+const nameToId   = {};
+
+// ── MFL Auth ───────────────────────────────────────────────────────────────────
+function updateMFLBtn(){ _dbgUpdate(); } // state shown in debug ticker
+async function linkMFL(){
+  const user=prompt("MFL Username:"); if(!user)return;
+  const pass=prompt("MFL Password:"); if(!pass)return;
+  try{
+    const r=await fetch(`/api/mfl?server=api&TYPE=login&year=2026&USERNAME=${encodeURIComponent(user)}&PASSWORD=${encodeURIComponent(pass)}`);
+    const d=await r.json();
+    const token=d?.userInfo?.userinfo;
+    if(token){
+      mflUserInfo=token; mflUsername=user;
+      localStorage.setItem("mflUserInfo",token); localStorage.setItem("mflUsername",user);
+      _dbgUpdate(); alert("MFL linked — refreshing rosters…"); doRefresh();
+    }else{
+      const msg=d?.error||JSON.stringify(d);
+      const dbg=d?._debug?("\n\nDebug: "+d._debug.httpStatus+" — "+d._debug.body):"";
+      alert("Login failed: "+msg+dbg);
+    }
+  }catch(e){alert("Error: "+e.message);}
+}
+function unlinkMFL(){
+  mflUserInfo=null; mflUsername=null;
+  localStorage.removeItem("mflUserInfo"); localStorage.removeItem("mflUsername");
+  _dbgUpdate();
+}
 
 // ── MFL API Keys ─────────────────────────────────────────────────────────────
 let mflApiKeys=JSON.parse(localStorage.getItem("mflApiKeys")||"{}");
@@ -565,7 +640,7 @@ async function doRefresh(){
             });
           }catch(e){
             if(/expired|invalid|session/i.test(e.message)){
-              mflUserInfo=null;localStorage.removeItem("mflUserInfo");updateAuthBtn();
+              mflUserInfo=null;localStorage.removeItem("mflUserInfo");updateMFLBtn();
             }
           }
         }
