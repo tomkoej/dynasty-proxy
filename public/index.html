@@ -595,8 +595,7 @@ function clearFilters(){
   renderList();
 }
 
-// ── MFL Auth ──────────────────────────────────────────────────────────────────
-let mflUserInfo=localStorage.getItem("mflUserInfo")||"";
+// ── MFL Auth (link/unlink) ────────────────────────────────────────────────────
 async function linkMFL(){
   const user=prompt("MFL Username:");
   if(!user)return;
