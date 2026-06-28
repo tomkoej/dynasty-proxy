@@ -182,9 +182,9 @@
     .history-empty { color:var(--dim); font-size:13px; }
     #debug-ticker { position:fixed; bottom:0; left:0; right:0; z-index:9998; background:#0d1117; border-top:1px solid #2a3040; padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
     #debug-ticker .dt-val { color:#6b7280; }
-    #debug-ticker .dt-key { color:#374151; margin-right:3px; }
+    #debug-ticker .dt-key { color:var(--dim); margin-right:3px; }
     #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
-    #debug-ticker .dt-sep { color:#2a3040; }
+    #debug-ticker .dt-sep { color:var(--muted); }
 
     #mfl-keys-panel { display:none; position:fixed; top:58px; right:24px; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; min-width:320px; box-shadow:0 4px 16px rgba(0,0,0,.6); }
     #mfl-keys-panel h4 { font-size:12px; color:var(--dim); margin-bottom:12px; letter-spacing:.05em; }
@@ -201,7 +201,7 @@
 <div id="frozen-top">
 <div id="header">
   <div>
-    <h1>🏈 <span>Dynasty</span> Watchlist <span id="app-version" style="color:var(--muted);font-size:12px;font-weight:400;letter-spacing:.02em;"></span></h1>
+    <h1>🏈 <span>Dynasty</span> Watchlist <span id="app-version" style="color:var(--dim);font-size:12px;font-weight:400;letter-spacing:.02em;"></span></h1>
     <p id="subtitle">—</p>
   </div>
   <div id="header-right">
@@ -270,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.38";
+const APP_VERSION = "1.39";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
