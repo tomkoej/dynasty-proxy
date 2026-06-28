@@ -171,13 +171,20 @@
       border-radius:8px; padding:14px; margin-bottom:20px; display:none;
     }
     #history-panel h3 { font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text); }
-    .history-entry { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--muted); gap:10px; }
+    .history-entry { display:flex; flex-direction:column; padding:8px 0; border-bottom:1px solid var(--muted); }
     .history-entry:last-child { border-bottom:none; }
-    .history-meta { display:flex; flex-direction:column; gap:2px; }
+    .history-entry.best-restore { border-left:2px solid var(--green); padding-left:8px; margin-left:-10px; }
+    .history-best-badge { font-size:10px; color:var(--green); font-weight:600; margin-bottom:3px; letter-spacing:.04em; }
+    .history-entry-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .history-meta { display:flex; flex-direction:column; gap:2px; flex:1; min-width:0; }
     .history-time { color:var(--dim); font-size:11px; }
     .history-desc { color:var(--text); font-size:13px; }
+    .history-actions { display:flex; gap:5px; flex-shrink:0; align-items:center; }
+    .expand-btn { background:none; border:1px solid var(--border); color:var(--dim); padding:3px 7px; border-radius:4px; font-family:var(--font); font-size:11px; cursor:pointer; white-space:nowrap; }
+    .expand-btn:hover { border-color:var(--text); color:var(--text); }
     .revert-btn { background:none; border:1px solid var(--border); color:var(--dim); padding:4px 10px; border-radius:4px; font-family:var(--font); font-size:11px; cursor:pointer; white-space:nowrap; flex-shrink:0; }
-    .revert-btn:hover { border-color:var(--green); color:var(--text); }
+    .revert-btn:hover { border-color:var(--green); color:var(--green); }
+    .history-players { margin-top:6px; padding:6px 8px; background:var(--bg); border-radius:4px; font-size:11px; color:var(--dim); line-height:1.7; }
     .history-empty { color:var(--dim); font-size:13px; }
   </style>
 </head>
@@ -358,12 +365,35 @@ function redo(){ if(!redoStack.length)return; undoStack.push(clone(watchlist)); 
 function revertToHistory(i){ recordChange(); watchlist=clone(history[i].watchlist); localStorage.setItem("wl",JSON.stringify(watchlist)); saveHistory("Reverted to: "+history[i].desc); buildNameDropdown();buildTeamFilter();renderList(); }
 function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length; document.getElementById("redo-btn").disabled=!redoStack.length; }
 function toggleHistory(){ const p=document.getElementById("history-panel"); p.style.display=p.style.display==="none"?"block":"none"; }
+let histExpanded=new Set();
+function hsToggle(i){histExpanded.has(i)?histExpanded.delete(i):histExpanded.add(i);renderHistory();}
+
 function renderHistory(){
   const el=document.getElementById("history-list");
   if(!history.length){el.innerHTML='<p class="history-empty">No history yet — changes auto-save here.</p>';return;}
+  const maxP=Math.max(...history.map(h=>h.watchlist?.length||0));
+  const bestIdx=maxP>0?history.findIndex(h=>(h.watchlist?.length||0)===maxP):-1;
   el.innerHTML=history.map((h,i)=>{
     const ts=new Date(h.ts).toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
-    return`<div class="history-entry"><div class="history-meta"><span class="history-desc">${h.desc}</span><span class="history-time">${ts} · ${h.watchlist.length} players</span></div><button class="revert-btn" onclick="revertToHistory(${i})">Revert</button></div>`;
+    const wl=h.watchlist||[];
+    const count=wl.length;
+    const isBest=(i===bestIdx&&count>0);
+    const isExp=histExpanded.has(i);
+    const names=wl.map(p=>`${p.name} <span style="color:var(--dim);font-size:10px">${p.pos}</span>`).join(" &middot; ");
+    return`<div class="history-entry${isBest?" best-restore":""}">
+      ${isBest?'<div class="history-best-badge">&#9733; Best restore point</div>':""}
+      <div class="history-entry-row">
+        <div class="history-meta">
+          <span class="history-desc">${h.desc}</span>
+          <span class="history-time">${ts} &middot; ${count} player${count!==1?"s":""}</span>
+        </div>
+        <div class="history-actions">
+          ${count>0?`<button class="expand-btn" onclick="hsToggle(${i})">${isExp?"&#9660; Hide":"&#9654; List"}</button>`:""}
+          <button class="revert-btn" onclick="revertToHistory(${i})">&#8635; Restore${count>0?" ("+count+")":""}</button>
+        </div>
+      </div>
+      ${isExp&&count>0?`<div class="history-players">${names}</div>`:""}
+    </div>`;
   }).join("");
 }
 
