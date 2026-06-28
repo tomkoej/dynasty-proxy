@@ -56,38 +56,33 @@ module.exports = async function handler(req, res) {
     "Accept-Encoding": "gzip, deflate, br",
   };
 
-  // MFL login — returns USERINFO token
+  // MFL login — docs require POST + XML=1; login response is XML, not JSON
   if (TYPE === "login") {
     const { USERNAME, PASSWORD } = req.query;
     if (!USERNAME || !PASSWORD) return res.status(400).json({ error: "Missing USERNAME or PASSWORD" });
     try {
-      const url = `https://api.myfantasyleague.com/${year}/login?USERNAME=${encodeURIComponent(USERNAME)}&PASSWORD=${encodeURIComponent(PASSWORD)}&JSON=1`;
-      const r = await fetch(url, { headers });
+      const url = `https://api.myfantasyleague.com/${year}/login`;
+      const body = new URLSearchParams({ USERNAME, PASSWORD, XML: "1" });
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString(),
+      });
       const rawText = await r.text();
       res.setHeader("Cache-Control", "no-store");
 
-      // Try JSON body first
-      if (rawText.trim()) {
-        try {
-          const data = JSON.parse(rawText);
-          return res.json(data);
-        } catch (_) {}
-      }
-
-      // MFL sometimes sets the token in Set-Cookie instead of the body
-      const setCookie = r.headers.get("set-cookie") || "";
-      const cookieMatch = setCookie.match(/MFL_USER_ID=([^;,\s]+)/);
+      // XML response: <status cookie_name="MFL_USER_ID" cookie_value="abc123..." status="OK" />
+      const cookieMatch = rawText.match(/cookie_value="([^"]+)"/);
       if (cookieMatch) {
         return res.json({ userInfo: { userinfo: cookieMatch[1] } });
       }
 
-      // Return diagnostic so the client can show what actually came back
+      // Surface any error message from XML
+      const errMatch = rawText.match(/<error[^>]*>([^<]*)<\/error>/i)
+        || rawText.match(/message="([^"]+)"/i);
       return res.json({
-        _mfl_debug: true,
-        httpStatus: r.status,
-        bodyLength: rawText.length,
-        bodyPreview: rawText.slice(0, 300),
-        setCookieHeader: setCookie.slice(0, 200),
+        error: errMatch ? errMatch[1] : "Login failed — check credentials",
+        _debug: { httpStatus: r.status, body: rawText.slice(0, 300) },
       });
     } catch (err) {
       return res.status(500).json({ error: err.message });
