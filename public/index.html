@@ -270,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.27";
+const APP_VERSION = "1.28";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -701,7 +701,9 @@ async function doRefresh(){
     if(rs.twoCopy)return sum+Object.keys(rs.nwoOwners||{}).length;
     return sum+Object.keys(rs.owners||{}).length;
   },0);
+  localStorage.setItem("_tbDebug",JSON.stringify(_tbStatus));
   renderLeagueKey();renderList();
+  _dbgUpdate();
 }
 
 // ── Render ─────────────────────────────────────────────────────────────────────
