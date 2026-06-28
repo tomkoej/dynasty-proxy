@@ -102,6 +102,7 @@
     #league-key { font-size:11px; margin-bottom:20px; line-height:2; }
     .lk-item { color:var(--muted); transition:color .15s; }
     .lk-item.lk-active { color:#fff; font-weight:600; }
+    .legend-label.lk-active { color:#fff; font-weight:600; }
     .league-group-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; transition:color .15s; }
     .league-group-label.lk-active { color:#fff; font-weight:600; }
     .league-group { margin-bottom:2px; }
@@ -269,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.36";
+const APP_VERSION = "1.37";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -727,6 +728,13 @@ function clearFilters(){
 }
 
 // ── Render helpers ──────────────────────────────────────────────────────────
+function renderLegend(){
+  const map={"Available":"available","My Team":"mine","Rostered":"taken","Trade Block":"tradeblock"};
+  document.querySelectorAll("#legend .legend-label").forEach(el=>{
+    const val=map[el.textContent.trim()];
+    if(val) el.classList.toggle("lk-active", fv.status.size>0&&fv.status.has(val));
+  });
+}
 function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>{
@@ -945,6 +953,7 @@ function renderList(){
 
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
   renderLeagueKey();
+  renderLegend();
   const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
   if(!rows.length){
