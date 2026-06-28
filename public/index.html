@@ -270,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.29";
+const APP_VERSION = "1.30";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -308,6 +308,7 @@ function _dbgUpdate(){
     `<span class="dt-key">refresh:</span><span class="dt-val">${ago}</span>`,
     _dbgErr?`<span class="dt-err">⚠ ${_dbgErr}</span>`:`<span class="dt-val">✓ no JS err</span>`,
     `<span class="dt-key">tb:</span><span class="dt-val">${localStorage.getItem("_tbDebug")||"no data"}</span>`,
+    `<span class="dt-key">tbRaw:</span><span class="dt-val">${(localStorage.getItem("_tbRaw")||"none").slice(0,80)}</span>`,
   ].filter(Boolean);
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
@@ -644,6 +645,7 @@ async function doRefresh(){
           try{
             const _tbExtra=_tbKey?{APIKEY:_tbKey}:{USERINFO:mflUserInfo};
             const tbData=await mfl("api",cfg.id,"tradeBait",year,_tbExtra);
+            if(LEAGUES.indexOf(cfg)===0) localStorage.setItem("_tbRaw",JSON.stringify(tbData).slice(0,400));
             const tb=leagueRosters[cfg.id].tradeBait;
             toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
               if(item.franchise_id===myFranchiseId)return;
