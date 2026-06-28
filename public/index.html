@@ -102,8 +102,9 @@
     #league-key { font-size:11px; margin-bottom:20px; line-height:2; }
     .lk-item { color:var(--muted); transition:color .15s; }
     .lk-item.lk-active { color:#fff; font-weight:600; }
+    .league-group-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; transition:color .15s; }
+    .league-group-label.lk-active { color:#fff; font-weight:600; }
     .league-group { margin-bottom:2px; }
-    .league-group-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; }
 
     /* Player rows */
     .player-row { margin-bottom:0; padding:16px 0 14px; border-bottom:1px solid var(--border); }
@@ -503,15 +504,16 @@ function clearFilters(){
 
 function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
-  document.getElementById("league-key").innerHTML=groups.map(g=>
-    `<div class="league-group"><span class="league-group-label">${g.label}</span>${
+  document.getElementById("league-key").innerHTML=groups.map(g=>{
+    const fmtOn=fv.format.size>0&&fv.format.has(g.label);
+    return`<div class="league-group"><span class="league-group-label${fmtOn?" lk-active":""}">${g.label}</span>${
       g.ids.map(c=>{
         const num=String(LEAGUES.indexOf(c)+1);
         const on=fv.league.size>0&&fv.league.has(num);
         return`<span class="lk-item${on?" lk-active":""}">[${num}] ${MY_TEAM_NAMES[c.id]||c.id}</span>`;
       }).join("  ")
-    }</div>`
-  ).join("");
+    }</div>`;
+  }).join("");
 }
 // ── Filter state ─────────────────────────────────────────────────────────────
 // ── Custom select — Excel-style with search + multi-select ───────────────────
