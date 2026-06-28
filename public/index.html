@@ -220,7 +220,7 @@
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-label">My Team</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div><span class="legend-label">Rostered</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div><span class="legend-label">Unknown</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div><span class="legend-label">Trade Block</span></div>
     <div class="legend-item"><span class="rookie-badge">R</span><span class="legend-label">Rookie</span></div>
     <label class="expand-toggle-label" style="margin-left:auto">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
@@ -240,7 +240,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.2";
+const APP_VERSION = "1.3";
 
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
@@ -286,8 +286,8 @@ const clone    = o=>JSON.parse(JSON.stringify(o));
 const trunc    = (s,n=9)=>!s?"":s.length<=n?s:s.slice(0,n-1)+"…";
 const stripHtml = s=>(s||"").replace(/<[^>]*>/g,"").trim();
 
-function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":"#f59e0b";}
-function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":"Unknown";}
+function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":s==="tradeblock"?"#d97706":"#374151";}
+function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":s==="tradeblock"?"Trade Block":"Unknown";}
 function isRookie(name){ const m=getPlayerMeta(name); return !!(m?.status==="R"||m?.rook==="1"); }
 
 // ── History / Undo ─────────────────────────────────────────────────────────────
@@ -315,7 +315,7 @@ async function mfl(server,leagueId,type,year="2026"){
 }
 function displayName(n){ const p=(n||"").split(", "); return p.length===2?p[1]+" "+p[0]:n; }
 function getPlayerMeta(name){ const n=norm(name); return mflPlayers.find(p=>p.name&&(norm(p.name)===n||norm(displayName(p.name))===n)); }
-function twoCopyStatuses(mc,oc){ const st=[]; for(let i=0;i<mc;i++)st.push("mine"); for(let i=0;i<oc;i++)st.push("taken"); while(st.length<2)st.push("available"); return st.slice(0,2); }
+function twoCopyStatuses(mc,oc,tb,pid){ const st=[]; for(let i=0;i<mc;i++)st.push("mine"); for(let i=0;i<oc;i++)st.push(tb?.has(pid)?"tradeblock":"taken"); while(st.length<2)st.push("available"); return st.slice(0,2); }
 
 // ── Player Pool ───────────────────────────────────────────────────────────────
 async function loadPlayerPool(){
@@ -371,8 +371,8 @@ function loadCachedRosters(){
   LEAGUES.forEach(cfg=>{
     const rs=data[cfg.id];
     if(!rs)result[cfg.id]=null;
-    else if(rs.twoCopy)result[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners||{},twoCopy:true};
-    else result[cfg.id]={mine:new Set(rs.mine),other:new Set(rs.other),owners:rs.owners||{}};
+    else if(rs.twoCopy)result[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners||{},tradeBait:new Set(rs.tradeBait||[]),twoCopy:true};
+    else result[cfg.id]={mine:new Set(rs.mine),other:new Set(rs.other),owners:rs.owners||{},tradeBait:new Set(rs.tradeBait||[])};
   });
   return result;
 }
@@ -382,8 +382,8 @@ function computePlayerStatus(name){
   LEAGUES.forEach(cfg=>{
     const rs=rosters[cfg.id];
     if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
-    else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0);
-    else{ if(rs.mine.has(pid))ls[cfg.id]="mine"; else if(rs.other.has(pid))ls[cfg.id]="taken"; else ls[cfg.id]="available"; }
+    else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,pid);
+    else{ if(rs.mine.has(pid))ls[cfg.id]="mine"; else if(rs.other.has(pid))ls[cfg.id]=rs.tradeBait?.has(pid)?"tradeblock":"taken"; else ls[cfg.id]="available"; }
   });
   return ls;
 }
@@ -424,7 +424,7 @@ async function doRefresh(){
               }
             });
           });
-          leagueRosters[cfg.id]={mineCount,otherCount,nwoOwners,twoCopy:true};
+          leagueRosters[cfg.id]={mineCount,otherCount,nwoOwners,tradeBait:new Set(),twoCopy:true};
         }else{
           const mine=new Set(),other=new Set(),owners={};
           allFr.forEach(fr=>{
@@ -435,8 +435,17 @@ async function doRefresh(){
               if(!isMe&&frName) owners[p.id]=frName;
             });
           });
-          leagueRosters[cfg.id]={mine,other,owners};
+          leagueRosters[cfg.id]={mine,other,owners,tradeBait:new Set()};
         }
+        // Fetch trade bait
+        try{
+          const tbData=await mfl(cfg.server,cfg.id,"tradebait",year);
+          const tb=leagueRosters[cfg.id].tradeBait;
+          toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
+            if(item.franchise_id===myFranchiseId)return;
+            toArr(item?.players?.player).forEach(p=>{if(p?.id)tb.add(p.id);});
+          });
+        }catch(e){}
         fetched=true;break;
       }catch(e){ rosterErrors.push(cfg.id+"/"+year+": "+e.message); leagueRosters[cfg.id]=null; }
     }
@@ -448,8 +457,8 @@ async function doRefresh(){
   LEAGUES.forEach(cfg=>{
     const rs=leagueRosters[cfg.id];
     if(!rs)rfs[cfg.id]=null;
-    else if(cfg.twoCopy)rfs[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners,twoCopy:true};
-    else rfs[cfg.id]={mine:[...rs.mine],other:[...rs.other],owners:rs.owners};
+    else if(cfg.twoCopy)rfs[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners,tradeBait:[...rs.tradeBait||[]],twoCopy:true};
+    else rfs[cfg.id]={mine:[...rs.mine],other:[...rs.other],owners:rs.owners,tradeBait:[...rs.tradeBait||[]]};
   });
   localStorage.setItem("leagueRostersData",JSON.stringify(rfs));
 
@@ -460,8 +469,8 @@ async function doRefresh(){
       const rs=leagueRosters[cfg.id];
       if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
       else if(!pid)ls[cfg.id]=cfg.twoCopy?["unknown","unknown"]:"unknown";
-      else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0);
-      else{ if(rs.mine.has(pid))ls[cfg.id]="mine"; else if(rs.other.has(pid))ls[cfg.id]="taken"; else ls[cfg.id]="available"; }
+      else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,pid);
+      else{ if(rs.mine.has(pid))ls[cfg.id]="mine"; else if(rs.other.has(pid))ls[cfg.id]=rs.tradeBait?.has(pid)?"tradeblock":"taken"; else ls[cfg.id]="available"; }
     }); statusMap[norm(player.name)]=ls;
   });
   playerStatus=statusMap;
@@ -763,6 +772,7 @@ function renderList(){
         let ti=0;
         const parts=st.map(s=>{
           if(s==="taken"){ const n=rawOwners[ti++]||""; return n||"Rostered"; }
+          if(s==="tradeblock"){ const n=rawOwners[ti++]||""; return (n?n+" · ":"")+"Trade Block"; }
           return s==="mine"?"My Team":s==="available"?"Available":"Unknown";
         });
         return`<div class="${cls}">[${num}] ${parts.join(" & ")}</div>`;
@@ -770,6 +780,7 @@ function renderList(){
         const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";
         let d;
         if(sv==="taken"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; d=n||"Rostered"; }
+        else if(sv==="tradeblock"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; d=(n?n+" · ":"")+"Trade Block"; }
         else if(sv==="mine") d="My Team";
         else if(sv==="available") d="Available";
         else d="Unknown";
@@ -826,7 +837,7 @@ if(lastRefresh)document.getElementById("timestamp").textContent="Updated "+lastR
 document.getElementById("app-version").textContent="v"+APP_VERSION;
 renderLeagueKey();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
-csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"taken",label:"Rostered"},{val:"unknown",label:"Unknown"}]);
+csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
 // Auto-refresh rosters if missing or stale (>1 hour)
