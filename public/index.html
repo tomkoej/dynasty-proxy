@@ -270,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.30";
+const APP_VERSION = "1.31";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -649,11 +649,8 @@ async function doRefresh(){
             const tb=leagueRosters[cfg.id].tradeBait;
             toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
               if(item.franchise_id===myFranchiseId)return;
-              toArr(item?.players?.player).forEach(p=>{
-                const raw=typeof p==="object"?(p?.id??p?.player_id):p;
-                const pid=raw!=null?String(raw):null;
-                if(pid)tb.add(pid);
-              });
+              // MFL stores offered players as a comma-separated string in willgive_players
+              (item.willgive_players||"").split(",").filter(Boolean).forEach(pid=>tb.add(pid.trim()));
             });
             _tbStatus[cfg.id]=tb.size;
           }catch(e){
