@@ -269,7 +269,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.20";
+const APP_VERSION = "1.21";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -309,6 +309,24 @@ function _dbgUpdate(){
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
 setInterval(_dbgUpdate,3000);
+
+// ── League config ──────────────────────────────────────────────────────────────
+const LEAGUES = [
+  { server:"www42", id:"71526", label:"SF" },        // [1] QC at the Kratom Factory
+  { server:"www47", id:"13133", label:"SF" },        // [2] Mediocre Morsov
+  { server:"www47", id:"52453", label:"SF/TE+" },    // [3] Cleon LIX
+  { server:"www48", id:"68291", label:"SF/TE+" },    // [4] The Undertaker
+  { server:"www47", id:"69382", label:"SF/TE+" },    // [5] Shotgun Shai-Hulud
+  { server:"www47", id:"64818", twoCopy:true, label:"SF/TE+" }, // [6] The Undertaker (nWo)
+];
+const MY_TEAM_NAMES = {
+  "71526": "QC at the Kratom Factory",
+  "13133": "Mediocre Morsov",
+  "52453": "Cleon LIX",
+  "68291": "The Undertaker",
+  "69382": "Shotgun Shai-Hulud",
+  "64818": "The Undertaker (nWo)",
+};
 
 // ── MFL API Keys ─────────────────────────────────────────────────────────────
 let mflApiKeys=JSON.parse(localStorage.getItem("mflApiKeys")||"{}");
