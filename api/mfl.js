@@ -56,30 +56,35 @@ module.exports = async function handler(req, res) {
     "Accept-Encoding": "gzip, deflate, br",
   };
 
-  // Tradebait must use api.myfantasyleague.com — try several URL forms
-  if (TYPE === "tradebait") {
-    const tbUrls = [
-      `https://api.myfantasyleague.com/${year}/export?TYPE=tradebait&L=${L}&JSON=1`,
-      `https://www.myfantasyleague.com/${year}/export?TYPE=tradebait&L=${L}&JSON=1`,
-      `https://${server}.myfantasyleague.com/${year}/export?TYPE=tradebait&L=${L}&JSON=1`,
-    ];
-    const attempts = [];
-    for (const url of tbUrls) {
-      try {
-        const r = await fetch(url, { headers });
-        const data = await r.json();
-        if (!data?.error) {
-          res.setHeader("Cache-Control", "no-store");
-          return res.json(data);
-        }
-        attempts.push(`${url} → ${JSON.stringify(data.error).slice(0, 80)}`);
-      } catch (e) {
-        attempts.push(`${url} → ${e.message}`);
-      }
+  // MFL login — returns USERINFO token
+  if (TYPE === "login") {
+    const { USERNAME, PASSWORD } = req.query;
+    if (!USERNAME || !PASSWORD) return res.status(400).json({ error: "Missing USERNAME or PASSWORD" });
+    try {
+      const url = `https://api.myfantasyleague.com/${year}/login?USERNAME=${encodeURIComponent(USERNAME)}&PASSWORD=${encodeURIComponent(PASSWORD)}&JSON=1`;
+      const r = await fetch(url, { headers });
+      const data = await r.json();
+      res.setHeader("Cache-Control", "no-store");
+      return res.json(data);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
     }
-    // All failed — return diagnostic info
-    res.setHeader("Cache-Control", "no-store");
-    return res.json({ tradeBaits: "", _debug: attempts });
+  }
+
+  // Tradebait — requires USERINFO token (from MFL login)
+  if (TYPE === "tradebait") {
+    const tbParams = new URLSearchParams({ TYPE: "tradebait", JSON: "1" });
+    if (L) tbParams.set("L", L);
+    if (rest.USERINFO) tbParams.set("USERINFO", rest.USERINFO);
+    const url = `https://api.myfantasyleague.com/${year}/export?${tbParams}`;
+    try {
+      const r = await fetch(url, { headers });
+      const data = await r.json();
+      res.setHeader("Cache-Control", "no-store");
+      return res.json(data);
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
   }
 
   // Standard proxy for all other MFL API calls
