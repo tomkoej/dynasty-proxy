@@ -99,7 +99,9 @@
     .legend-dot  { width:11px; height:11px; border-radius:50%; border:1px solid var(--border); flex-shrink:0; }
     .legend-label { color:var(--dim); font-size:12px; }
 
-    #league-key { color:var(--muted); font-size:11px; margin-bottom:20px; line-height:2; }
+    #league-key { font-size:11px; margin-bottom:20px; line-height:2; }
+    .lk-item { color:var(--muted); transition:color .15s; }
+    .lk-item.lk-active { color:#fff; font-weight:600; }
     .league-group { margin-bottom:2px; }
     .league-group-label { color:var(--muted); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; }
 
@@ -134,7 +136,7 @@
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; }
 
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
-    #list-controls { padding:6px 0 2px; display:flex; align-items:center; }
+    #list-controls { padding:2px 0 6px; display:flex; align-items:center; }
     .expand-toggle-label { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
     .expand-toggle-label input[type="checkbox"] { display:none; }
     .toggle-track {
@@ -223,7 +225,6 @@
     <div class="legend-item"><span class="rookie-badge">R</span><span class="legend-label">Rookie</span></div>
   </div>
 
-  <div id="league-key"></div>
   <div id="list-controls">
     <label class="expand-toggle-label">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
@@ -231,6 +232,7 @@
       <span class="toggle-text">Expand all</span>
     </label>
   </div>
+  <div id="league-key"></div>
 </div>
 </div>
 <div id="scroll-list">
@@ -504,7 +506,15 @@ function clearFilters(){
 
 function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
-  document.getElementById("league-key").innerHTML=groups.map(g=>`<div class="league-group"><span class="league-group-label">${g.label}</span>${g.ids.map(c=>`[${LEAGUES.indexOf(c)+1}] ${MY_TEAM_NAMES[c.id]||c.id}`).join("  ")}</div>`).join("");
+  document.getElementById("league-key").innerHTML=groups.map(g=>
+    `<div class="league-group"><span class="league-group-label">${g.label}</span>${
+      g.ids.map(c=>{
+        const num=String(LEAGUES.indexOf(c)+1);
+        const on=fv.league.size>0&&fv.league.has(num);
+        return`<span class="lk-item${on?" lk-active":""}">[${num}] ${MY_TEAM_NAMES[c.id]||c.id}</span>`;
+      }).join("  ")
+    }</div>`
+  ).join("");
 }
 // ── Filter state ─────────────────────────────────────────────────────────────
 // ── Custom select — Excel-style with search + multi-select ───────────────────
@@ -705,6 +715,7 @@ function renderList(){
     :sortKey(a.name).localeCompare(sortKey(b.name)));
 
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
+  renderLeagueKey();
   const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
   if(!rows.length){el.innerHTML='<p class="no-results">No players match.</p>';return;}
