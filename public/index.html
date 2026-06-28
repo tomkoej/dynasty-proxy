@@ -179,10 +179,8 @@
       <button class="hdr-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
       <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
-      <button class="hdr-btn" id="refresh-btn" onclick="doRefresh()">↻ Refresh</button>
     </div>
     <div id="timestamp">Not yet refreshed</div>
-    <div id="debug"></div>
   </div>
 </div>
 
@@ -389,7 +387,6 @@ function computePlayerStatus(name){
 
 // ── Refresh ────────────────────────────────────────────────────────────────────
 async function doRefresh(){
-  const btn=document.getElementById("refresh-btn"); btn.disabled=true;btn.textContent="… Refreshing";
   const rosterErrors=[],newNames={},leagueRosters={};
 
   for(const cfg of LEAGUES){
@@ -468,16 +465,14 @@ async function doRefresh(){
 
   const now=new Date();
   lastRefresh=now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
-  localStorage.setItem("ps",JSON.stringify(playerStatus)); localStorage.setItem("ln",JSON.stringify(leagueNames)); localStorage.setItem("lr",lastRefresh);
+  localStorage.setItem("ps",JSON.stringify(playerStatus)); localStorage.setItem("ln",JSON.stringify(leagueNames)); localStorage.setItem("lr",lastRefresh); localStorage.setItem("lrTime",Date.now().toString());
   const loaded=Object.values(leagueRosters).filter(r=>r!==null).length;
   const ownerCount=Object.values(leagueRosters).reduce((sum,rs)=>{
     if(!rs)return sum;
     if(rs.twoCopy)return sum+Object.keys(rs.nwoOwners||{}).length;
     return sum+Object.keys(rs.owners||{}).length;
   },0);
-  document.getElementById("debug").textContent=loaded+"/6 leagues · "+ownerCount+" ownership records"+(rosterErrors.length?" · "+rosterErrors[0]:"");
   document.getElementById("timestamp").textContent="Updated "+lastRefresh;
-  btn.disabled=false;btn.textContent="↻ Refresh";
   renderLeagueKey();renderList();
 }
 
@@ -822,6 +817,9 @@ csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",lab
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"taken",label:"Rostered"},{val:"unknown",label:"Unknown"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();
+// Auto-refresh rosters if missing or stale (>1 hour)
+const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
+if(!_lrTime||Date.now()-_lrTime>3600000){doRefresh();}
 loadPlayerPool();
 </script>
 <div id="filter-panel" onclick="event.stopPropagation()"></div>
