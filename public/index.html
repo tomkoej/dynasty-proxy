@@ -37,6 +37,9 @@
     .hdr-btn:hover:not(:disabled) { border-color:var(--green); }
     .hdr-btn:disabled { opacity:.4; cursor:default; }
     #timestamp { color:#fff; font-size:11px; }
+    #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:13px; padding:0 2px; line-height:1; font-family:var(--font); }
+    #refresh-btn-sm:hover { color:var(--text); }
+    #refresh-warning { color:#ef4444; font-size:10px; text-align:right; min-height:14px; }
     #debug     { color:var(--muted); font-size:10px; }
 
     #main { max-width:680px; margin:0 auto; padding:20px 24px 0; }
@@ -211,7 +214,11 @@
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
       <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
     </div>
-    <div id="timestamp">Not yet refreshed</div>
+    <div style="display:flex;align-items:center;gap:5px;">
+      <div id="timestamp">Not yet refreshed</div>
+      <button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button>
+    </div>
+    <div id="refresh-warning"></div>
   </div>
 </div>
 
@@ -270,7 +277,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.39";
+const APP_VERSION = "1.40";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -388,6 +395,19 @@ const nameToId   = {};
 let _tbStatus    = {}; // leagueId → count or "ERR:msg"
 
 // ── MFL Auth ───────────────────────────────────────────────────────────────────
+function manualRefresh(){
+  const lrt=parseInt(localStorage.getItem("lrTime")||"0");
+  const elapsed=Date.now()-lrt;
+  const warn=document.getElementById("refresh-warning");
+  if(lrt&&elapsed<300000){
+    const remaining=Math.ceil((300000-elapsed)/60000);
+    warn.textContent="⚠ Refreshed "+Math.round(elapsed/1000)+"s ago — wait "+remaining+" more min to stay within MFL guidelines";
+    return;
+  }
+  warn.textContent="";
+  localStorage.removeItem("lrTime");
+  doRefresh();
+}
 function updateMFLBtn(){ _dbgUpdate(); } // state shown in debug ticker
 async function linkMFL(){
   const user=prompt("MFL Username:"); if(!user)return;
