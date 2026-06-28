@@ -63,9 +63,32 @@ module.exports = async function handler(req, res) {
     try {
       const url = `https://api.myfantasyleague.com/${year}/login?USERNAME=${encodeURIComponent(USERNAME)}&PASSWORD=${encodeURIComponent(PASSWORD)}&JSON=1`;
       const r = await fetch(url, { headers });
-      const data = await r.json();
+      const rawText = await r.text();
       res.setHeader("Cache-Control", "no-store");
-      return res.json(data);
+
+      // Try JSON body first
+      if (rawText.trim()) {
+        try {
+          const data = JSON.parse(rawText);
+          return res.json(data);
+        } catch (_) {}
+      }
+
+      // MFL sometimes sets the token in Set-Cookie instead of the body
+      const setCookie = r.headers.get("set-cookie") || "";
+      const cookieMatch = setCookie.match(/MFL_USER_ID=([^;,\s]+)/);
+      if (cookieMatch) {
+        return res.json({ userInfo: { userinfo: cookieMatch[1] } });
+      }
+
+      // Return diagnostic so the client can show what actually came back
+      return res.json({
+        _mfl_debug: true,
+        httpStatus: r.status,
+        bodyLength: rawText.length,
+        bodyPreview: rawText.slice(0, 300),
+        setCookieHeader: setCookie.slice(0, 200),
+      });
     } catch (err) {
       return res.status(500).json({ error: err.message });
     }
