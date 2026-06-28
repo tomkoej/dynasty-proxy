@@ -240,7 +240,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.6";
+const APP_VERSION = "1.7";
 
 const LEAGUES = [
   { server:"www42", id:"71526",               label:"SF"     },
@@ -383,7 +383,7 @@ function computePlayerStatus(name){
     const rs=rosters[cfg.id];
     if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
     else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,pid);
-    else{ if(rs.mine.has(pid))ls[cfg.id]="mine"; else if(rs.other.has(pid))ls[cfg.id]=rs.tradeBait?.has(pid)?"tradeblock":"taken"; else ls[cfg.id]="available"; }
+    else{ if(rs.mine.has(String(pid)))ls[cfg.id]="mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
   });
   return ls;
 }
@@ -440,18 +440,17 @@ async function doRefresh(){
         // Fetch trade bait
         try{
           const tbData=await mfl(cfg.server,cfg.id,"tradebait",year);
-          console.log("[TB] league",cfg.id,"raw:",JSON.stringify(tbData?.tradeBaits).slice(0,300));
           const tb=leagueRosters[cfg.id].tradeBait;
           toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
             if(item.franchise_id===myFranchiseId)return;
-            // player can be a plain string ID or an object {id:"..."}
+            // MFL can return player as string, number, or object {id}
             toArr(item?.players?.player).forEach(p=>{
-              const pid=typeof p==="string"?p:(p?.id||p?.player_id||null);
+              const raw=typeof p==="object"?(p?.id??p?.player_id):p;
+              const pid=raw!=null?String(raw):null;
               if(pid)tb.add(pid);
             });
           });
-          console.log("[TB] league",cfg.id,"players on block:",[...tb]);
-        }catch(e){console.warn("[TB] fetch error",cfg.id,e.message);}
+        }catch(e){}
         fetched=true;break;
       }catch(e){ rosterErrors.push(cfg.id+"/"+year+": "+e.message); leagueRosters[cfg.id]=null; }
     }
@@ -476,7 +475,7 @@ async function doRefresh(){
       if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
       else if(!pid)ls[cfg.id]=cfg.twoCopy?["unknown","unknown"]:"unknown";
       else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,pid);
-      else{ if(rs.mine.has(pid))ls[cfg.id]="mine"; else if(rs.other.has(pid))ls[cfg.id]=rs.tradeBait?.has(pid)?"tradeblock":"taken"; else ls[cfg.id]="available"; }
+      else{ if(rs.mine.has(String(pid)))ls[cfg.id]="mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
     }); statusMap[norm(player.name)]=ls;
   });
   playerStatus=statusMap;
@@ -490,7 +489,8 @@ async function doRefresh(){
     if(rs.twoCopy)return sum+Object.keys(rs.nwoOwners||{}).length;
     return sum+Object.keys(rs.owners||{}).length;
   },0);
-  document.getElementById("timestamp").textContent="Updated "+lastRefresh;
+  const tbTotal=Object.values(leagueRosters).reduce((n,rs)=>n+(rs?.tradeBait?.size||0),0);
+  document.getElementById("timestamp").textContent="Updated "+lastRefresh+(tbTotal?` · ${tbTotal} on trade block`:"");
   renderLeagueKey();renderList();
 }
 
