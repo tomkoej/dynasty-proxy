@@ -270,7 +270,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.25";
+const APP_VERSION = "1.26";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -306,7 +306,8 @@ function _dbgUpdate(){
     `<span class="dt-key">auth:</span><span class="dt-val">${localStorage.getItem("mflUserInfo")?"✓ set":"—"}</span>`,
     `<span class="dt-key">refresh:</span><span class="dt-val">${ago}</span>`,
     _dbgErr?`<span class="dt-err">⚠ ${_dbgErr}</span>`:`<span class="dt-val">✓ no JS err</span>`,
-  ];
+    Object.keys(_tbStatus).length?`<span class="dt-key">tb:</span><span class="dt-val">${LEAGUES.map(l=>_tbStatus[l.id]!==undefined?String(_tbStatus[l.id]):"—").join("·")}</span>`:"",
+  ].filter(Boolean);
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
 setInterval(_dbgUpdate,3000);
@@ -382,6 +383,7 @@ let undoStack    = [], redoStack = [];
 let history      = JSON.parse(localStorage.getItem("wlHistory")||"[]");
 let mflPlayers   = [];
 const nameToId   = {};
+let _tbStatus    = {}; // leagueId → count or "ERR:msg"
 
 // ── MFL Auth ───────────────────────────────────────────────────────────────────
 function updateMFLBtn(){ _dbgUpdate(); } // state shown in debug ticker
@@ -650,11 +652,15 @@ async function doRefresh(){
                 if(pid)tb.add(pid);
               });
             });
+            _tbStatus[cfg.id]=tb.size;
           }catch(e){
+            _tbStatus[cfg.id]="ERR:"+e.message.slice(0,40);
             if(mflUserInfo&&/expired|invalid|session/i.test(e.message)){
               mflUserInfo=null;localStorage.removeItem("mflUserInfo");updateMFLBtn();
             }
           }
+        }else{
+          _tbStatus[cfg.id]="no key";
         }
         fetched=true;break;
       }catch(e){ rosterErrors.push(cfg.id+"/"+year+": "+e.message); leagueRosters[cfg.id]=null; }
