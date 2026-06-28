@@ -37,7 +37,7 @@
     .hdr-btn:hover:not(:disabled) { border-color:var(--green); }
     .hdr-btn:disabled { opacity:.4; cursor:default; }
     #timestamp { color:#fff; font-size:11px; }
-    #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:13px; padding:0 2px; line-height:1; font-family:var(--font); }
+    #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:22px; padding:0 2px; line-height:1; font-family:var(--font); }
     #refresh-btn-sm:hover { color:var(--text); }
     #refresh-warning { color:#ef4444; font-size:10px; text-align:right; min-height:14px; }
     #debug     { color:var(--muted); font-size:10px; }
@@ -118,7 +118,7 @@
     .player-name { color:var(--text); }
     .player-pos  { color:var(--text); font-size:14px; }
     .player-team { color:var(--text); font-size:14px; }
-    .rookie-badge { background:#d97706; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
+    .rookie-badge { background:#818cf8; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
 
     /* Icon rows */
     .icon-row-group { margin-top:0; padding-left:36px; display:flex; flex-direction:column; gap:5px; }
@@ -258,12 +258,14 @@
     <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-label">My Team</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div><span class="legend-label">Rostered</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div><span class="legend-label">Trade Block</span></div>
-    <div class="legend-item"><span class="rookie-badge">R</span><span class="legend-label">Rookie</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div><span class="legend-label">My Trade Block</span></div>
     <label class="expand-toggle-label" style="margin-left:auto">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
       <span class="toggle-text">Expand</span>
       <span class="toggle-track"><span class="toggle-thumb"></span></span>
     </label>
+    <div style="flex-basis:100%;height:6px"></div>
+    <div class="legend-item"><span class="rookie-badge">R</span><span class="legend-label rookie-label">Rookie</span></div>
   </div>
 
   <div id="league-key"></div>
@@ -277,7 +279,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.41";
+const APP_VERSION = "1.42";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -470,8 +472,8 @@ function saveMflKeys(){
   _dbgUpdate();
 }
 
-function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":s==="tradeblock"?"#d97706":"#374151";}
-function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":s==="tradeblock"?"Trade Block":"Unknown";}
+function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":s==="tradeblock"?"#d97706":s==="mytradeblock"?"#eab308":"#374151";}
+function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":s==="tradeblock"?"Trade Block":s==="mytradeblock"?"My Trade Block":"Unknown";}
 function isRookie(name){ const m=getPlayerMeta(name); return !!(m?.status==="R"||m?.rook==="1"); }
 
 // ── History / Undo ─────────────────────────────────────────────────────────────
@@ -523,7 +525,7 @@ async function mfl(server,leagueId,type,year="2026",extra={}){
 }
 function displayName(n){ const p=(n||"").split(", "); return p.length===2?p[1]+" "+p[0]:n; }
 function getPlayerMeta(name){ const n=norm(name); return mflPlayers.find(p=>p.name&&(norm(p.name)===n||norm(displayName(p.name))===n)); }
-function twoCopyStatuses(mc,oc,tb,pid){ const st=[]; for(let i=0;i<mc;i++)st.push("mine"); for(let i=0;i<oc;i++)st.push(tb?.has(pid)?"tradeblock":"taken"); while(st.length<2)st.push("available"); return st.slice(0,2); }
+function twoCopyStatuses(mc,oc,tb,myTb,pid){ const st=[]; for(let i=0;i<mc;i++)st.push(myTb?.has(pid)?"mytradeblock":"mine"); for(let i=0;i<oc;i++)st.push(tb?.has(pid)?"tradeblock":"taken"); while(st.length<2)st.push("available"); return st.slice(0,2); }
 
 // ── Player Pool ───────────────────────────────────────────────────────────────
 async function loadPlayerPool(){
@@ -589,8 +591,8 @@ function loadCachedRosters(){
   LEAGUES.forEach(cfg=>{
     const rs=data[cfg.id];
     if(!rs)result[cfg.id]=null;
-    else if(rs.twoCopy)result[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners||{},tradeBait:new Set(rs.tradeBait||[]),twoCopy:true};
-    else result[cfg.id]={mine:new Set(rs.mine),other:new Set(rs.other),owners:rs.owners||{},tradeBait:new Set(rs.tradeBait||[])};
+    else if(rs.twoCopy)result[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners||{},tradeBait:new Set(rs.tradeBait||[]),myTradeBait:new Set(rs.myTradeBait||[]),twoCopy:true};
+    else result[cfg.id]={mine:new Set(rs.mine),other:new Set(rs.other),owners:rs.owners||{},tradeBait:new Set(rs.tradeBait||[]),myTradeBait:new Set(rs.myTradeBait||[])};
   });
   return result;
 }
@@ -600,8 +602,8 @@ function computePlayerStatus(name){
   LEAGUES.forEach(cfg=>{
     const rs=rosters[cfg.id];
     if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
-    else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,pid);
-    else{ if(rs.mine.has(String(pid)))ls[cfg.id]="mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
+    else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,rs.myTradeBait,pid);
+    else{ if(rs.mine.has(String(pid)))ls[cfg.id]=rs.myTradeBait?.has(String(pid))?"mytradeblock":"mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
   });
   return ls;
 }
@@ -645,7 +647,7 @@ async function doRefresh(){
               }
             });
           });
-          leagueRosters[cfg.id]={mineCount,otherCount,nwoOwners,tradeBait:new Set(),twoCopy:true};
+          leagueRosters[cfg.id]={mineCount,otherCount,nwoOwners,tradeBait:new Set(),myTradeBait:new Set(),twoCopy:true};
         }else{
           const mine=new Set(),other=new Set(),owners={};
           allFr.forEach(fr=>{
@@ -656,7 +658,7 @@ async function doRefresh(){
               if(!isMe&&frName) owners[p.id]=frName;
             });
           });
-          leagueRosters[cfg.id]={mine,other,owners,tradeBait:new Set()};
+          leagueRosters[cfg.id]={mine,other,owners,tradeBait:new Set(),myTradeBait:new Set()};
         }
         // Fetch trade bait — APIKEY (preferred) or mflUserInfo cookie
         const _tbKey=mflApiKeys[cfg.id];
@@ -667,9 +669,12 @@ async function doRefresh(){
             if(LEAGUES.indexOf(cfg)===0) localStorage.setItem("_tbRaw",JSON.stringify(tbData).slice(0,400));
             const tb=leagueRosters[cfg.id].tradeBait;
             toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
-              if(item.franchise_id===myFranchiseId)return;
-              // MFL stores offered players as a comma-separated string in willgive_players
-              (item.willGiveUp||item.willgive_players||"").split(",").filter(Boolean).forEach(pid=>tb.add(pid.trim()));
+              const ids=(item.willGiveUp||item.willgive_players||"").split(",").filter(Boolean).map(p=>p.trim());
+              if(item.franchise_id===myFranchiseId){
+                ids.forEach(pid=>leagueRosters[cfg.id].myTradeBait.add(pid));
+              }else{
+                ids.forEach(pid=>tb.add(pid));
+              }
             });
             _tbStatus[cfg.id]=tb.size;
           }catch(e){
@@ -692,8 +697,8 @@ async function doRefresh(){
   LEAGUES.forEach(cfg=>{
     const rs=leagueRosters[cfg.id];
     if(!rs)rfs[cfg.id]=null;
-    else if(cfg.twoCopy)rfs[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners,tradeBait:[...rs.tradeBait||[]],twoCopy:true};
-    else rfs[cfg.id]={mine:[...rs.mine],other:[...rs.other],owners:rs.owners,tradeBait:[...rs.tradeBait||[]]};
+    else if(cfg.twoCopy)rfs[cfg.id]={mineCount:rs.mineCount,otherCount:rs.otherCount,nwoOwners:rs.nwoOwners,tradeBait:[...rs.tradeBait||[]],myTradeBait:[...rs.myTradeBait||[]],twoCopy:true};
+    else rfs[cfg.id]={mine:[...rs.mine],other:[...rs.other],owners:rs.owners,tradeBait:[...rs.tradeBait||[]],myTradeBait:[...rs.myTradeBait||[]]};
   });
   localStorage.setItem("leagueRostersData",JSON.stringify(rfs));
 
@@ -704,8 +709,8 @@ async function doRefresh(){
       const rs=leagueRosters[cfg.id];
       if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
       else if(!pid)ls[cfg.id]=cfg.twoCopy?["unknown","unknown"]:"unknown";
-      else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,pid);
-      else{ if(rs.mine.has(String(pid)))ls[cfg.id]="mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
+      else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,rs.myTradeBait,pid);
+      else{ if(rs.mine.has(String(pid)))ls[cfg.id]=rs.myTradeBait?.has(String(pid))?"mytradeblock":"mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
     }); statusMap[norm(player.name)]=ls;
   });
   playerStatus=statusMap;
@@ -749,11 +754,13 @@ function clearFilters(){
 
 // ── Render helpers ──────────────────────────────────────────────────────────
 function renderLegend(){
-  const map={"Available":"available","My Team":"mine","Rostered":"taken","Trade Block":"tradeblock"};
+  const map={"Available":"available","My Team":"mine","My Trade Block":"mytradeblock","Trade Block":"tradeblock","Rostered":"taken"};
   document.querySelectorAll("#legend .legend-label").forEach(el=>{
     const val=map[el.textContent.trim()];
     if(val) el.classList.toggle("lk-active", fv.status.size>0&&fv.status.has(val));
   });
+  const rookieLbl=document.querySelector("#legend .rookie-label");
+  if(rookieLbl) rookieLbl.classList.toggle("lk-active", fv.sort==="rookies");
 }
 function renderLeagueKey(){
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
@@ -1047,6 +1054,7 @@ function renderList(){
         let d;
         if(sv==="taken"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; d=n||"Rostered"; }
         else if(sv==="tradeblock"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; d=n||"Rostered"; }
+        else if(sv==="mytradeblock") d="My Trade Block";
         else if(sv==="mine") d="My Team";
         else if(sv==="available") d="Available";
         else d="Unknown";
@@ -1104,7 +1112,7 @@ document.getElementById("app-version").textContent="v"+APP_VERSION;
 renderLeagueKey();
 updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
-csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
+csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();_dbgUpdate();
 // Refresh rosters on load unless refreshed within the last 5 minutes
