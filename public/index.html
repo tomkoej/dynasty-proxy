@@ -269,7 +269,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.23";
+const APP_VERSION = "1.24";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -630,10 +630,12 @@ async function doRefresh(){
           });
           leagueRosters[cfg.id]={mine,other,owners,tradeBait:new Set()};
         }
-        // Fetch trade bait (requires MFL auth)
-        if(mflUserInfo){
+        // Fetch trade bait — APIKEY (preferred) or mflUserInfo cookie
+        const _tbKey=mflApiKeys[cfg.id];
+        if(_tbKey||mflUserInfo){
           try{
-            const tbData=await mfl("api",cfg.id,"tradeBait",year);
+            const _tbExtra=_tbKey?{APIKEY:_tbKey}:{USERINFO:mflUserInfo};
+            const tbData=await mfl("api",cfg.id,"tradeBait",year,_tbExtra);
             const tb=leagueRosters[cfg.id].tradeBait;
             toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
               if(item.franchise_id===myFranchiseId)return;
@@ -644,25 +646,10 @@ async function doRefresh(){
               });
             });
           }catch(e){
-            if(/expired|invalid|session/i.test(e.message)){
+            if(mflUserInfo&&/expired|invalid|session/i.test(e.message)){
               mflUserInfo=null;localStorage.removeItem("mflUserInfo");updateMFLBtn();
             }
           }
-        }
-        // Fetch trade bait using MFL USERINFO token
-        if(mflUserInfo){
-          try{
-            const tbData=await mfl(cfg.server,cfg.id,"tradeBait",year, mflApiKeys[cfg.id]?{APIKEY:mflApiKeys[cfg.id]}:{});
-            const tb=leagueRosters[cfg.id].tradeBait;
-            toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
-              if(item.franchise_id===myFranchiseId)return;
-              toArr(item?.players?.player).forEach(p=>{
-                const raw=typeof p==="object"?(p?.id??p?.player_id):p;
-                const pid=raw!=null?String(raw):null;
-                if(pid)tb.add(pid);
-              });
-            });
-          }catch(e){}
         }
         fetched=true;break;
       }catch(e){ rosterErrors.push(cfg.id+"/"+year+": "+e.message); leagueRosters[cfg.id]=null; }
