@@ -36,9 +36,11 @@
     }
     .hdr-btn:hover:not(:disabled) { border-color:var(--green); }
     .hdr-btn:disabled { opacity:.4; cursor:default; }
-    #timestamp { color:#fff; font-size:11px; vertical-align:middle; line-height:1; }
-    #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:18px; padding:0 0 0 3px; line-height:1; font-family:var(--font); vertical-align:middle; }
-    #refresh-btn-sm:hover { color:var(--text); }
+    #timestamp-row { display:flex; align-items:center; gap:8px; }
+    #timestamp { color:var(--dim); font-size:11px; font-family:var(--font); }
+    #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:13px; padding:0; line-height:1; font-family:var(--font); flex-shrink:0; }
+    #refresh-btn-sm:hover:not(:disabled) { color:var(--text); }
+    #refresh-btn-sm:disabled { opacity:.4; cursor:default; }
     #refresh-warning { color:#ef4444; font-size:10px; text-align:right; min-height:14px; }
     #debug     { color:var(--muted); font-size:10px; }
 
@@ -214,7 +216,7 @@
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
       <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
     </div>
-    <div><span id="timestamp">Not yet refreshed</span><button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button></div>
+    <div id="timestamp-row"><span id="timestamp">Not yet refreshed</span><button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button></div>
     <div id="refresh-warning"></div>
   </div>
 </div>
@@ -276,7 +278,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.45";
+const APP_VERSION = "1.46";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -607,6 +609,10 @@ function computePlayerStatus(name){
 
 // ── Refresh ────────────────────────────────────────────────────────────────────
 async function doRefresh(){
+  const tsEl=document.getElementById("timestamp");
+  const btnEl=document.getElementById("refresh-btn-sm");
+  if(tsEl)tsEl.textContent="Refreshing…";
+  if(btnEl)btnEl.disabled=true;
   const rosterErrors=[],newNames={},leagueRosters={};
 
   const _sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -724,6 +730,8 @@ async function doRefresh(){
   localStorage.setItem("_tbDebug",
     LEAGUES.map(l=>{const v=_tbStatus[l.id];return v===undefined?"—":String(v);}).join("·")
   );
+  if(tsEl)tsEl.textContent="Updated "+lastRefresh;
+  if(btnEl)btnEl.disabled=false;
   renderLeagueKey();renderList();
   _dbgUpdate();
 }
