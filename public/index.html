@@ -18,72 +18,63 @@
       --dim:#78746c; --muted:#b5b0a8; --text:#1e1c18;
       --green:#1a7f37; --green-hi:#2da44e; --blue:#0550ae; --red:#cf222e;
     }
-    html:has(body.day), body.day { background:#7aa8c4; }
-    body.day #debug-ticker { border-top-color:var(--border); }
+    html:has(body.day), body.day { background:#3a6480; }
+    body.day #frozen-top  { background:rgba(58,100,128,0.82); }
+    body.day #debug-ticker { background:rgba(40,80,110,0.88); border-top-color:var(--border); }
     body.day .hdr-btn { box-shadow:0 1px 3px rgba(0,0,0,.08); }
     body.day #mfl-keys-panel { box-shadow:0 4px 16px rgba(0,0,0,.12); }
     body.day #filter-panel   { box-shadow:0 4px 16px rgba(0,0,0,.1); }
+    body.day .lk-item.lk-active,
+    body.day .league-group-label.lk-active,
+    body.day .legend-label.lk-active { color:var(--text); }
     /* ── Theme toggle ──────────────────────────────────────────────────────── */
     .theme-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
-    html, body { height:100%; background:var(--bg); }
+    /* ── Sky backgrounds ───────────────────────────────────────────────────── */
+    html, body { height:100%; }
     body {
-      background-color:#060e1c;
+      background-color:#03060c;
       background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url%28%23g%29'/%3E%3C/svg%3E"),
         linear-gradient(to bottom,
-          #060e1c  0%,
-          #0b1530 18%,
-          #101d3e 38%,
-          #181e4a 52%,
-          #221848 62%,
-          #3a1e42 70%,
-          #6a2438 76%,
-          #b04020 82%,
-          #d86018 87%,
-          #ee8018 91%,
-          #f89820 95%,
-          #fcac2c 98%,
-          #fec038 100%
+          #03060c  0%,  #060a18  7%,  #0a1024 16%,
+          #0e1834 26%,  #121c42 36%,  #161e4e 45%,
+          #182058 53%,  #1a2060 60%,  #1c1e62 68%,
+          #1c1c60 75%,  #1c1a5c 82%,  #201a5c 86%,
+          #281858 89%,  #341854 92%,  #3c1852 95%,
+          #421850 98%,  #441852 100%
         );
       background-blend-mode: overlay, normal;
       background-size: 250px 250px, cover;
       background-repeat: repeat, no-repeat;
       background-attachment: fixed, fixed;
+      color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column;
     }
     body.day {
-      background-color:#8ab4cc;
+      background-color:#3a6480;
       background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url%28%23g%29'/%3E%3C/svg%3E"),
         linear-gradient(to bottom,
-          #7aa8c4  0%,
-          #88b2cc 18%,
-          #94bcd4 38%,
-          #a0c0d4 52%,
-          #a8b8c8 62%,
-          #b0a898 70%,
-          #c49870 76%,
-          #d89840 82%,
-          #e8a820 87%,
-          #f0b818 91%,
-          #f8c418 95%,
-          #fcd020 98%,
-          #fedc28 100%
+          #3a6480  0%,  #446e8e  5%,  #4e7898 11%,
+          #5882a4 18%,  #628eae 25%,  #6c98b6 31%,
+          #74a2bc 37%,  #7aacc2 43%,  #80aec4 50%,
+          #82b0c4 57%,  #84b0c4 63%,  #84b0c4 69%,
+          #82aec2 75%,  #80aac0 80%,  #7ea8be 85%,
+          #7ca6bc 90%,  #7aa4ba 95%,  #78a2b8 100%
         );
       background-blend-mode: overlay, normal;
       background-size: 250px 250px, cover;
       background-repeat: repeat, no-repeat;
       background-attachment: fixed, fixed;
     }
-    body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
     #page-wrap   { display:flex; flex-direction:column; height:100vh; background:transparent; }
-    #frozen-top  { flex-shrink:0; background:var(--bg); }
+    #frozen-top  { flex-shrink:0; background:rgba(4,8,18,0.82); }
     #filter-panel { display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; box-shadow:0 4px 16px rgba(0,0,0,.5); }
     #scroll-list { flex:1; overflow-y:auto; min-height:0; background:transparent; overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:8px 24px 16px; }
 
     #header {
       display:flex; justify-content:space-between; align-items:flex-start;
-      padding:12px 24px; border-bottom:1px solid var(--border); background:var(--surface);
+      padding:12px 24px; border-bottom:1px solid var(--border);
     }
     #header h1 { font-size:18px; font-weight:700; }
     #header h1 span { color:var(--green-hi); }
@@ -99,11 +90,10 @@
     .hdr-btn:disabled { opacity:.4; cursor:default; }
     #timestamp-row { display:flex; align-items:center; gap:8px; }
     #timestamp { color:var(--dim); font-size:11px; font-family:var(--font); }
-    #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:13px; padding:0; line-height:1; font-family:var(--font); flex-shrink:0; }
+    #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:22px; padding:0; line-height:1; font-family:var(--font); flex-shrink:0; display:flex; align-items:center; }
     #refresh-btn-sm:hover:not(:disabled) { color:var(--text); }
     #refresh-btn-sm:disabled { opacity:.4; cursor:default; }
     #refresh-warning { color:#ef4444; font-size:10px; text-align:right; min-height:14px; }
-    #debug     { color:var(--muted); font-size:10px; }
 
     #main { max-width:680px; margin:0 auto; padding:10px 24px 0; }
     .sec-label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
@@ -164,19 +154,14 @@
     .legend-item { display:flex; align-items:center; gap:5px; }
     .legend-dot  { width:11px; height:11px; border-radius:50%; border:1px solid var(--border); flex-shrink:0; }
     .legend-label { color:var(--dim); font-size:12px; }
-
-    #league-key { font-size:11px; margin-bottom:8px; line-height:2; }
     .lk-item { color:var(--dim); transition:color .15s; }
     .lk-item.lk-active { color:#fff; font-weight:600; }
-    body.day .lk-item.lk-active,
-    body.day .league-group-label.lk-active,
-    body.day .legend-label.lk-active { color:var(--text); }
     .legend-label.lk-active { color:#fff; font-weight:600; }
     .league-group-label { color:var(--dim); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; transition:color .15s; }
     .league-group-label.lk-active { color:#fff; font-weight:600; }
     .league-group { margin-bottom:2px; }
+    #league-key { font-size:11px; margin-bottom:8px; line-height:2; }
 
-    /* Player rows */
     .player-row { margin-bottom:0; padding:16px 0 14px; border-bottom:1px solid var(--border); }
     .player-name-row { display:flex; align-items:center; gap:8px; }
     .remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0; margin-left:auto; }
@@ -185,8 +170,6 @@
     .player-pos  { color:var(--text); font-size:14px; }
     .player-team { color:var(--text); font-size:14px; }
     .rookie-badge { background:#818cf8; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
-
-    /* Icon rows */
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
     .row-label { color:var(--text); font-size:10px; }
@@ -196,44 +179,24 @@
       width:20px; height:20px; border-radius:50%; color:white;
       font-size:10px; font-weight:700; border:1px solid var(--border); cursor:default; flex-shrink:0;
     }
-    .nwo-oval { display:inline-flex; gap:3px; align-items:center; border:1px solid rgba(255,255,255,0.2); border-radius:14px; padding:1px 5px; }
     .owner-toggle { background:none; border:none; color:var(--dim); cursor:pointer; font-family:var(--font); font-size:10px; padding:0; line-height:1; flex-shrink:0; width:16px; text-align:center; transition:transform .15s; display:inline-block; }
     .owner-toggle:hover { color:var(--text); }
     .owner-toggle.open { transform:rotate(90deg); }
-    .owner-toggle-ph { width:16px; flex-shrink:0; display:inline-block; }
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:flex; gap:20px; padding-left:36px; margin-top:3px; }
     .avail-col       { display:flex; flex-direction:column; gap:2px; }
     .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
     .owner-line.hl   { color:var(--text); }
-
     .no-results { color:var(--dim); font-size:13px; padding:8px 0; }
-    .auth-input {
-      width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
-      padding:7px 10px; border-radius:5px; font-family:var(--font); font-size:12px;
-      outline:none; margin-bottom:8px; display:block;
-    }
-    .auth-input:focus { border-color:var(--green); }
-    #mfl-auth-status { font-size:11px; color:var(--dim); margin-top:8px; min-height:16px; }
     .expand-toggle-label { display:flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
     .expand-toggle-label input[type="checkbox"] { display:none; }
-    .toggle-track {
-      width:30px; height:17px; border-radius:9px; background:var(--muted);
-      position:relative; transition:background .2s; flex-shrink:0;
-    }
+    .toggle-track { width:30px; height:17px; border-radius:9px; background:var(--muted); position:relative; transition:background .2s; flex-shrink:0; }
     .expand-toggle-label input:checked ~ .toggle-track { background:var(--green); }
-    .toggle-thumb {
-      position:absolute; top:2px; left:2px; width:13px; height:13px;
-      border-radius:50%; background:#fff; transition:transform .2s;
-    }
+    .toggle-thumb { position:absolute; top:2px; left:2px; width:13px; height:13px; border-radius:50%; background:#fff; transition:transform .2s; }
     .expand-toggle-label input:checked ~ .toggle-track .toggle-thumb { transform:translateX(13px); }
     .toggle-text { color:var(--dim); font-size:11px; font-family:var(--font); }
-
-    #history-panel {
-      background:var(--surface); border:1px solid var(--border);
-      border-radius:8px; padding:14px; margin-bottom:20px; display:none;
-    }
+    #history-panel { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:14px; margin-bottom:20px; display:none; }
     #history-panel h3 { font-size:13px; font-weight:600; margin-bottom:10px; color:var(--text); }
     .history-entry { display:flex; flex-direction:column; padding:8px 0; border-bottom:1px solid var(--muted); }
     .history-entry:last-child { border-bottom:none; }
@@ -250,12 +213,11 @@
     .revert-btn:hover { border-color:var(--green); color:var(--green); }
     .history-players { margin-top:6px; padding:6px 8px; background:var(--bg); border-radius:4px; font-size:11px; color:var(--dim); line-height:1.7; }
     .history-empty { color:var(--dim); font-size:13px; }
-    #debug-ticker { flex-shrink:0; background:var(--bg); border-top:1px solid var(--border); padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
+    #debug-ticker { flex-shrink:0; background:rgba(4,8,18,0.88); border-top:1px solid var(--border); padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
     #debug-ticker .dt-val { color:var(--dim); }
     #debug-ticker .dt-key { color:var(--dim); margin-right:3px; }
     #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
     #debug-ticker .dt-sep { color:var(--muted); }
-
     #mfl-keys-panel { display:none; position:fixed; top:58px; right:24px; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:16px; min-width:320px; box-shadow:0 4px 16px rgba(0,0,0,.6); }
     #mfl-keys-panel h4 { font-size:12px; color:var(--dim); margin-bottom:12px; letter-spacing:.05em; }
     #mfl-keys-panel .keys-instructions { font-size:11px; color:var(--dim); margin-bottom:12px; line-height:1.5; }
@@ -264,6 +226,8 @@
     .keys-input { background:var(--bg); border:1px solid var(--border); color:var(--text); padding:5px 8px; border-radius:4px; font-family:var(--font); font-size:11px; width:100%; }
     .keys-input:focus { outline:none; border-color:var(--green); }
     #mfl-keys-panel .keys-save { background:var(--green); color:#fff; border:none; padding:7px 16px; border-radius:5px; font-family:var(--font); font-size:12px; cursor:pointer; width:100%; margin-top:4px; }
+    .auth-input { width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:7px 10px; border-radius:5px; font-family:var(--font); font-size:12px; outline:none; margin-bottom:8px; display:block; }
+    .auth-input:focus { border-color:var(--green); }
   </style>
 </head>
 <body>
@@ -301,14 +265,11 @@
     <div id="add-results"></div>
     <div id="pool-status">Loading player pool…</div>
   </div>
-
   <hr class="section-divider">
-
   <div id="history-panel">
     <h3>Watchlist History</h3>
     <div id="history-list"></div>
   </div>
-
   <div id="filter-section">
     <div class="filter-header">
       <span class="sec-label">Filter &amp; sort</span>
@@ -324,7 +285,6 @@
       <div class="cs-wrap" id="csf-sort"><button class="cs-btn" onclick="csToggle(this)">Sort<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-sort" onclick="event.stopPropagation()"></div></div>
     </div>
   </div>
-
   <div class="filter-header"><span class="sec-label">Status</span></div>
   <div id="legend">
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
@@ -340,7 +300,6 @@
     <div style="flex-basis:100%;height:0"></div>
     <div class="legend-item"><span class="rookie-badge">R</span><span class="legend-label rookie-label">Rookie</span></div>
   </div>
-
   <div class="filter-header"><span class="sec-label">Teams</span></div>
   <div id="league-key"></div>
 </div>
@@ -354,20 +313,19 @@
 </div>
 
 <script>
-const APP_VERSION = "1.64";
+const APP_VERSION = "1.65";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
-let _bgColor   = _isDayMode ? "#7aa8c4" : "#060e1c";
+let _bgColor   = _isDayMode ? "#3a6480" : "#03060c";
 let _dimColor  = _isDayMode ? "#c0bcb4" : "#2d3d52";
 
 function _applyTheme(isDay){
   document.body.classList.toggle("day", isDay);
-  _bgColor  = isDay ? "#7aa8c4" : "#060e1c";
+  _bgColor  = isDay ? "#3a6480" : "#03060c";
   _dimColor = isDay ? "#c0bcb4" : "#2d3d52";
   const tog = document.getElementById("theme-toggle");
   if(tog) tog.checked = isDay;
-
   renderList();
 }
 function toggleTheme(){
@@ -380,23 +338,17 @@ function toggleTheme(){
 let _dbgErr=null,_dbgErrTime=null;
 window.onerror=(msg,src,line,col)=>{
   _dbgErr=msg+" ("+(src||"").split("/").pop()+":"+line+":"+col+")";
-  _dbgErrTime=Date.now();
-  _dbgUpdate();return false;
+  _dbgErrTime=Date.now();_dbgUpdate();return false;
 };
 window.onunhandledrejection=e=>{
   _dbgErr="Promise rejection: "+(e.reason?.message||e.reason||"unknown");
-  _dbgErrTime=Date.now();
-  _dbgUpdate();
+  _dbgErrTime=Date.now();_dbgUpdate();
 };
 function _dbgUpdate(){
-  const el=document.getElementById("debug-ticker");
-  if(!el)return;
+  const el=document.getElementById("debug-ticker");if(!el)return;
   const safeLen=(key,parse=true)=>{
-    const v=localStorage.getItem(key);
-    if(v===null)return"null";
-    if(!parse)return v.length+"b";
-    try{const p=JSON.parse(v);return Array.isArray(p)?p.length+" items":typeof p==="object"&&p?Object.keys(p).length+" keys":JSON.stringify(p).slice(0,20);}
-    catch{return"ERR";}
+    const v=localStorage.getItem(key);if(v===null)return"null";if(!parse)return v.length+"b";
+    try{const p=JSON.parse(v);return Array.isArray(p)?p.length+" items":typeof p==="object"&&p?Object.keys(p).length+" keys":JSON.stringify(p).slice(0,20);}catch{return"ERR";}
   };
   const lrt=localStorage.getItem("lrTime");
   const ago=lrt?Math.round((Date.now()-parseInt(lrt))/1000)+"s ago":"never";
@@ -420,45 +372,30 @@ setInterval(_dbgUpdate,3000);
 
 // ── League config ──────────────────────────────────────────────────────────────
 const LEAGUES = [
-  { server:"www47", id:"13133", label:"SF" },        // [1] Mediocre Morsov
-  { server:"www42", id:"71526", label:"SF" },        // [2] QC at the Kratom Factory
-  { server:"www47", id:"64818", twoCopy:true, label:"SF/TE+" }, // [3] The Undertaker (nWo)
-  { server:"www48", id:"68291", label:"SF/TE+" },    // [4] The Undertaker
-  { server:"www47", id:"69382", label:"SF/TE+" },    // [5] Shotgun Shai-Hulud
-  { server:"www47", id:"52453", label:"SF/TE+" },    // [6] Cleon LIX
+  { server:"www47", id:"13133", label:"SF" },
+  { server:"www42", id:"71526", label:"SF" },
+  { server:"www47", id:"64818", twoCopy:true, label:"SF/TE+" },
+  { server:"www48", id:"68291", label:"SF/TE+" },
+  { server:"www47", id:"69382", label:"SF/TE+" },
+  { server:"www47", id:"52453", label:"SF/TE+" },
 ];
 const MY_TEAM_NAMES = {
-  "71526": "QC at the Kratom Factory",
-  "13133": "Mediocre Morsov",
-  "52453": "Cleon LIX",
-  "68291": "The Undertaker",
-  "69382": "Shotgun Shai-Hulud",
-  "64818": "The Undertaker (nWo)",
+  "71526":"QC at the Kratom Factory","13133":"Mediocre Morsov",
+  "52453":"Cleon LIX","68291":"The Undertaker",
+  "69382":"Shotgun Shai-Hulud","64818":"The Undertaker (nWo)",
 };
-
-// ── MY_TEAM_MATCH (exact franchise name inside each league — edit if different) ─
 const MY_TEAM_MATCH = {
-  "71526": "QC at the Kratom Factory",
-  "13133": "Mediocre Morsov",
-  "52453": "Cleon LIX",
-  "68291": "The Undertaker",
-  "69382": "Shotgun Shai-Hulud",
-  "64818": "The Undertaker (nWo)",
+  "71526":"QC at the Kratom Factory","13133":"Mediocre Morsov",
+  "52453":"Cleon LIX","68291":"The Undertaker",
+  "69382":"Shotgun Shai-Hulud","64818":"The Undertaker (nWo)",
 };
 
-// ── Utility functions ──────────────────────────────────────────────────────────
 const norm    = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
 const clone   = v => JSON.parse(JSON.stringify(v));
 const toArr   = v => Array.isArray(v)?v:(v&&typeof v==="object"?[v]:[]);
-const sortKey = n => {
-  const w = (n||"").trim().split(/\s+/);
-  const sfx = /^(jr\.?|sr\.?|ii|iii|iv|v)$/i;
-  const last = [...w].reverse().find(p => !sfx.test(p)) || w[0];
-  return (last + " " + n).toLowerCase();
-};
-function stripHtml(s){ return (s||"").replace(/<[^>]*>/g,""); }
+const sortKey = n => { const w=(n||"").trim().split(/\s+/),sfx=/^(jr\.?|sr\.?|ii|iii|iv|v)$/i,last=[...w].reverse().find(p=>!sfx.test(p))||w[0]; return(last+" "+n).toLowerCase(); };
+function stripHtml(s){ return(s||"").replace(/<[^>]*>/g,""); }
 
-// ── DEFAULT_WATCHLIST (29 dynasty targets) ─────────────────────────────────────
 const DEFAULT_WATCHLIST=[
   {name:"Caleb Williams",pos:"QB"},{name:"Jayden Daniels",pos:"QB"},
   {name:"CJ Stroud",pos:"QB"},{name:"Anthony Richardson",pos:"QB"},
@@ -478,7 +415,6 @@ const DEFAULT_WATCHLIST=[
   {name:"Cade Otton",pos:"TE"}
 ];
 
-// ── State ──────────────────────────────────────────────────────────────────────
 let mflUserInfo  = localStorage.getItem("mflUserInfo") || null;
 let mflUsername  = localStorage.getItem("mflUsername") || null;
 let watchlist    = JSON.parse(localStorage.getItem("wl")||"null") || DEFAULT_WATCHLIST;
@@ -489,159 +425,111 @@ let undoStack    = [], redoStack = [];
 let history      = JSON.parse(localStorage.getItem("wlHistory")||"[]");
 let mflPlayers   = [];
 const nameToId   = {};
-let _tbStatus    = {}; // leagueId → count or "ERR:msg"
+let _tbStatus    = {};
 
-// ── MFL Auth ───────────────────────────────────────────────────────────────────
 function manualRefresh(){
-  const lrt=parseInt(localStorage.getItem("lrTime")||"0");
-  const elapsed=Date.now()-lrt;
+  const lrt=parseInt(localStorage.getItem("lrTime")||"0"),elapsed=Date.now()-lrt;
   const warn=document.getElementById("refresh-warning");
   if(lrt&&elapsed<300000){
     const mins=Math.round(elapsed/60000);
     warn.textContent="⚠ Last refresh was "+(mins<1?Math.round(elapsed/1000)+"s":"~"+mins+"min")+" ago — frequent refreshes may violate MFL guidelines";
-  }else{
-    warn.textContent="";
-  }
-  localStorage.removeItem("lrTime");
-  doRefresh();
+  }else{warn.textContent="";}
+  localStorage.removeItem("lrTime");doRefresh();
 }
-function updateMFLBtn(){ _dbgUpdate(); } // state shown in debug ticker
+function updateMFLBtn(){ _dbgUpdate(); }
 async function linkMFL(){
-  const user=prompt("MFL Username:"); if(!user)return;
-  const pass=prompt("MFL Password:"); if(!pass)return;
+  const user=prompt("MFL Username:");if(!user)return;
+  const pass=prompt("MFL Password:");if(!pass)return;
   try{
     const r=await fetch(`/api/mfl?server=api&TYPE=login&year=2026&USERNAME=${encodeURIComponent(user)}&PASSWORD=${encodeURIComponent(pass)}`);
-    const d=await r.json();
-    const token=d?.userInfo?.userinfo;
-    if(token){
-      mflUserInfo=token; mflUsername=user;
-      localStorage.setItem("mflUserInfo",token); localStorage.setItem("mflUsername",user);
-      _dbgUpdate(); alert("MFL linked — refreshing rosters…"); doRefresh();
-    }else{
-      const msg=d?.error||JSON.stringify(d);
-      const dbg=d?._debug?("\n\nDebug: "+d._debug.httpStatus+" — "+d._debug.body):"";
-      alert("Login failed: "+msg+dbg);
-    }
+    const d=await r.json();const token=d?.userInfo?.userinfo;
+    if(token){mflUserInfo=token;mflUsername=user;localStorage.setItem("mflUserInfo",token);localStorage.setItem("mflUsername",user);_dbgUpdate();alert("MFL linked — refreshing rosters…");doRefresh();}
+    else{alert("Login failed: "+(d?.error||JSON.stringify(d)));}
   }catch(e){alert("Error: "+e.message);}
 }
-function unlinkMFL(){
-  mflUserInfo=null; mflUsername=null;
-  localStorage.removeItem("mflUserInfo"); localStorage.removeItem("mflUsername");
-  _dbgUpdate();
-}
+function unlinkMFL(){mflUserInfo=null;mflUsername=null;localStorage.removeItem("mflUserInfo");localStorage.removeItem("mflUsername");_dbgUpdate();}
 
-// ── MFL API Keys ─────────────────────────────────────────────────────────────
 let mflApiKeys=JSON.parse(localStorage.getItem("mflApiKeys")||"{}");
-
 function toggleMflKeys(){
-  const p=document.getElementById("mfl-keys-panel");
-  if(!p)return;
+  const p=document.getElementById("mfl-keys-panel");if(!p)return;
   p.style.display=p.style.display==="block"?"none":"block";
-  if(p.style.display==="block") buildKeysPanel();
+  if(p.style.display==="block")buildKeysPanel();
 }
 document.addEventListener("click",e=>{
   const p=document.getElementById("mfl-keys-panel");
-  if(p&&p.style.display==="block"&&!e.target.closest("#mfl-keys-panel")&&!e.target.closest("#mfl-keys-btn"))
-    p.style.display="none";
+  if(p&&p.style.display==="block"&&!e.target.closest("#mfl-keys-panel")&&!e.target.closest("#mfl-keys-btn"))p.style.display="none";
 });
 function buildKeysPanel(){
-  const body=document.getElementById("mfl-keys-body");
-  if(!body)return;
+  const body=document.getElementById("mfl-keys-body");if(!body)return;
   body.innerHTML=LEAGUES.map((c,i)=>{
     const saved=mflApiKeys[c.id]||"";
-    return`<div class="keys-row">
-      <span class="keys-label">[${i+1}] ${MY_TEAM_NAMES[c.id]||"League "+(i+1)}</span>
-      <input class="keys-input" id="apikey-${c.id}" type="text" value="${saved}" placeholder="Paste APIKEY…" spellcheck="false"/>
-    </div>`;
+    return`<div class="keys-row"><span class="keys-label">[${i+1}] ${MY_TEAM_NAMES[c.id]||"League "+(i+1)}</span><input class="keys-input" id="apikey-${c.id}" type="text" value="${saved}" placeholder="Paste APIKEY…" spellcheck="false"/></div>`;
   }).join("");
 }
 function saveMflKeys(){
-  LEAGUES.forEach(c=>{
-    const el=document.getElementById("apikey-"+c.id);
-    if(!el)return;
-    const v=el.value.trim();
-    if(v) mflApiKeys[c.id]=v; else delete mflApiKeys[c.id];
-  });
+  LEAGUES.forEach(c=>{const el=document.getElementById("apikey-"+c.id);if(!el)return;const v=el.value.trim();if(v)mflApiKeys[c.id]=v;else delete mflApiKeys[c.id];});
   localStorage.setItem("mflApiKeys",JSON.stringify(mflApiKeys));
-  document.getElementById("mfl-keys-panel").style.display="none";
-  _dbgUpdate();
+  document.getElementById("mfl-keys-panel").style.display="none";_dbgUpdate();
 }
 
 function iconColor(s){return s==="available"?"#16a34a":s==="mine"||s==="mytradeblock"?"#2563eb":s==="taken"||s==="tradeblock"?"#dc2626":"#374151";}
 function ringColor(s){return s==="mytradeblock"?"#06b6d4":s==="tradeblock"?"#d97706":null;}
 function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":s==="tradeblock"?"Trade Block":s==="mytradeblock"?"My Trade Block":"Unknown";}
-function isRookie(name){ const m=getPlayerMeta(name); return !!(m?.status==="R"||m?.rook==="1"); }
+function isRookie(name){ const m=getPlayerMeta(name);return !!(m?.status==="R"||m?.rook==="1"); }
 
-// ── History / Undo ─────────────────────────────────────────────────────────────
-function recordChange(){ undoStack.push(clone(watchlist)); if(undoStack.length>100)undoStack.shift(); redoStack=[]; updateUndoRedoBtns(); }
-function saveHistory(desc){ history.unshift({ts:Date.now(),desc,watchlist:clone(watchlist)}); if(history.length>30)history.pop(); localStorage.setItem("wlHistory",JSON.stringify(history)); renderHistory(); }
-function undo(){ if(!undoStack.length)return; redoStack.push(clone(watchlist)); watchlist=undoStack.pop(); localStorage.setItem("wl",JSON.stringify(watchlist)); updateUndoRedoBtns(); buildNameDropdown();buildTeamFilter();renderList(); }
-function redo(){ if(!redoStack.length)return; undoStack.push(clone(watchlist)); watchlist=redoStack.pop(); localStorage.setItem("wl",JSON.stringify(watchlist)); updateUndoRedoBtns(); buildNameDropdown();buildTeamFilter();renderList(); }
-function revertToHistory(i){ recordChange(); watchlist=clone(history[i].watchlist); localStorage.setItem("wl",JSON.stringify(watchlist)); saveHistory("Reverted to: "+history[i].desc); buildNameDropdown();buildTeamFilter();renderList(); }
-function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length; document.getElementById("redo-btn").disabled=!redoStack.length; }
-function toggleHistory(){ const p=document.getElementById("history-panel"); p.style.display=p.style.display==="none"?"block":"none"; }
+function recordChange(){ undoStack.push(clone(watchlist));if(undoStack.length>100)undoStack.shift();redoStack=[];updateUndoRedoBtns(); }
+function saveHistory(desc){ history.unshift({ts:Date.now(),desc,watchlist:clone(watchlist)});if(history.length>30)history.pop();localStorage.setItem("wlHistory",JSON.stringify(history));renderHistory(); }
+function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();renderList(); }
+function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();renderList(); }
+function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();renderList(); }
+function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length;document.getElementById("redo-btn").disabled=!redoStack.length; }
+function toggleHistory(){ const p=document.getElementById("history-panel");p.style.display=p.style.display==="none"?"block":"none"; }
 let histExpanded=new Set();
 function hsToggle(i){histExpanded.has(i)?histExpanded.delete(i):histExpanded.add(i);renderHistory();}
-
 function renderHistory(){
   const el=document.getElementById("history-list");
-  if(!history.length){el.innerHTML='<p class="history-empty">No history yet — changes auto-save here.</p>';return;}
+  if(!history.length){el.innerHTML='<p class="history-empty">No history yet.</p>';return;}
   const maxP=Math.max(...history.map(h=>h.watchlist?.length||0));
   const bestIdx=maxP>0?history.findIndex(h=>(h.watchlist?.length||0)===maxP):-1;
   el.innerHTML=history.map((h,i)=>{
     const ts=new Date(h.ts).toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
-    const wl=h.watchlist||[];
-    const count=wl.length;
-    const isBest=(i===bestIdx&&count>0);
-    const isExp=histExpanded.has(i);
+    const wl=h.watchlist||[],count=wl.length,isBest=(i===bestIdx&&count>0),isExp=histExpanded.has(i);
     const names=wl.map(p=>`${p.name} <span style="color:var(--dim);font-size:10px">${p.pos}</span>`).join(" &middot; ");
     return`<div class="history-entry${isBest?" best-restore":""}">
       ${isBest?'<div class="history-best-badge">&#9733; Best restore point</div>':""}
-      <div class="history-entry-row">
-        <div class="history-meta">
-          <span class="history-desc">${h.desc}</span>
-          <span class="history-time">${ts} &middot; ${count} player${count!==1?"s":""}</span>
-        </div>
-        <div class="history-actions">
-          ${count>0?`<button class="expand-btn" onclick="hsToggle(${i})">${isExp?"&#9660; Hide":"&#9654; List"}</button>`:""}
-          <button class="revert-btn" onclick="revertToHistory(${i})">&#8635; Restore${count>0?" ("+count+")":""}</button>
-        </div>
-      </div>
-      ${isExp&&count>0?`<div class="history-players">${names}</div>`:""}
-    </div>`;
+      <div class="history-entry-row"><div class="history-meta"><span class="history-desc">${h.desc}</span><span class="history-time">${ts} &middot; ${count} player${count!==1?"s":""}</span></div>
+      <div class="history-actions">${count>0?`<button class="expand-btn" onclick="hsToggle(${i})">${isExp?"&#9660; Hide":"&#9654; List"}</button>`:""}<button class="revert-btn" onclick="revertToHistory(${i})">&#8635; Restore${count>0?" ("+count+")":""}</button></div></div>
+      ${isExp&&count>0?`<div class="history-players">${names}</div>`:""}</div>`;
   }).join("");
 }
 
-// ── MFL API ───────────────────────────────────────────────────────────────────
 async function mfl(server,leagueId,type,year="2026",extra={}){
-  const p=new URLSearchParams({server,TYPE:type,year}); if(leagueId)p.set("L",leagueId);
+  const p=new URLSearchParams({server,TYPE:type,year});if(leagueId)p.set("L",leagueId);
   Object.entries(extra).forEach(([k,v])=>p.set(k,v));
-  const r=await fetch(`/api/mfl?${p}`); if(!r.ok)throw new Error("HTTP "+r.status);
-  const d=await r.json(); if(d?.error){const em=typeof d.error==="string"?d.error:JSON.stringify(d.error);throw new Error(em);} return d;
+  const r=await fetch(`/api/mfl?${p}`);if(!r.ok)throw new Error("HTTP "+r.status);
+  const d=await r.json();if(d?.error){const em=typeof d.error==="string"?d.error:JSON.stringify(d.error);throw new Error(em);}return d;
 }
-function displayName(n){ const p=(n||"").split(", "); return p.length===2?p[1]+" "+p[0]:n; }
-function getPlayerMeta(name){ const n=norm(name); return mflPlayers.find(p=>p.name&&(norm(p.name)===n||norm(displayName(p.name))===n)); }
-function twoCopyStatuses(mc,oc,tb,myTb,pid){ const st=[]; for(let i=0;i<mc;i++)st.push(myTb?.has(pid)?"mytradeblock":"mine"); for(let i=0;i<oc;i++)st.push(tb?.has(pid)?"tradeblock":"taken"); while(st.length<2)st.push("available"); return st.slice(0,2); }
+function displayName(n){ const p=(n||"").split(", ");return p.length===2?p[1]+" "+p[0]:n; }
+function getPlayerMeta(name){ const n=norm(name);return mflPlayers.find(p=>p.name&&(norm(p.name)===n||norm(displayName(p.name))===n)); }
+function twoCopyStatuses(mc,oc,tb,myTb,pid){ const st=[];for(let i=0;i<mc;i++)st.push(myTb?.has(pid)?"mytradeblock":"mine");for(let i=0;i<oc;i++)st.push(tb?.has(pid)?"tradeblock":"taken");while(st.length<2)st.push("available");return st.slice(0,2); }
 
-// ── Player Pool ───────────────────────────────────────────────────────────────
 async function loadPlayerPool(){
   const cached=localStorage.getItem("mflPoolV2"),cachedTime=parseInt(localStorage.getItem("mflPoolTimeV2")||"0");
-  if(cached&&(Date.now()-cachedTime)<86400000){ mflPlayers=JSON.parse(cached); }
+  if(cached&&(Date.now()-cachedTime)<86400000){mflPlayers=JSON.parse(cached);}
   else{
     document.getElementById("pool-status").textContent="Fetching player pool from MFL…";
     try{
       const d=await mfl("www47","52453","players","2026");
       const raw=toArr(d?.players?.player);
-      if(raw.length>100){ mflPlayers=raw.filter(p=>["QB","RB","WR","TE"].includes(p.position)); localStorage.setItem("mflPoolV2",JSON.stringify(mflPlayers)); localStorage.setItem("mflPoolTimeV2",Date.now().toString()); }
-    }catch(e){ document.getElementById("pool-status").textContent="Could not load pool: "+e.message; return; }
+      if(raw.length>100){mflPlayers=raw.filter(p=>["QB","RB","WR","TE"].includes(p.position));localStorage.setItem("mflPoolV2",JSON.stringify(mflPlayers));localStorage.setItem("mflPoolTimeV2",Date.now().toString());}
+    }catch(e){document.getElementById("pool-status").textContent="Could not load pool: "+e.message;return;}
   }
-  mflPlayers.forEach(p=>{ if(!p.name||!p.id)return; nameToId[norm(p.name)]=p.id; nameToId[norm(displayName(p.name))]=p.id; });
+  mflPlayers.forEach(p=>{if(!p.name||!p.id)return;nameToId[norm(p.name)]=p.id;nameToId[norm(displayName(p.name))]=p.id;});
   const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV2")||Date.now()));
   document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
-  buildTeamFilter(); renderList();
+  buildTeamFilter();renderList();
 }
 
-// ── Add Player ─────────────────────────────────────────────────────────────────
 let addTimer;
 function onAddInput(){clearTimeout(addTimer);addTimer=setTimeout(updateAddResults,120);}
 function hideResultsDelayed(){setTimeout(()=>{document.getElementById("add-results").style.display="none";},200);}
@@ -650,10 +538,9 @@ function updateAddResults(){
   const inWl=new Set(watchlist.map(p=>norm(p.name)));
   if(!q||q.length<2){box.style.display="none";return;}
   const results=mflPlayers.filter(p=>p.name&&(norm(p.name).includes(q)||norm(displayName(p.name)).includes(q)))
-    .sort((a,b)=>{ const an=norm(displayName(a.name)),bn=norm(displayName(b.name)); return(an.startsWith(q)?0:1)-(bn.startsWith(q)?0:1)||an.localeCompare(bn); }).slice(0,12);
+    .sort((a,b)=>{const an=norm(displayName(a.name)),bn=norm(displayName(b.name));return(an.startsWith(q)?0:1)-(bn.startsWith(q)?0:1)||an.localeCompare(bn);}).slice(0,12);
   if(!results.length){box.style.display="none";return;}
-  box.innerHTML=results.map(p=>{ const dn=displayName(p.name),already=inWl.has(norm(dn));
-    const rook=p.status==="R"||p.rook==="1";
+  box.innerHTML=results.map(p=>{const dn=displayName(p.name),already=inWl.has(norm(dn)),rook=p.status==="R"||p.rook==="1";
     return`<div class="add-result${already?" already":""}" ${already?"":`onclick="addFromPool('${dn.replace(/'/g,"\\'")}','${p.position||""}')"`}>
       <span class="add-result-name">${dn}${rook?' <span class="rookie-badge">R</span>':""}</span>
       <span class="add-result-meta">${p.position||""}${p.team?" · "+p.team:""}</span></div>`;
@@ -662,27 +549,21 @@ function updateAddResults(){
 }
 function addFromPool(name,pos){
   if(watchlist.some(p=>norm(p.name)===norm(name)))return;
-  recordChange(); watchlist.push({name,pos}); localStorage.setItem("wl",JSON.stringify(watchlist));
+  recordChange();watchlist.push({name,pos});localStorage.setItem("wl",JSON.stringify(watchlist));
   const status=computePlayerStatus(name);
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
   saveHistory("Added "+name);
-  document.getElementById("add-search").value=""; document.getElementById("add-results").style.display="none";
+  document.getElementById("add-search").value="";document.getElementById("add-results").style.display="none";
   buildNameDropdown();buildTeamFilter();renderList();
 }
-
-
 function resetToDefaults(){
   if(!confirm("Reset watchlist to the 29 default players?"))return;
-  recordChange();
-  watchlist=clone(DEFAULT_WATCHLIST);
-  localStorage.setItem("wl",JSON.stringify(watchlist));
-  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");
-  buildNameDropdown();buildTeamFilter();renderList();
+  recordChange();watchlist=clone(DEFAULT_WATCHLIST);localStorage.setItem("wl",JSON.stringify(watchlist));
+  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();renderList();
 }
 
-// ── Roster helpers ─────────────────────────────────────────────────────────────
 function loadCachedRosters(){
-  const data=JSON.parse(localStorage.getItem("leagueRostersData")||"null"); if(!data)return null;
+  const data=JSON.parse(localStorage.getItem("leagueRostersData")||"null");if(!data)return null;
   const result={};
   LEAGUES.forEach(cfg=>{
     const rs=data[cfg.id];
@@ -693,105 +574,80 @@ function loadCachedRosters(){
   return result;
 }
 function computePlayerStatus(name){
-  const pid=nameToId[norm(name)],rosters=loadCachedRosters(); if(!rosters||!pid)return null;
+  const pid=nameToId[norm(name)],rosters=loadCachedRosters();if(!rosters||!pid)return null;
   const ls={};
   LEAGUES.forEach(cfg=>{
     const rs=rosters[cfg.id];
     if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
     else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,rs.myTradeBait,pid);
-    else{ if(rs.mine.has(String(pid)))ls[cfg.id]=rs.myTradeBait?.has(String(pid))?"mytradeblock":"mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
+    else{if(rs.mine.has(String(pid)))ls[cfg.id]=rs.myTradeBait?.has(String(pid))?"mytradeblock":"mine";else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken";else ls[cfg.id]="available";}
   });
   return ls;
 }
 
-// ── Refresh ────────────────────────────────────────────────────────────────────
 async function doRefresh(){
-  const tsEl=document.getElementById("timestamp");
-  const btnEl=document.getElementById("refresh-btn-sm");
-  if(tsEl)tsEl.textContent="Refreshing…";
-  if(btnEl)btnEl.disabled=true;
+  const tsEl=document.getElementById("timestamp"),btnEl=document.getElementById("refresh-btn-sm");
+  if(tsEl)tsEl.textContent="Refreshing…";if(btnEl)btnEl.disabled=true;
   const rosterErrors=[],newNames={},leagueRosters={};
-
   const _sleep=ms=>new Promise(r=>setTimeout(r,ms));
   for(let _li=0;_li<LEAGUES.length;_li++){
-    if(_li>0)await _sleep(1000); // 1s between leagues per MFL rate-limit guidelines
-    const cfg=LEAGUES[_li];
-    let fetched=false;
+    if(_li>0)await _sleep(1000);
+    const cfg=LEAGUES[_li];let fetched=false;
     for(const year of ["2026","2025"]){
       try{
         const rData=await mfl(cfg.server,cfg.id,"rosters",year);
-        let myFranchiseId=null;
-        const frNames={};  // id → name for this league
+        let myFranchiseId=null;const frNames={};
         try{
           const lg=await mfl(cfg.server,cfg.id,"league",year);
           newNames[cfg.id]=lg?.league?.name||cfg.id;
           const frs=toArr(lg?.league?.franchises?.franchise);
-          frs.forEach(fr=>{ frNames[fr.id]=stripHtml(fr.name); });
+          frs.forEach(fr=>{frNames[fr.id]=stripHtml(fr.name);});
           const matchName=MY_TEAM_MATCH[cfg.id]||MY_TEAM_NAMES[cfg.id]||"";
           const myFr=frs.find(fr=>norm(fr.name)===norm(matchName));
           myFranchiseId=myFr?.id||null;
         }catch{newNames[cfg.id]=cfg.id;}
-
         const allFr=toArr(rData?.rosters?.franchise);
-
         if(cfg.twoCopy){
           const mineCount={},otherCount={},nwoOwners={};
           allFr.forEach(fr=>{
-            const isMe=myFranchiseId&&fr.id===myFranchiseId;
-            const frName=frNames[fr.id]||"";
+            const isMe=myFranchiseId&&fr.id===myFranchiseId,frName=frNames[fr.id]||"";
             toArr(fr.player).forEach(p=>{
-              if(isMe){ mineCount[p.id]=(mineCount[p.id]||0)+1; }
-              else{
-                otherCount[p.id]=(otherCount[p.id]||0)+1;
-                if(frName){ if(!nwoOwners[p.id])nwoOwners[p.id]=[]; nwoOwners[p.id].push(frName); }
-              }
+              if(isMe){mineCount[p.id]=(mineCount[p.id]||0)+1;}
+              else{otherCount[p.id]=(otherCount[p.id]||0)+1;if(frName){if(!nwoOwners[p.id])nwoOwners[p.id]=[];nwoOwners[p.id].push(frName);}}
             });
           });
           leagueRosters[cfg.id]={mineCount,otherCount,nwoOwners,tradeBait:new Set(),myTradeBait:new Set(),twoCopy:true};
         }else{
           const mine=new Set(),other=new Set(),owners={};
           allFr.forEach(fr=>{
-            const isMe=myFranchiseId&&fr.id===myFranchiseId;
-            const frName=frNames[fr.id]||"";
-            toArr(fr.player).forEach(p=>{
-              isMe?mine.add(p.id):other.add(p.id);
-              if(!isMe&&frName) owners[p.id]=frName;
-            });
+            const isMe=myFranchiseId&&fr.id===myFranchiseId,frName=frNames[fr.id]||"";
+            toArr(fr.player).forEach(p=>{isMe?mine.add(p.id):other.add(p.id);if(!isMe&&frName)owners[p.id]=frName;});
           });
           leagueRosters[cfg.id]={mine,other,owners,tradeBait:new Set(),myTradeBait:new Set()};
         }
-        // Fetch trade bait — APIKEY (preferred) or mflUserInfo cookie
         const _tbKey=mflApiKeys[cfg.id];
         if(_tbKey||mflUserInfo){
           try{
             const _tbExtra=_tbKey?{APIKEY:_tbKey}:{USERINFO:mflUserInfo};
             const tbData=await mfl("api",cfg.id,"tradeBait",year,_tbExtra);
-            if(LEAGUES.indexOf(cfg)===0) localStorage.setItem("_tbRaw",JSON.stringify(tbData).slice(0,400));
+            if(LEAGUES.indexOf(cfg)===0)localStorage.setItem("_tbRaw",JSON.stringify(tbData).slice(0,400));
             const tb=leagueRosters[cfg.id].tradeBait;
             toArr(tbData?.tradeBaits?.tradeBait).forEach(item=>{
               const ids=(item.willGiveUp||item.willgive_players||"").split(",").filter(Boolean).map(p=>p.trim());
-              if(item.franchise_id===myFranchiseId){
-                ids.forEach(pid=>leagueRosters[cfg.id].myTradeBait.add(pid));
-              }else{
-                ids.forEach(pid=>tb.add(pid));
-              }
+              if(item.franchise_id===myFranchiseId){ids.forEach(pid=>leagueRosters[cfg.id].myTradeBait.add(pid));}
+              else{ids.forEach(pid=>tb.add(pid));}
             });
             _tbStatus[cfg.id]=tb.size;
           }catch(e){
             _tbStatus[cfg.id]="ERR:"+e.message.slice(0,40);
-            if(mflUserInfo&&/expired|invalid|session/i.test(e.message)){
-              mflUserInfo=null;localStorage.removeItem("mflUserInfo");updateMFLBtn();
-            }
+            if(mflUserInfo&&/expired|invalid|session/i.test(e.message)){mflUserInfo=null;localStorage.removeItem("mflUserInfo");updateMFLBtn();}
           }
-        }else{
-          _tbStatus[cfg.id]="no key";
-        }
+        }else{_tbStatus[cfg.id]="no key";}
         fetched=true;break;
-      }catch(e){ rosterErrors.push(cfg.id+"/"+year+": "+e.message); leagueRosters[cfg.id]=null; }
+      }catch(e){rosterErrors.push(cfg.id+"/"+year+": "+e.message);leagueRosters[cfg.id]=null;}
     }
     if(!fetched){newNames[cfg.id]=cfg.id;leagueRosters[cfg.id]=null;}
   }
-
   leagueNames=newNames;
   const rfs={};
   LEAGUES.forEach(cfg=>{
@@ -801,79 +657,55 @@ async function doRefresh(){
     else rfs[cfg.id]={mine:[...rs.mine],other:[...rs.other],owners:rs.owners,tradeBait:[...rs.tradeBait||[]],myTradeBait:[...rs.myTradeBait||[]]};
   });
   localStorage.setItem("leagueRostersData",JSON.stringify(rfs));
-
   const statusMap={};
   watchlist.forEach(player=>{
-    const pid=nameToId[norm(player.name)]; const ls={};
+    const pid=nameToId[norm(player.name)];const ls={};
     LEAGUES.forEach(cfg=>{
       const rs=leagueRosters[cfg.id];
       if(!rs)ls[cfg.id]=cfg.twoCopy?["error","error"]:"error";
       else if(!pid)ls[cfg.id]=cfg.twoCopy?["unknown","unknown"]:"unknown";
       else if(cfg.twoCopy)ls[cfg.id]=twoCopyStatuses(rs.mineCount[pid]||0,rs.otherCount[pid]||0,rs.tradeBait,rs.myTradeBait,pid);
-      else{ if(rs.mine.has(String(pid)))ls[cfg.id]=rs.myTradeBait?.has(String(pid))?"mytradeblock":"mine"; else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken"; else ls[cfg.id]="available"; }
-    }); statusMap[norm(player.name)]=ls;
+      else{if(rs.mine.has(String(pid)))ls[cfg.id]=rs.myTradeBait?.has(String(pid))?"mytradeblock":"mine";else if(rs.other.has(String(pid)))ls[cfg.id]=rs.tradeBait?.has(String(pid))?"tradeblock":"taken";else ls[cfg.id]="available";}
+    });statusMap[norm(player.name)]=ls;
   });
   playerStatus=statusMap;
-
   const now=new Date();
   lastRefresh=now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
-  localStorage.setItem("ps",JSON.stringify(playerStatus)); localStorage.setItem("ln",JSON.stringify(leagueNames)); localStorage.setItem("lr",lastRefresh); localStorage.setItem("lrTime",Date.now().toString());
-  const loaded=Object.values(leagueRosters).filter(r=>r!==null).length;
-  const ownerCount=Object.values(leagueRosters).reduce((sum,rs)=>{
-    if(!rs)return sum;
-    if(rs.twoCopy)return sum+Object.keys(rs.nwoOwners||{}).length;
-    return sum+Object.keys(rs.owners||{}).length;
-  },0);
-  localStorage.setItem("_tbDebug",
-    LEAGUES.map(l=>{const v=_tbStatus[l.id];return v===undefined?"—":String(v);}).join("·")
-  );
-  if(tsEl)tsEl.textContent="Updated "+lastRefresh;
-  if(btnEl)btnEl.disabled=false;
-  renderLeagueKey();renderList();
-  _dbgUpdate();
+  localStorage.setItem("ps",JSON.stringify(playerStatus));localStorage.setItem("ln",JSON.stringify(leagueNames));localStorage.setItem("lr",lastRefresh);localStorage.setItem("lrTime",Date.now().toString());
+  localStorage.setItem("_tbDebug",LEAGUES.map(l=>{const v=_tbStatus[l.id];return v===undefined?"—":String(v);}).join("·"));
+  if(tsEl)tsEl.textContent="Updated "+lastRefresh;if(btnEl)btnEl.disabled=false;
+  renderLeagueKey();renderList();_dbgUpdate();
 }
 
-// ── Render ─────────────────────────────────────────────────────────────────────
 function toggleOwners(idx){
-  const el=document.getElementById("owners-"+idx);
-  const btn=document.getElementById("owntoggle-"+idx);
-  if(!el)return;
-  const opening=el.style.display==="none";
-  el.style.display=opening?"contents":"none";
-  btn.classList.toggle("open",opening);
+  const el=document.getElementById("owners-"+idx),btn=document.getElementById("owntoggle-"+idx);
+  if(!el)return;const opening=el.style.display==="none";
+  el.style.display=opening?"contents":"none";btn.classList.toggle("open",opening);
 }
-
 function clearFilters(){
-  [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league].forEach(s=>s.clear());
-  fv.sort="az";
-  closePanel();
-  Object.keys(csQ).forEach(k=>csQ[k]="");
+  [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league].forEach(s=>s.clear());fv.sort="az";
+  closePanel();Object.keys(csQ).forEach(k=>csQ[k]="");
   ["name","pos","nflteam","status","format","league","sort"].forEach(k=>{csUpdateBtn(k);csRender(k);});
-  buildLeagueFilter();
-  document.getElementById("clear-filters-btn").style.display="none";
-  renderList();
+  buildLeagueFilter();document.getElementById("clear-filters-btn").style.display="none";renderList();
 }
 
-// ── Render helpers ──────────────────────────────────────────────────────────
 function renderLegend(){
   const map={"Available":"available","My Team":"mine","My Trade Block":"mytradeblock","Trade Block":"tradeblock","Rostered":"taken"};
   document.querySelectorAll("#legend .legend-label").forEach(el=>{
     const val=map[el.textContent.trim()];
-    if(val) el.classList.toggle("lk-active", fv.status.size>0&&fv.status.has(val));
+    if(val)el.classList.toggle("lk-active",fv.status.size>0&&fv.status.has(val));
   });
   const rookieLbl=document.querySelector("#legend .rookie-label");
-  if(rookieLbl) rookieLbl.classList.toggle("lk-active", fv.sort==="rookies");
+  if(rookieLbl)rookieLbl.classList.toggle("lk-active",fv.sort==="rookies");
 }
 function renderLeagueKey(){
-  // Build status-active league set: leagues where any watchlist player matches the status filter
   let statusIds=null;
   if(fv.status.size>0&&fv.league.size===0){
     statusIds=new Set();
     watchlist.forEach(p=>{
       const st=playerStatus[norm(p.name)]||{};
       LEAGUES.forEach(cfg=>{
-        const sv=st[cfg.id];
-        const svArr=Array.isArray(sv)?sv:[sv||"unknown"];
+        const sv=st[cfg.id],svArr=Array.isArray(sv)?sv:[sv||"unknown"];
         if(svArr.some(s=>fv.status.has(s)))statusIds.add(cfg.id);
       });
     });
@@ -882,85 +714,49 @@ function renderLeagueKey(){
   document.getElementById("league-key").innerHTML=groups.map(g=>{
     const fmtOn=fv.format.size>0&&fv.format.has(g.label);
     return`<div class="league-group"><span class="league-group-label${fmtOn?" lk-active":""}">${g.label}</span>${
-      g.ids.map(c=>{
-        const num=String(LEAGUES.indexOf(c)+1);
-        const on=fv.league.size>0?fv.league.has(num):statusIds?statusIds.has(c.id):false;
+      g.ids.map(c=>{const num=String(LEAGUES.indexOf(c)+1);const on=fv.league.size>0?fv.league.has(num):statusIds?statusIds.has(c.id):false;
         return`<span class="lk-item${on?" lk-active":""}">[${num}] ${MY_TEAM_NAMES[c.id]||c.id}</span>`;
-      }).join("  ")
-    }</div>`;
+      }).join("  ")}</div>`;
   }).join("");
 }
-// ── Filter state ─────────────────────────────────────────────────────────────
-// ── Custom select — Excel-style with search + multi-select ───────────────────
-const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),sort:"az"};
-const csData={};
-const csQ={};
-const csCfg={
-  name:{multi:true},pos:{multi:true},nflteam:{multi:true},
-  status:{multi:true},format:{multi:true},league:{multi:true},sort:{multi:false}
-};
 
+const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),sort:"az"};
+const csData={},csQ={};
+const csCfg={name:{multi:true},pos:{multi:true},nflteam:{multi:true},status:{multi:true},format:{multi:true},league:{multi:true},sort:{multi:false}};
 let _panelKey=null;
 function closePanel(){
   if(!_panelKey)return;
-  const panel=document.getElementById("filter-panel");
-  panel.style.display="none";
-  panel.innerHTML="";
-  document.querySelectorAll(".cs-btn.panel-open").forEach(b=>b.classList.remove("panel-open"));
-  _panelKey=null;
+  const panel=document.getElementById("filter-panel");panel.style.display="none";panel.innerHTML="";
+  document.querySelectorAll(".cs-btn.panel-open").forEach(b=>b.classList.remove("panel-open"));_panelKey=null;
 }
 function csRefreshPanel(key){
-  const list=document.getElementById("csl-"+key);
-  const panel=document.getElementById("filter-panel");
+  const list=document.getElementById("csl-"+key),panel=document.getElementById("filter-panel");
   if(!list||!panel||_panelKey!==key)return;
-  const sv=panel.querySelector(".cs-search-input")?.value||"";
-  if(sv)csQ[key]=sv;
-  panel.innerHTML=list.innerHTML;
-  if(sv){const inp=panel.querySelector(".cs-search-input");if(inp)inp.value=sv;}
+  const sv=panel.querySelector(".cs-search-input")?.value||"";if(sv)csQ[key]=sv;
+  panel.innerHTML=list.innerHTML;if(sv){const inp=panel.querySelector(".cs-search-input");if(inp)inp.value=sv;}
 }
 function csShowPanel(key){
-  const list=document.getElementById("csl-"+key);
-  const panel=document.getElementById("filter-panel");
-  if(!list||!panel)return;
-  const btn=document.querySelector("#csf-"+key+" .cs-btn");
-  if(!btn)return;
-  const r=btn.getBoundingClientRect();
-  const minW=Math.max(btn.offsetWidth,220);
+  const list=document.getElementById("csl-"+key),panel=document.getElementById("filter-panel");if(!list||!panel)return;
+  const btn=document.querySelector("#csf-"+key+" .cs-btn");if(!btn)return;
+  const r=btn.getBoundingClientRect(),minW=Math.max(btn.offsetWidth,220);
   const left=r.left+minW>window.innerWidth-8?Math.max(8,r.right-minW):r.left;
-  panel.style.top=(r.bottom+2)+"px";
-  panel.style.left=left+"px";
-  panel.style.minWidth=minW+"px";
-  panel.dataset.key=key;
-  panel.innerHTML=list.innerHTML;
-  panel.style.display="block";
+  panel.style.top=(r.bottom+2)+"px";panel.style.left=left+"px";panel.style.minWidth=minW+"px";
+  panel.dataset.key=key;panel.innerHTML=list.innerHTML;panel.style.display="block";
 }
 function csToggle(btn){
   const key=btn.closest(".cs-wrap").id.replace("csf-","");
-  if(_panelKey===key){closePanel();return;}
-  closePanel();
-  _panelKey=key;
-  btn.classList.add("panel-open");
-  csShowPanel(key);
+  if(_panelKey===key){closePanel();return;}closePanel();_panelKey=key;btn.classList.add("panel-open");csShowPanel(key);
   setTimeout(()=>document.querySelector("#filter-panel .cs-search-input")?.focus(),30);
 }
-
-document.addEventListener("click",e=>{
-  if(!e.target.closest(".cs-wrap")&&!e.target.closest("#filter-panel"))closePanel();
-});
-
+document.addEventListener("click",e=>{if(!e.target.closest(".cs-wrap")&&!e.target.closest("#filter-panel"))closePanel();});
 function csRender(key){
-  const list=document.getElementById("csl-"+key);
-  if(!list)return;
-  const q=(csQ[key]||"").toLowerCase();
-  const opts=csData[key]||[];
-  const multi=csCfg[key]?.multi;
+  const list=document.getElementById("csl-"+key);if(!list)return;
+  const q=(csQ[key]||"").toLowerCase(),opts=csData[key]||[],multi=csCfg[key]?.multi;
   const filtered=opts.filter(o=>!o.val||!q||o.label.toLowerCase().includes(q));
   const searchBox=`<div class="cs-search-wrap" onclick="event.stopPropagation()"><input class="cs-search-input" type="text" placeholder="Search..." value="${csQ[key]||""}" oninput="csQUpdate('${key}',this.value)" onkeydown="event.stopPropagation()"></div>`;
   if(multi){
-    const sel=fv[key];
-    const allVals=opts.filter(o=>o.val).map(o=>o.val);
-    const allOn=allVals.length>0&&allVals.every(v=>sel.has(v));
-    const someOn=sel.size>0&&!allOn;
+    const sel=fv[key],allVals=opts.filter(o=>o.val).map(o=>o.val);
+    const allOn=allVals.length>0&&allVals.every(v=>sel.has(v)),someOn=sel.size>0&&!allOn;
     const rows=filtered.map(o=>{
       if(!o.val)return`<div class="cs-opt cs-selall" onclick="csToggleAll('${key}')"><span class="cs-chk">${allOn?"☑":someOn?"⊡":"☐"}</span>Select All</div>`;
       const on=sel.has(o.val);
@@ -969,108 +765,48 @@ function csRender(key){
     list.innerHTML=searchBox+rows;
   }else{
     const cur=fv[key];
-    const rows=filtered.map(o=>
-      `<div class="cs-opt${o.val===cur?" active":""}" data-val="${o.val}" onclick="csSelect(this,'${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${o.val===cur?"✓":""}</span>${o.label}</div>`
-    ).join("");
+    const rows=filtered.map(o=>`<div class="cs-opt${o.val===cur?" active":""}" data-val="${o.val}" onclick="csSelect(this,'${key}','${o.val.replace(/'/g,"\'")}')"><span class="cs-chk">${o.val===cur?"✓":""}</span>${o.label}</div>`).join("");
     list.innerHTML=searchBox+rows;
   }
   if(_panelKey===key)csRefreshPanel(key);
 }
-
 function csQUpdate(key,val){csQ[key]=val;csRender(key);}
-
-function csSelect(el,key,val){
-  fv[key]=val;
-  csQ[key]="";
-  closePanel();
-  csUpdateBtn(key);csRender(key);
-  renderList();
-}
-function csToggleOpt(key,val){
-  const sel=fv[key];
-  sel.has(val)?sel.delete(val):sel.add(val);
-  csUpdateBtn(key);csRender(key);
-  if(key==="format")buildLeagueFilter();
-  renderList();
-}
-function csToggleAll(key){
-  const sel=fv[key];
-  const allVals=(csData[key]||[]).filter(o=>o.val).map(o=>o.val);
-  if(allVals.every(v=>sel.has(v)))sel.clear();
-  else allVals.forEach(v=>sel.add(v));
-  csUpdateBtn(key);csRender(key);
-  if(key==="format")buildLeagueFilter();
-  renderList();
-}
+function csSelect(el,key,val){fv[key]=val;csQ[key]="";closePanel();csUpdateBtn(key);csRender(key);renderList();}
+function csToggleOpt(key,val){const sel=fv[key];sel.has(val)?sel.delete(val):sel.add(val);csUpdateBtn(key);csRender(key);if(key==="format")buildLeagueFilter();renderList();}
+function csToggleAll(key){const sel=fv[key],allVals=(csData[key]||[]).filter(o=>o.val).map(o=>o.val);if(allVals.every(v=>sel.has(v)))sel.clear();else allVals.forEach(v=>sel.add(v));csUpdateBtn(key);csRender(key);if(key==="format")buildLeagueFilter();renderList();}
 function csUpdateBtn(key){
-  const btn=document.querySelector("#csf-"+key+" .cs-btn");
-  if(!btn)return;
+  const btn=document.querySelector("#csf-"+key+" .cs-btn");if(!btn)return;
   const multi=csCfg[key]?.multi;
-  if(multi){
-    const n=fv[key].size;
-    btn.classList.toggle("has-val",n>0);
-    let badge=btn.querySelector(".cs-badge");
-    if(n>0){if(!badge){badge=document.createElement("span");badge.className="cs-badge";btn.insertBefore(badge,btn.querySelector(".cs-arr"));}badge.textContent=n;}
-    else if(badge)badge.remove();
-  }else{
-    btn.classList.toggle("has-val",fv[key]!==""&&key!=="sort");
-  }
+  if(multi){const n=fv[key].size;btn.classList.toggle("has-val",n>0);let badge=btn.querySelector(".cs-badge");if(n>0){if(!badge){badge=document.createElement("span");badge.className="cs-badge";btn.insertBefore(badge,btn.querySelector(".cs-arr"));}badge.textContent=n;}else if(badge)badge.remove();}
+  else{btn.classList.toggle("has-val",fv[key]!==""&&key!=="sort");}
 }
-function csOptions(key,opts){
-  csData[key]=opts;csRender(key);
-}
-
-function buildFormatFilter(){
-  const formats=[...new Set(LEAGUES.map(c=>c.label))];
-  csOptions("format",[{val:"",label:"Select All"},...formats.map(f=>({val:f,label:f}))]);
-}
+function csOptions(key,opts){csData[key]=opts;csRender(key);}
+function buildFormatFilter(){const formats=[...new Set(LEAGUES.map(c=>c.label))];csOptions("format",[{val:"",label:"Select All"},...formats.map(f=>({val:f,label:f}))]);}
 function buildLeagueFilter(){
   const pool=fv.format.size>0?LEAGUES.filter(c=>fv.format.has(c.label)):LEAGUES;
   const validNums=new Set(pool.map(c=>String(LEAGUES.indexOf(c)+1)));
   fv.league.forEach(n=>{if(!validNums.has(n))fv.league.delete(n);});
-  csOptions("league",[{val:"",label:"Select All"},...pool.map(c=>{
-    const num=LEAGUES.indexOf(c)+1;
-    return{val:String(num),label:`[${num}] ${MY_TEAM_NAMES[c.id]||c.id}`};
-  })]);
+  csOptions("league",[{val:"",label:"Select All"},...pool.map(c=>{const num=LEAGUES.indexOf(c)+1;return{val:String(num),label:`[${num}] ${MY_TEAM_NAMES[c.id]||c.id}`};})]);
 }
-function buildTeamFilter(){
-  const teams=new Set(); watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});
-  csOptions("nflteam",[{val:"",label:"Select All"},...[...teams].sort().map(t=>({val:t,label:t}))]);
-}
-
-function buildNameDropdown(){
-  const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));
-  csOptions("name",[{val:"",label:"Select All"},...sorted.map(p=>({val:norm(p.name),label:p.name}))]);
-}
+function buildTeamFilter(){const teams=new Set();watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});csOptions("nflteam",[{val:"",label:"Select All"},...[...teams].sort().map(t=>({val:t,label:t}))]);}
+function buildNameDropdown(){const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));csOptions("name",[{val:"",label:"Select All"},...sorted.map(p=>({val:norm(p.name),label:p.name}))]);}
 
 let allExpanded=false;
 function applyExpandAll(){
   document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="contents");
   document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.add("open"));
-  const chk=document.getElementById("expand-all-toggle");
-  if(chk)chk.checked=true;
-  const lbl=document.querySelector(".expand-toggle-label .toggle-text");
-  if(lbl)lbl.textContent="Collapse";
+  const chk=document.getElementById("expand-all-toggle");if(chk)chk.checked=true;
+  const lbl=document.querySelector(".expand-toggle-label .toggle-text");if(lbl)lbl.textContent="Collapse";
 }
 function toggleAllOwners(){
-  const chk=document.getElementById("expand-all-toggle");
-  allExpanded=chk?chk.checked:!allExpanded;
+  const chk=document.getElementById("expand-all-toggle");allExpanded=chk?chk.checked:!allExpanded;
   const lbl=document.querySelector(".expand-toggle-label .toggle-text");
-  if(allExpanded){
-    applyExpandAll();
-    if(lbl)lbl.textContent="Collapse";
-  }else{
-    document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");
-    document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));
-    if(lbl)lbl.textContent="Expand";
-  }
+  if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse";}
+  else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));if(lbl)lbl.textContent="Expand";}
 }
 
 function renderList(){
-  const sortV=fv.sort||"az";
-  const el=document.getElementById("player-list");
-  const rosters=loadCachedRosters();
-
+  const sortV=fv.sort||"az",el=document.getElementById("player-list"),rosters=loadCachedRosters();
   let rows=watchlist.map((p,i)=>({...p,i})).filter(p=>{
     if(fv.name.size>0&&!fv.name.has(norm(p.name)))return false;
     if(fv.pos.size>0&&!fv.pos.has(p.pos))return false;
@@ -1078,139 +814,92 @@ function renderList(){
     if(fv.status.size>0){
       const st=playerStatus[norm(p.name)]||{};
       let cfgs;
-      if(fv.league.size>0) cfgs=[...fv.league].map(n=>LEAGUES[parseInt(n)-1]).filter(Boolean);
-      else if(fv.format.size>0) cfgs=LEAGUES.filter(c=>fv.format.has(c.label));
+      if(fv.league.size>0)cfgs=[...fv.league].map(n=>LEAGUES[parseInt(n)-1]).filter(Boolean);
+      else if(fv.format.size>0)cfgs=LEAGUES.filter(c=>fv.format.has(c.label));
       else cfgs=LEAGUES;
       const vals=cfgs.flatMap(c=>{const s=st[c.id];return Array.isArray(s)?s:[s];});
       if(!vals.some(v=>fv.status.has(v)))return false;
     }
     return true;
   });
-
-  // Sort
-  if(sortV==="rookies") rows=rows.filter(p=>isRookie(p.name));
-  rows.sort((a,b)=>sortV==="za"
-    ?sortKey(b.name).localeCompare(sortKey(a.name))
-    :sortKey(a.name).localeCompare(sortKey(b.name)));
-
+  if(sortV==="rookies")rows=rows.filter(p=>isRookie(p.name));
+  rows.sort((a,b)=>sortV==="za"?sortKey(b.name).localeCompare(sortKey(a.name)):sortKey(a.name).localeCompare(sortKey(b.name)));
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
-  renderLeagueKey();
-  renderLegend();
+  renderLeagueKey();renderLegend();
   const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
   if(!rows.length){
     if(!watchlist.length){
       el.innerHTML=`<div style="padding:20px 0;display:flex;flex-direction:column;gap:10px;">
-        <p style="color:var(--dim);font-size:13px;">Your watchlist is empty — history has no saved snapshots.</p>
+        <p style="color:var(--dim);font-size:13px;">Your watchlist is empty.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button onclick="toggleHistory()" style="background:none;border:1px solid var(--border);color:var(--dim);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#9733; Open History</button>
           <button onclick="resetToDefaults()" style="background:none;border:1px solid var(--blue);color:var(--blue);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#8635; Reset to default (29 players)</button>
-        </div>
-      </div>`;
-    } else {
-      el.innerHTML='<p class="no-results">No players match.</p>';
-    }
+        </div></div>`;
+    }else{el.innerHTML='<p class="no-results">No players match.</p>';}
     return;
   }
-
   const dimColor=_dimColor;
-  // Which league IDs are "in scope" for the current Format/League filter
-  const scopeIds=(()=>{
-    if(fv.league.size>0)return new Set([...fv.league].map(n=>LEAGUES[parseInt(n)-1]?.id).filter(Boolean));
-    if(fv.format.size>0)return new Set(LEAGUES.filter(c=>fv.format.has(c.label)).map(c=>c.id));
-    return null; // all in scope
-  })();
+  const scopeIds=(()=>{if(fv.league.size>0)return new Set([...fv.league].map(n=>LEAGUES[parseInt(n)-1]?.id).filter(Boolean));if(fv.format.size>0)return new Set(LEAGUES.filter(c=>fv.format.has(c.label)).map(c=>c.id));return null;})();
   const effStatus=(cfg,s)=>{return typeof s==="string"?s:"unknown";};
-  const shouldDim=(cfg,sv)=>{
-    if(fv.status.size>0&&!fv.status.has(sv))return true;
-    if(scopeIds!==null&&!scopeIds.has(cfg.id))return true;
-    return false;
-  };
+  const shouldDim=(cfg,sv)=>{if(fv.status.size>0&&!fv.status.has(sv))return true;if(scopeIds!==null&&!scopeIds.has(cfg.id))return true;return false;};
   const makeIcon=(cfg,s)=>{
-    const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
-    const sv=effStatus(cfg,s);
-    const dim=shouldDim(cfg,sv);
-    const bg=dim?dimColor:iconColor(sv);
-    const rc=!dim?ringColor(sv):null;
-    const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px ${_bgColor},0 0 0 4px ${rc}`:``);
+    const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id,sv=effStatus(cfg,s),dim=shouldDim(cfg,sv);
+    const bg=dim?dimColor:iconColor(sv),rc=!dim?ringColor(sv):null;
+    const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px ${_bgColor},0 0 0 4px ${rc}`:"");
     return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
   };
   const makeNwoIcon=(cfg,s)=>{
-    const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
-    const st=Array.isArray(s)?s:["unknown","unknown"];
-    return st.map((si,k)=>{
-      const sv=effStatus(cfg,si);
-      const dim=shouldDim(cfg,sv);
-      const bg=dim?dimColor:iconColor(sv);
-      const rc=!dim?ringColor(sv):null;
-      const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px ${_bgColor},0 0 0 4px ${rc}`:``);
+    const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id,st=Array.isArray(s)?s:["unknown","unknown"];
+    return st.map((si,k)=>{const sv=effStatus(cfg,si),dim=shouldDim(cfg,sv),bg=dim?dimColor:iconColor(sv),rc=!dim?ringColor(sv):null;
+      const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px ${_bgColor},0 0 0 4px ${rc}`:"");
       return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
     }).join("");
   };
-
-  // Build "> Team Name" lines for a group of leagues — only when someone else owns the player
   const buildStatusLines=(status,pid)=>{
     const lineFor=(cfg)=>{
-      const num=LEAGUES.indexOf(cfg)+1;
-      const numStr=String(num);
-      const leagueSv=status[cfg.id];
+      const num=LEAGUES.indexOf(cfg)+1,numStr=String(num),leagueSv=status[cfg.id];
       const svArr=Array.isArray(leagueSv)?leagueSv:[leagueSv||"unknown"];
       const isStatusMatch=fv.status.size>0&&svArr.some(sv=>fv.status.has(sv));
-      const hl=fv.league.size>0?fv.league.has(numStr)
-        :fv.format.size>0?fv.format.has(cfg.label)
-        :isStatusMatch;
+      const hl=fv.league.size>0?fv.league.has(numStr):fv.format.size>0?fv.format.has(cfg.label):isStatusMatch;
       const cls="owner-line"+(hl?" hl":"");
       if(cfg.twoCopy){
         const st=Array.isArray(status[cfg.id])?status[cfg.id]:["unknown","unknown"];
         const rawOwners=(rosters&&pid)?rosters[cfg.id]?.nwoOwners?.[pid]||[]:[];
         let ti=0;
         const parts=st.map(s=>{
-          if(s==="taken"){ const n=rawOwners[ti++]||""; return n||"Rostered"; }
-          if(s==="tradeblock"){ const n=rawOwners[ti++]||""; return n||"Rostered"; }
-          return s==="mine"?"My Team":s==="available"?"Available":"Unknown";
+          if(s==="taken"){const n=rawOwners[ti++]||"";return n||"Rostered";}
+          if(s==="tradeblock"){const n=rawOwners[ti++]||"";return n||"Rostered";}
+          return s==="mine"?"My Team":s==="mytradeblock"?"My Trade Block":s==="available"?"Available":"Unknown";
         });
         return`<div class="${cls}">[${num}] ${parts.join(" & ")}</div>`;
       }else{
-        const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";
-        let d;
-        if(sv==="taken"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; d=n||"Rostered"; }
-        else if(sv==="tradeblock"){ const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":""; d=n||"Rostered"; }
-        else if(sv==="mytradeblock") d="My Trade Block";
-        else if(sv==="mine") d="My Team";
-        else if(sv==="available") d="Available";
+        const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";let d;
+        if(sv==="taken"){const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":"";d=n||"Rostered";}
+        else if(sv==="tradeblock"){const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":"";d=n||"Rostered";}
+        else if(sv==="mytradeblock")d="My Trade Block";
+        else if(sv==="mine")d="My Team";
+        else if(sv==="available")d="Available";
         else d="Unknown";
         return`<div class="${cls}">[${num}] ${d}</div>`;
       }
     };
-    const sfLines  =LEAGUES.filter(c=>c.label==="SF"   ).map(lineFor).join("");
+    const sfLines=LEAGUES.filter(c=>c.label==="SF").map(lineFor).join("");
     const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
-    return`<div class="avail-grid">
-      <div class="avail-col">${sfLines}</div>
-      <div class="avail-col">${sfteLines}</div>
-    </div>`;
+    return`<div class="avail-grid"><div class="avail-col">${sfLines}</div><div class="avail-col">${sfteLines}</div></div>`;
   };
-
   el.innerHTML=rows.map(({name,pos,i})=>{
-    const status=playerStatus[norm(name)]||{};
-    const meta=getPlayerMeta(name);
-    const team=meta?.team||"";
-    const rookie=isRookie(name);
-    const pid=nameToId[norm(name)];
-    const _sfCfgs=LEAGUES.filter(c=>c.label==="SF");
-    const _sfteCfgs=LEAGUES.filter(c=>c.label==="SF/TE+");
-    const _sfteSlots=_sfteCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0);
-    const _sfSlots=_sfCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0);
-    const _maxSlots=Math.max(_sfSlots,_sfteSlots);
+    const status=playerStatus[norm(name)]||{},meta=getPlayerMeta(name),team=meta?.team||"",rookie=isRookie(name),pid=nameToId[norm(name)];
+    const _sfCfgs=LEAGUES.filter(c=>c.label==="SF"),_sfteCfgs=LEAGUES.filter(c=>c.label==="SF/TE+");
+    const _sfteSlots=_sfteCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0),_sfSlots=_sfCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0),_maxSlots=Math.max(_sfSlots,_sfteSlots);
     const _ph='<span class="icon-slot-ph"></span>';
     const sfIcons=_sfCfgs.map(c=>makeIcon(c,status[c.id])).join("")+_ph.repeat(_maxSlots-_sfSlots);
     const sfteIcons=_sfteCfgs.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
     const allStatuses=buildStatusLines(status,pid);
-
     return`<div class="player-row">
       <div class="player-name-row">
         <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
-        <span class="player-name">${name}</span>
-        <span class="player-pos">${pos}</span>
+        <span class="player-name">${name}</span><span class="player-pos">${pos}</span>
         ${team?`<span class="player-team">${team}</span>`:""}
         ${rookie?'<span class="rookie-badge">R</span>':""}
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
@@ -1227,14 +916,11 @@ function renderList(){
 }
 
 function removePlayer(i){
-  const name=watchlist[i]?.name||"Player";
-  recordChange(); watchlist=watchlist.filter((_,j)=>j!==i);
-  localStorage.setItem("wl",JSON.stringify(watchlist));
-  saveHistory("Removed "+name);
+  const name=watchlist[i]?.name||"Player";recordChange();watchlist=watchlist.filter((_,j)=>j!==i);
+  localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Removed "+name);
   buildNameDropdown();buildTeamFilter();renderList();
 }
 
-// timestamp set by refresh block below
 document.getElementById("app-version").textContent="v"+APP_VERSION;
 _applyTheme(_isDayMode);
 renderLeagueKey();
@@ -1243,9 +929,8 @@ csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",lab
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();_dbgUpdate();
-// Refresh rosters on load unless refreshed within the last 5 minutes
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
-const _stale=!_lrTime||Date.now()-_lrTime>1800000; // 30 min per MFL caching guidelines
+const _stale=!_lrTime||Date.now()-_lrTime>1800000;
 if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
 loadPlayerPool();
 </script>
