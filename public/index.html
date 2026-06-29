@@ -285,7 +285,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.73";
+const APP_VERSION = "1.74";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -338,6 +338,7 @@ function _dbgUpdate(){
     `<span class="dt-key">tb:</span><span class="dt-val">${localStorage.getItem("_tbDebug")||"no data"}</span>`,
     `<span class="dt-key">tbRaw:</span><span class="dt-val">${(localStorage.getItem("_tbRaw")||"none").slice(0,80)}</span>`,
     `<span class="dt-key">myFr:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");return LEAGUES.map(l=>{const v=d[l.id];return v?(v.startsWith("OK")?"["+(LEAGUES.indexOf(l)+1)+"]✓":"["+(LEAGUES.indexOf(l)+1)+"]✗"):"?";}).join(" ");}catch{return"err";}})()}</span>`,
+    `<span class="dt-key">frDetail:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");const miss=Object.entries(d).find(([k,v])=>v.startsWith("MISS"));return miss?miss[1].slice(0,200):"none";}catch{return"err";}})()}</span>`,
   ].filter(Boolean);
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
