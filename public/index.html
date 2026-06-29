@@ -256,8 +256,8 @@
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-label">My Team</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div><span class="legend-label">Rostered</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:#d97706"></div><span class="legend-label">Trade Block</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:#eab308"></div><span class="legend-label">My Trade Block</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:transparent;box-shadow:0 0 0 2px #0d1117,0 0 0 4px #d97706;outline:none;border-color:transparent"></div><span class="legend-label">Trade Block</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:transparent;box-shadow:0 0 0 2px #0d1117,0 0 0 4px #eab308;outline:none;border-color:transparent"></div><span class="legend-label">My Trade Block</span></div>
     <label class="expand-toggle-label" style="margin-left:auto">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
       <span class="toggle-text">Expand</span>
@@ -279,7 +279,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.48";
+const APP_VERSION = "1.49";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -472,7 +472,8 @@ function saveMflKeys(){
   _dbgUpdate();
 }
 
-function iconColor(s){return s==="available"?"#16a34a":s==="mine"?"#2563eb":s==="taken"?"#dc2626":s==="tradeblock"?"#d97706":s==="mytradeblock"?"#eab308":"#374151";}
+function iconColor(s){return s==="available"?"#16a34a":s==="mine"||s==="mytradeblock"?"#2563eb":s==="taken"||s==="tradeblock"?"#dc2626":"#374151";}
+function ringColor(s){return s==="mytradeblock"?"#eab308":s==="tradeblock"?"#d97706":null;}
 function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":s==="tradeblock"?"Trade Block":s==="mytradeblock"?"My Trade Block":"Unknown";}
 function isRookie(name){ const m=getPlayerMeta(name); return !!(m?.status==="R"||m?.rook==="1"); }
 
@@ -1033,16 +1034,22 @@ function renderList(){
   const makeIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const sv=effStatus(cfg,s);
-    const bg=shouldDim(cfg,sv)?dimColor:iconColor(sv);
-    return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
+    const dim=shouldDim(cfg,sv);
+    const bg=dim?dimColor:iconColor(sv);
+    const rc=!dim?ringColor(sv):null;
+    const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px #0d1117,0 0 0 4px ${rc}`:``);
+    return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
   };
   const makeNwoIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const st=Array.isArray(s)?s:["unknown","unknown"];
     return`<span class="nwo-oval">${st.map((si,k)=>{
       const sv=effStatus(cfg,si);
-      const bg=shouldDim(cfg,sv)?dimColor:iconColor(sv);
-      return`<span class="league-icon" style="background:${bg}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
+      const dim=shouldDim(cfg,sv);
+      const bg=dim?dimColor:iconColor(sv);
+      const rc=!dim?ringColor(sv):null;
+      const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px #0d1117,0 0 0 4px ${rc}`:``);
+      return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
     }).join("")}</span>`;
   };
 
