@@ -18,9 +18,9 @@
       --dim:#78746c; --muted:#b5b0a8; --text:#1e1c18;
       --green:#1a7f37; --green-hi:#2da44e; --blue:#0550ae; --red:#cf222e;
     }
-    html:has(body.day), body.day { background:#3a6480; }
-    body.day #frozen-top  { background:rgba(58,100,128,0.82); }
-    body.day #debug-ticker { background:rgba(40,80,110,0.88); border-top-color:var(--border); }
+    html:has(body.day), body.day { background:#eceae6; }
+    body.day { background:#eceae6; }
+    body.day #debug-ticker { border-top-color:var(--border); }
     body.day .hdr-btn { box-shadow:0 1px 3px rgba(0,0,0,.08); }
     body.day #mfl-keys-panel { box-shadow:0 4px 16px rgba(0,0,0,.12); }
     body.day #filter-panel   { box-shadow:0 4px 16px rgba(0,0,0,.1); }
@@ -29,45 +29,10 @@
     body.day .legend-label.lk-active { color:var(--text); }
     /* ── Theme toggle ──────────────────────────────────────────────────────── */
     .theme-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
-    /* ── Sky backgrounds ───────────────────────────────────────────────────── */
-    html, body { height:100%; }
-    body {
-      background-color:#03060c;
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url%28%23g%29'/%3E%3C/svg%3E"),
-        linear-gradient(to bottom,
-          #03060c  0%,  #060a18  7%,  #0a1024 16%,
-          #0e1834 26%,  #121c42 36%,  #161e4e 45%,
-          #182058 53%,  #1a2060 60%,  #1c1e62 68%,
-          #1c1c60 75%,  #1c1a5c 82%,  #201a5c 86%,
-          #281858 89%,  #341854 92%,  #3c1852 95%,
-          #421850 98%,  #441852 100%
-        );
-      background-blend-mode: overlay, normal;
-      background-size: 250px 250px, cover;
-      background-repeat: repeat, no-repeat;
-      background-attachment: fixed, fixed;
-      color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column;
-    }
-    body.day {
-      background-color:#3a6480;
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url%28%23g%29'/%3E%3C/svg%3E"),
-        linear-gradient(to bottom,
-          #3a6480  0%,  #446e8e  5%,  #4e7898 11%,
-          #5882a4 18%,  #628eae 25%,  #6c98b6 31%,
-          #74a2bc 37%,  #7aacc2 43%,  #80aec4 50%,
-          #82b0c4 57%,  #84b0c4 63%,  #84b0c4 69%,
-          #82aec2 75%,  #80aac0 80%,  #7ea8be 85%,
-          #7ca6bc 90%,  #7aa4ba 95%,  #78a2b8 100%
-        );
-      background-blend-mode: overlay, normal;
-      background-size: 250px 250px, cover;
-      background-repeat: repeat, no-repeat;
-      background-attachment: fixed, fixed;
-    }
+    html, body { height:100%; background:var(--bg); }
+    body { color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
     #page-wrap   { display:flex; flex-direction:column; height:100vh; background:transparent; }
-    #frozen-top  { flex-shrink:0; background:rgba(4,8,18,0.82); }
+    #frozen-top  { flex-shrink:0; background:var(--bg); }
     #filter-panel { display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; box-shadow:0 4px 16px rgba(0,0,0,.5); }
     #scroll-list { flex:1; overflow-y:auto; min-height:0; background:transparent; overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:8px 24px 16px; }
@@ -213,7 +178,7 @@
     .revert-btn:hover { border-color:var(--green); color:var(--green); }
     .history-players { margin-top:6px; padding:6px 8px; background:var(--bg); border-radius:4px; font-size:11px; color:var(--dim); line-height:1.7; }
     .history-empty { color:var(--dim); font-size:13px; }
-    #debug-ticker { flex-shrink:0; background:rgba(4,8,18,0.88); border-top:1px solid var(--border); padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
+    #debug-ticker { flex-shrink:0; background:var(--bg); border-top:1px solid var(--border); padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
     #debug-ticker .dt-val { color:var(--dim); }
     #debug-ticker .dt-key { color:var(--dim); margin-right:3px; }
     #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
@@ -240,9 +205,9 @@
     <div class="theme-row">
       <label class="expand-toggle-label" style="cursor:pointer;margin:0">
         <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
-        <span class="toggle-text">Night</span>
+        <span class="toggle-text">Dark</span>
         <span class="toggle-track"><span class="toggle-thumb"></span></span>
-        <span class="toggle-text">Day</span>
+        <span class="toggle-text">Light</span>
       </label>
     </div>
   </div>
@@ -313,16 +278,16 @@
 </div>
 
 <script>
-const APP_VERSION = "1.65";
+const APP_VERSION = "1.66";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
-let _bgColor   = _isDayMode ? "#3a6480" : "#03060c";
+let _bgColor   = _isDayMode ? "#eceae6" : "#0e1520";
 let _dimColor  = _isDayMode ? "#c0bcb4" : "#2d3d52";
 
 function _applyTheme(isDay){
   document.body.classList.toggle("day", isDay);
-  _bgColor  = isDay ? "#3a6480" : "#03060c";
+  _bgColor  = isDay ? "#eceae6" : "#0e1520";
   _dimColor = isDay ? "#c0bcb4" : "#2d3d52";
   const tog = document.getElementById("theme-toggle");
   if(tog) tog.checked = isDay;
