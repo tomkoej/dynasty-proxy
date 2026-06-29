@@ -7,18 +7,18 @@
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
-      --bg:#0d1117; --surface:#161b22; --border:#30363d; --dim:#6b7280;
-      --muted:#374151; --text:#e5e5e5; --green:#16a34a; --green-hi:#22c55e;
+      --bg:#1a1528; --surface:#231c32; --border:#3a3250; --dim:#8a7fa8;
+      --muted:#3e3658; --text:#ede8f8; --green:#16a34a; --green-hi:#22c55e;
       --blue:#2563eb; --red:#dc2626;
       --font:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
     }
     /* ── Day theme ─────────────────────────────────────────────────────────── */
     body.day {
-      --bg:#f5f0e8; --surface:#ede9e0; --border:#ccc7bc;
-      --dim:#6b6560; --muted:#aea89e; --text:#231f1b;
+      --bg:#fbe8d8; --surface:#f2dece; --border:#dcc8b4;
+      --dim:#8a6f62; --muted:#c8afa4; --text:#2d1e18;
       --green:#1a7f37; --green-hi:#2da44e; --blue:#0550ae; --red:#cf222e;
     }
-    html:has(body.day), body.day { background:#f5f0e8; }
+    html:has(body.day), body.day { background:#fbe8d8; }
     body.day #debug-ticker { border-top-color:#d0d7de; }
     body.day .hdr-btn { box-shadow:0 1px 3px rgba(0,0,0,.08); }
     body.day #mfl-keys-panel { box-shadow:0 4px 16px rgba(0,0,0,.12); }
@@ -26,11 +26,25 @@
     /* ── Theme toggle ──────────────────────────────────────────────────────── */
     .theme-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
     html, body { height:100%; background:var(--bg); }
+    body {
+      background-color:var(--bg);
+      background-image:
+        radial-gradient(ellipse 70% 50% at 0% 100%, rgba(160,90,255,0.10) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 45% at 100% 0%,  rgba(90,60,200,0.08) 0%, transparent 55%),
+        radial-gradient(ellipse 40% 30% at 50% 100%, rgba(210,120,80,0.05) 0%, transparent 45%);
+    }
+    body.day {
+      background-color:var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -5%,  rgba(255,185,80,0.28) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 100% 80%, rgba(255,120,80,0.12) 0%, transparent 50%),
+        radial-gradient(ellipse 40% 30% at 0%   50%, rgba(255,160,100,0.08) 0%, transparent 45%);
+    }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
-    #page-wrap   { display:flex; flex-direction:column; height:100vh; background:var(--bg); }
+    #page-wrap   { display:flex; flex-direction:column; height:100vh; background:transparent; }
     #frozen-top  { flex-shrink:0; background:var(--bg); }
     #filter-panel { display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; box-shadow:0 4px 16px rgba(0,0,0,.5); }
-    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:var(--bg); overscroll-behavior:none; }
+    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:transparent; overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:8px 24px 16px; }
 
     #header {
@@ -306,17 +320,17 @@
 </div>
 
 <script>
-const APP_VERSION = "1.61";
+const APP_VERSION = "1.62";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
-let _bgColor   = _isDayMode ? "#f5f0e8" : "#0d1117";
-let _dimColor  = _isDayMode ? "#c8d0d8" : "#374151";
+let _bgColor   = _isDayMode ? "#fbe8d8" : "#1a1528";
+let _dimColor  = _isDayMode ? "#cdb8b0" : "#3e3658";
 
 function _applyTheme(isDay){
   document.body.classList.toggle("day", isDay);
-  _bgColor  = isDay ? "#f5f0e8" : "#0d1117";
-  _dimColor = isDay ? "#c8d0d8" : "#374151";
+  _bgColor  = isDay ? "#fbe8d8" : "#1a1528";
+  _dimColor = isDay ? "#cdb8b0" : "#3e3658";
   const tog = document.getElementById("theme-toggle");
   if(tog) tog.checked = isDay;
 
