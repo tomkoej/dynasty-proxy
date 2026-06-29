@@ -18,7 +18,7 @@
       --dim:#78746c; --muted:#b5b0a8; --text:#1e1c18;
       --green:#1a7f37; --green-hi:#2da44e; --blue:#0550ae; --red:#cf222e;
     }
-    html:has(body.day), body.day { background:#eceae6; }
+    html:has(body.day), body.day { background:#7aa8c4; }
     body.day #debug-ticker { border-top-color:var(--border); }
     body.day .hdr-btn { box-shadow:0 1px 3px rgba(0,0,0,.08); }
     body.day #mfl-keys-panel { box-shadow:0 4px 16px rgba(0,0,0,.12); }
@@ -27,20 +27,52 @@
     .theme-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
     html, body { height:100%; background:var(--bg); }
     body {
-      background-color:var(--bg);
+      background-color:#060e1c;
       background-image:
-        radial-gradient(ellipse 130% 35% at 50% 115%, rgba(220,130,50,0.20) 0%, transparent 50%),
-        radial-gradient(ellipse 70%  25% at 15% 110%, rgba(190,80,30,0.10) 0%, transparent 40%),
-        radial-gradient(ellipse 60%  25% at 85% 110%, rgba(190,80,30,0.08) 0%, transparent 40%),
-        linear-gradient(to bottom, rgba(5,12,25,0.25) 0%, transparent 50%);
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url%28%23g%29'/%3E%3C/svg%3E"),
+        linear-gradient(to bottom,
+          #060e1c  0%,
+          #0b1530 18%,
+          #101d3e 38%,
+          #181e4a 52%,
+          #221848 62%,
+          #3a1e42 70%,
+          #6a2438 76%,
+          #b04020 82%,
+          #d86018 87%,
+          #ee8018 91%,
+          #f89820 95%,
+          #fcac2c 98%,
+          #fec038 100%
+        );
+      background-blend-mode: overlay, normal;
+      background-size: 250px 250px, cover;
+      background-repeat: repeat, no-repeat;
+      background-attachment: fixed, fixed;
     }
     body.day {
-      background-color:var(--bg);
+      background-color:#8ab4cc;
       background-image:
-        radial-gradient(ellipse 130% 50% at 50% -15%, rgba(255,205,90,0.26) 0%, transparent 55%),
-        radial-gradient(ellipse 70%  35% at 5%  -5%,  rgba(255,170,90,0.14) 0%, transparent 45%),
-        radial-gradient(ellipse 60%  30% at 95%  0%,  rgba(255,180,100,0.12) 0%, transparent 42%),
-        linear-gradient(to bottom, transparent 45%, rgba(160,170,180,0.08) 100%);
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url%28%23g%29'/%3E%3C/svg%3E"),
+        linear-gradient(to bottom,
+          #7aa8c4  0%,
+          #88b2cc 18%,
+          #94bcd4 38%,
+          #a0c0d4 52%,
+          #a8b8c8 62%,
+          #b0a898 70%,
+          #c49870 76%,
+          #d89840 82%,
+          #e8a820 87%,
+          #f0b818 91%,
+          #f8c418 95%,
+          #fcd020 98%,
+          #fedc28 100%
+        );
+      background-blend-mode: overlay, normal;
+      background-size: 250px 250px, cover;
+      background-repeat: repeat, no-repeat;
+      background-attachment: fixed, fixed;
     }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
     #page-wrap   { display:flex; flex-direction:column; height:100vh; background:transparent; }
@@ -322,16 +354,16 @@
 </div>
 
 <script>
-const APP_VERSION = "1.63";
+const APP_VERSION = "1.64";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
-let _bgColor   = _isDayMode ? "#eceae6" : "#0e1520";
+let _bgColor   = _isDayMode ? "#7aa8c4" : "#060e1c";
 let _dimColor  = _isDayMode ? "#c0bcb4" : "#2d3d52";
 
 function _applyTheme(isDay){
   document.body.classList.toggle("day", isDay);
-  _bgColor  = isDay ? "#eceae6" : "#0e1520";
+  _bgColor  = isDay ? "#7aa8c4" : "#060e1c";
   _dimColor = isDay ? "#c0bcb4" : "#2d3d52";
   const tog = document.getElementById("theme-toggle");
   if(tog) tog.checked = isDay;
