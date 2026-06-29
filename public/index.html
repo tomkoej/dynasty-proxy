@@ -141,6 +141,7 @@
     .player-pos  { color:var(--text); font-size:14px; }
     .player-team { color:var(--text); font-size:14px; }
     .rookie-badge { background:#818cf8; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
+    .jersey-pill { display:inline-flex; align-items:center; justify-content:center; min-width:32px; height:22px; padding:0 7px; border-radius:11px; border:2px solid; font-family:var(--font); font-size:11px; font-weight:700; flex-shrink:0; }
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
     .row-label { color:var(--text); font-size:10px; }
@@ -284,7 +285,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.75";
+const APP_VERSION = "1.76";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -362,6 +363,33 @@ const MY_TEAM_MATCH = {
   "52453":"Cleon LIX","68291":"The Undertaker",
   "69382":"Shotgun Shai-Hulud","64818":"The Undertaker",
 };
+
+const NFL_TEAM_COLORS = {
+  ARI:{c1:"#97233F",c2:"#000000",c3:"#FFFFFF"}, ATL:{c1:"#A71930",c2:"#000000",c3:"#A5ACAF"},
+  BAL:{c1:"#241773",c2:"#000000",c3:"#9E7C0C"}, BUF:{c1:"#00338D",c2:"#C60C30",c3:"#FFFFFF"},
+  CAR:{c1:"#0085CA",c2:"#101820",c3:"#BFC0BF"}, CHI:{c1:"#0B162A",c2:"#C83803",c3:"#FFFFFF"},
+  CIN:{c1:"#FB4F14",c2:"#000000",c3:"#FFFFFF"}, CLE:{c1:"#311D00",c2:"#FF3C00",c3:"#FFFFFF"},
+  DAL:{c1:"#003594",c2:"#869397",c3:"#FFFFFF"}, DEN:{c1:"#FB4F14",c2:"#002244",c3:"#FFFFFF"},
+  DET:{c1:"#0076B6",c2:"#B0B7BC",c3:"#000000"}, GB:{c1:"#203731",c2:"#FFB612",c3:"#FFFFFF"},
+  HOU:{c1:"#03202F",c2:"#A71930",c3:"#FFFFFF"}, IND:{c1:"#002C5F",c2:"#A2AAAD",c3:"#FFFFFF"},
+  JAC:{c1:"#006778",c2:"#000000",c3:"#9F792C"}, JAX:{c1:"#006778",c2:"#000000",c3:"#9F792C"},
+  KC:{c1:"#E31837",c2:"#FFB81C",c3:"#FFFFFF"}, LV:{c1:"#000000",c2:"#A5ACAF",c3:"#FFFFFF"},
+  LVR:{c1:"#000000",c2:"#A5ACAF",c3:"#FFFFFF"}, LAC:{c1:"#0080C6",c2:"#002A5E",c3:"#FFC20E"},
+  LAR:{c1:"#003594",c2:"#FFA300",c3:"#FFFFFF"}, MIA:{c1:"#008E97",c2:"#F58220",c3:"#FFFFFF"},
+  MIN:{c1:"#4F2683",c2:"#FFC62F",c3:"#FFFFFF"}, NE:{c1:"#002244",c2:"#C60C30",c3:"#B0B7BC"},
+  NO:{c1:"#101820",c2:"#D3BC8D",c3:"#FFFFFF"}, NYG:{c1:"#0B2265",c2:"#A71930",c3:"#FFFFFF"},
+  NYJ:{c1:"#125740",c2:"#000000",c3:"#FFFFFF"}, PHI:{c1:"#004C54",c2:"#A5ACAF",c3:"#ACC0C6"},
+  PIT:{c1:"#101820",c2:"#FFB612",c3:"#FFFFFF"}, SF:{c1:"#AA0000",c2:"#B3995D",c3:"#FFFFFF"},
+  SEA:{c1:"#002244",c2:"#69BE28",c3:"#A5ACAF"}, TB:{c1:"#D50A0A",c2:"#34302B",c3:"#B1BABF"},
+  TEN:{c1:"#0C2340",c2:"#4B92DB",c3:"#C8102E"}, WAS:{c1:"#5A1414",c2:"#000000",c3:"#FFB612"},
+  WSH:{c1:"#5A1414",c2:"#000000",c3:"#FFB612"},
+};
+function jerseyPill(name){
+  const m=getPlayerMeta(name);
+  if(!m?.jersey)return"";
+  const tc=NFL_TEAM_COLORS[m.team]||{c1:"#374151",c2:"#1f2937",c3:"#fff"};
+  return`<span class="jersey-pill" style="background:${tc.c1};border-color:${tc.c2};color:${tc.c3}">#${m.jersey}</span>`;
+}
 
 const norm    = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
 const clone   = v => JSON.parse(JSON.stringify(v));
@@ -875,6 +903,7 @@ function renderList(){
     return`<div class="player-row">
       <div class="player-name-row">
         <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
+        ${jerseyPill(name)}
         <span class="player-name">${name}</span><span class="player-pos">${pos}</span>
         ${team?`<span class="player-team">${team}</span>`:""}
         ${rookie?'<span class="rookie-badge">R</span>':""}
