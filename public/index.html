@@ -280,7 +280,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.53";
+const APP_VERSION = "1.54";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -1044,14 +1044,14 @@ function renderList(){
   const makeNwoIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const st=Array.isArray(s)?s:["unknown","unknown"];
-    return`<span class="nwo-oval" style="grid-column:span 2">${st.map((si,k)=>{
+    return st.map((si,k)=>{
       const sv=effStatus(cfg,si);
       const dim=shouldDim(cfg,sv);
       const bg=dim?dimColor:iconColor(sv);
       const rc=!dim?ringColor(sv):null;
       const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px #0d1117,0 0 0 4px ${rc}`:``);
       return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
-    }).join("")}</span>`;
+    }).join("");
   };
 
   // Build "> Team Name" lines for a group of leagues — only when someone else owns the player
