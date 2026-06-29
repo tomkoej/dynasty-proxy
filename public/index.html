@@ -285,7 +285,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.77";
+const APP_VERSION = "1.78";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -387,9 +387,10 @@ const NFL_TEAM_COLORS = {
 };
 function jerseyPill(name){
   const m=getPlayerMeta(name);
-  if(!m?.jersey)return"";
+  if(!m?.team)return"";
+  const num=m.jersey||"00";
   const tc=NFL_TEAM_COLORS[m.team]||{c1:"#374151",c2:"#1f2937",c3:"#fff"};
-  return`<span class="jersey-pill" style="background:${tc.c1};border-color:${tc.c2};color:${tc.c3}">#${m.jersey}</span>`;
+  return`<span class="jersey-pill" style="background:${tc.c1};border-color:${tc.c2};color:${tc.c3}">#${num}</span>`;
 }
 
 const norm    = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
