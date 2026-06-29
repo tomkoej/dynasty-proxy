@@ -123,9 +123,10 @@
     .rookie-badge { background:#818cf8; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
 
     /* Icon rows */
-    .icon-row-group { margin-top:0; padding-left:36px; display:flex; flex-direction:column; gap:5px; }
-    .icon-row-line  { display:flex; align-items:center; gap:5px; }
-    .row-label { color:#fff; font-size:10px; min-width:42px; }
+    .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
+    .icon-row-line  { display:contents; }
+    .row-label { color:#fff; font-size:10px; }
+    .icon-slot-ph { width:20px; height:20px; flex-shrink:0; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
       width:20px; height:20px; border-radius:50%; color:white;
@@ -279,7 +280,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.52";
+const APP_VERSION = "1.53";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -1043,7 +1044,7 @@ function renderList(){
   const makeNwoIcon=(cfg,s)=>{
     const num=LEAGUES.indexOf(cfg)+1,ln=MY_TEAM_NAMES[cfg.id]||cfg.id;
     const st=Array.isArray(s)?s:["unknown","unknown"];
-    return`<span class="nwo-oval">${st.map((si,k)=>{
+    return`<span class="nwo-oval" style="grid-column:span 2">${st.map((si,k)=>{
       const sv=effStatus(cfg,si);
       const dim=shouldDim(cfg,sv);
       const bg=dim?dimColor:iconColor(sv);
@@ -1101,8 +1102,14 @@ function renderList(){
     const team=meta?.team||"";
     const rookie=isRookie(name);
     const pid=nameToId[norm(name)];
-    const sfIcons  =LEAGUES.filter(c=>c.label==="SF").map(c=>makeIcon(c,status[c.id])).join("");
-    const sfteIcons=LEAGUES.filter(c=>c.label==="SF/TE+").map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
+    const _sfCfgs=LEAGUES.filter(c=>c.label==="SF");
+    const _sfteCfgs=LEAGUES.filter(c=>c.label==="SF/TE+");
+    const _sfteSlots=_sfteCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0);
+    const _sfSlots=_sfCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0);
+    const _maxSlots=Math.max(_sfSlots,_sfteSlots);
+    const _ph='<span class="icon-slot-ph"></span>';
+    const sfIcons=_sfCfgs.map(c=>makeIcon(c,status[c.id])).join("")+_ph.repeat(_maxSlots-_sfSlots);
+    const sfteIcons=_sfteCfgs.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
     const allStatuses=buildStatusLines(status,pid);
 
     return`<div class="player-row">
@@ -1115,7 +1122,7 @@ function renderList(){
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
       <span class="player-section-label">Status</span>
-      <div class="icon-row-group">
+      <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},26px)">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
       </div>
