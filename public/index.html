@@ -255,8 +255,8 @@
     <div class="legend-item"><div class="legend-dot" style="background:#16a34a"></div><span class="legend-label">Available</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#2563eb"></div><span class="legend-label">My Team</span></div>
     <div class="legend-item"><div class="legend-dot" style="background:#dc2626"></div><span class="legend-label">Rostered</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px solid #d97706"></div><span class="legend-label">Trade Block</span></div>
-    <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px solid #06b6d4"></div><span class="legend-label">My Trade Block</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px solid #7c3aed"></div><span class="legend-label">Trade Block</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px solid #f59e0b"></div><span class="legend-label">My Trade Block</span></div>
     <label class="expand-toggle-label" style="margin-left:auto">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
       <span class="toggle-text">Expand</span>
@@ -278,7 +278,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.66";
+const APP_VERSION = "1.67";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -438,7 +438,7 @@ function saveMflKeys(){
 }
 
 function iconColor(s){return s==="available"?"#16a34a":s==="mine"||s==="mytradeblock"?"#2563eb":s==="taken"||s==="tradeblock"?"#dc2626":"#374151";}
-function ringColor(s){return s==="mytradeblock"?"#06b6d4":s==="tradeblock"?"#d97706":null;}
+function ringColor(s){return s==="mytradeblock"?"#f59e0b":s==="tradeblock"?"#7c3aed":null;}
 function iconLabel(s){return s==="available"?"Available":s==="mine"?"My Team":s==="taken"?"Rostered":s==="tradeblock"?"Trade Block":s==="mytradeblock"?"My Trade Block":"Unknown";}
 function isRookie(name){ const m=getPlayerMeta(name);return !!(m?.status==="R"||m?.rook==="1"); }
 
