@@ -18,7 +18,7 @@
     #frozen-top  { flex-shrink:0; background:var(--bg); }
     #filter-panel { display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; box-shadow:0 4px 16px rgba(0,0,0,.5); }
     #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; }
-    #list-inner  { max-width:680px; margin:0 auto; padding:8px 24px 60px; }
+    #list-inner  { max-width:680px; margin:0 auto; padding:8px 24px 16px; }
 
     #header {
       display:flex; justify-content:space-between; align-items:flex-start;
@@ -185,7 +185,7 @@
     .revert-btn:hover { border-color:var(--green); color:var(--green); }
     .history-players { margin-top:6px; padding:6px 8px; background:var(--bg); border-radius:4px; font-size:11px; color:var(--dim); line-height:1.7; }
     .history-empty { color:var(--dim); font-size:13px; }
-    #debug-ticker { position:fixed; bottom:0; left:0; right:0; z-index:9998; background:#0d1117; border-top:1px solid #2a3040; padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
+    #debug-ticker { flex-shrink:0; background:#0d1117; border-top:1px solid #2a3040; padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
     #debug-ticker .dt-val { color:#6b7280; }
     #debug-ticker .dt-key { color:var(--dim); margin-right:3px; }
     #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
@@ -275,10 +275,11 @@
     <div id="player-list"></div>
   </div>
 </div>
+<div id="debug-ticker"><span class="dt-val">loading…</span></div>
 </div>
 
 <script>
-const APP_VERSION = "1.47";
+const APP_VERSION = "1.48";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -1146,6 +1147,5 @@ loadPlayerPool();
   <div id="mfl-keys-body"></div>
   <button class="keys-save" onclick="saveMflKeys()">Save Keys</button>
 </div>
-<div id="debug-ticker"><span class="dt-val">loading…</span></div>
 </body>
 </html>
