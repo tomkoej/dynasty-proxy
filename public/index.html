@@ -285,7 +285,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.76";
+const APP_VERSION = "1.77";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -339,6 +339,7 @@ function _dbgUpdate(){
     `<span class="dt-key">tbRaw:</span><span class="dt-val">${(localStorage.getItem("_tbRaw")||"none").slice(0,80)}</span>`,
     `<span class="dt-key">myFr:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");return LEAGUES.map(l=>{const v=d[l.id];return v?(v.startsWith("OK")?"["+(LEAGUES.indexOf(l)+1)+"]✓":"["+(LEAGUES.indexOf(l)+1)+"]✗"):"?";}).join(" ");}catch{return"err";}})()}</span>`,
     `<span class="dt-key">frDetail:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");const miss=Object.entries(d).find(([k,v])=>v.startsWith("MISS"));return miss?miss[1].slice(0,200):"none";}catch{return"err";}})()}</span>`,
+    `<span class="dt-key">plSample:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Erick All");return m?JSON.stringify(m).slice(0,200):"not found";}catch{return"err";}})()}</span>`,
   ].filter(Boolean);
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
@@ -515,14 +516,14 @@ function getPlayerMeta(name){ const n=norm(name);return mflPlayers.find(p=>p.nam
 function twoCopyStatuses(mc,oc,tb,myTb,pid){ const st=[];for(let i=0;i<mc;i++)st.push(myTb?.has(pid)?"mytradeblock":"mine");for(let i=0;i<oc;i++)st.push(tb?.has(pid)?"tradeblock":"taken");while(st.length<2)st.push("available");return st.slice(0,2); }
 
 async function loadPlayerPool(){
-  const cached=localStorage.getItem("mflPoolV2"),cachedTime=parseInt(localStorage.getItem("mflPoolTimeV2")||"0");
+  const cached=localStorage.getItem("mflPoolV3"),cachedTime=parseInt(localStorage.getItem("mflPoolTimeV3")||"0");
   if(cached&&(Date.now()-cachedTime)<86400000){mflPlayers=JSON.parse(cached);}
   else{
     document.getElementById("pool-status").textContent="Fetching player pool from MFL…";
     try{
-      const d=await mfl("www47","52453","players","2026");
+      const d=await mfl("www47","52453","players","2026",{DETAILS:"1"});
       const raw=toArr(d?.players?.player);
-      if(raw.length>100){mflPlayers=raw.filter(p=>["QB","RB","WR","TE"].includes(p.position));localStorage.setItem("mflPoolV2",JSON.stringify(mflPlayers));localStorage.setItem("mflPoolTimeV2",Date.now().toString());}
+      if(raw.length>100){mflPlayers=raw.filter(p=>["QB","RB","WR","TE"].includes(p.position));localStorage.setItem("mflPoolV3",JSON.stringify(mflPlayers));localStorage.setItem("mflPoolTimeV3",Date.now().toString());}
     }catch(e){document.getElementById("pool-status").textContent="Could not load pool: "+e.message;return;}
   }
   mflPlayers.forEach(p=>{if(!p.name||!p.id)return;nameToId[norm(p.name)]=p.id;nameToId[norm(displayName(p.name))]=p.id;});
