@@ -285,7 +285,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.72";
+const APP_VERSION = "1.73";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -337,6 +337,7 @@ function _dbgUpdate(){
     _dbgErr?`<span class="dt-err">⚠ ${_dbgErr}</span>`:`<span class="dt-val">✓ no JS err</span>`,
     `<span class="dt-key">tb:</span><span class="dt-val">${localStorage.getItem("_tbDebug")||"no data"}</span>`,
     `<span class="dt-key">tbRaw:</span><span class="dt-val">${(localStorage.getItem("_tbRaw")||"none").slice(0,80)}</span>`,
+    `<span class="dt-key">myFr:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");return LEAGUES.map(l=>{const v=d[l.id];return v?(v.startsWith("OK")?"["+(LEAGUES.indexOf(l)+1)+"]✓":"["+(LEAGUES.indexOf(l)+1)+"]✗"):"?";}).join(" ");}catch{return"err";}})()}</span>`,
   ].filter(Boolean);
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
@@ -561,6 +562,7 @@ async function doRefresh(){
   const tsEl=document.getElementById("timestamp"),btnEl=document.getElementById("refresh-btn-sm");
   if(tsEl)tsEl.textContent="Refreshing…";if(btnEl)btnEl.disabled=true;
   const rosterErrors=[],newNames={},leagueRosters={};
+  const _frDebug={};
   const _sleep=ms=>new Promise(r=>setTimeout(r,ms));
   for(let _li=0;_li<LEAGUES.length;_li++){
     if(_li>0)await _sleep(1000);
@@ -577,6 +579,7 @@ async function doRefresh(){
           const matchName=MY_TEAM_MATCH[cfg.id]||MY_TEAM_NAMES[cfg.id]||"";
           const myFr=frs.find(fr=>norm(fr.name)===norm(matchName));
           myFranchiseId=myFr?.id||null;
+          _frDebug[cfg.id]=myFranchiseId?"OK:"+myFranchiseId:"MISS (want '"+matchName+"' in: "+frs.map(f=>f.name).join("|")+")";
         }catch{newNames[cfg.id]=cfg.id;}
         const allFr=toArr(rData?.rosters?.franchise);
         if(cfg.twoCopy){
@@ -645,6 +648,7 @@ async function doRefresh(){
   lastRefresh=now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
   localStorage.setItem("ps",JSON.stringify(playerStatus));localStorage.setItem("ln",JSON.stringify(leagueNames));localStorage.setItem("lr",lastRefresh);localStorage.setItem("lrTime",Date.now().toString());
   localStorage.setItem("_tbDebug",LEAGUES.map(l=>{const v=_tbStatus[l.id];return v===undefined?"—":String(v);}).join("·"));
+  localStorage.setItem("_frDebug",JSON.stringify(_frDebug));
   if(tsEl)tsEl.textContent="Updated "+lastRefresh;if(btnEl)btnEl.disabled=false;
   renderLeagueKey();renderList();_dbgUpdate();
 }
