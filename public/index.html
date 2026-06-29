@@ -285,7 +285,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.78";
+const APP_VERSION = "1.79";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -340,6 +340,7 @@ function _dbgUpdate(){
     `<span class="dt-key">myFr:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");return LEAGUES.map(l=>{const v=d[l.id];return v?(v.startsWith("OK")?"["+(LEAGUES.indexOf(l)+1)+"]✓":"["+(LEAGUES.indexOf(l)+1)+"]✗"):"?";}).join(" ");}catch{return"err";}})()}</span>`,
     `<span class="dt-key">frDetail:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");const miss=Object.entries(d).find(([k,v])=>v.startsWith("MISS"));return miss?miss[1].slice(0,200):"none";}catch{return"err";}})()}</span>`,
     `<span class="dt-key">plSample:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Erick All");return m?JSON.stringify(m).slice(0,200):"not found";}catch{return"err";}})()}</span>`,
+    _unmappedTeams.size?`<span class="dt-err">⚠ unmapped teams: ${[..._unmappedTeams].join(",")}</span>`:"",
   ].filter(Boolean);
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
@@ -374,23 +375,29 @@ const NFL_TEAM_COLORS = {
   DET:{c1:"#0076B6",c2:"#B0B7BC",c3:"#000000"}, GB:{c1:"#203731",c2:"#FFB612",c3:"#FFFFFF"},
   HOU:{c1:"#03202F",c2:"#A71930",c3:"#FFFFFF"}, IND:{c1:"#002C5F",c2:"#A2AAAD",c3:"#FFFFFF"},
   JAC:{c1:"#006778",c2:"#000000",c3:"#9F792C"}, JAX:{c1:"#006778",c2:"#000000",c3:"#9F792C"},
-  KC:{c1:"#E31837",c2:"#FFB81C",c3:"#FFFFFF"}, LV:{c1:"#000000",c2:"#A5ACAF",c3:"#FFFFFF"},
-  LVR:{c1:"#000000",c2:"#A5ACAF",c3:"#FFFFFF"}, LAC:{c1:"#0080C6",c2:"#002A5E",c3:"#FFC20E"},
-  LAR:{c1:"#003594",c2:"#FFA300",c3:"#FFFFFF"}, MIA:{c1:"#008E97",c2:"#F58220",c3:"#FFFFFF"},
-  MIN:{c1:"#4F2683",c2:"#FFC62F",c3:"#FFFFFF"}, NE:{c1:"#002244",c2:"#C60C30",c3:"#B0B7BC"},
-  NO:{c1:"#101820",c2:"#D3BC8D",c3:"#FFFFFF"}, NYG:{c1:"#0B2265",c2:"#A71930",c3:"#FFFFFF"},
-  NYJ:{c1:"#125740",c2:"#000000",c3:"#FFFFFF"}, PHI:{c1:"#004C54",c2:"#A5ACAF",c3:"#ACC0C6"},
-  PIT:{c1:"#101820",c2:"#FFB612",c3:"#FFFFFF"}, SF:{c1:"#AA0000",c2:"#B3995D",c3:"#FFFFFF"},
-  SEA:{c1:"#002244",c2:"#69BE28",c3:"#A5ACAF"}, TB:{c1:"#D50A0A",c2:"#34302B",c3:"#B1BABF"},
-  TEN:{c1:"#0C2340",c2:"#4B92DB",c3:"#C8102E"}, WAS:{c1:"#5A1414",c2:"#000000",c3:"#FFB612"},
-  WSH:{c1:"#5A1414",c2:"#000000",c3:"#FFB612"},
+  KC:{c1:"#E31837",c2:"#FFB81C",c3:"#FFFFFF"}, KCC:{c1:"#E31837",c2:"#FFB81C",c3:"#FFFFFF"},
+  LV:{c1:"#000000",c2:"#A5ACAF",c3:"#FFFFFF"}, LVR:{c1:"#000000",c2:"#A5ACAF",c3:"#FFFFFF"},
+  LAC:{c1:"#0080C6",c2:"#002A5E",c3:"#FFC20E"}, LAR:{c1:"#003594",c2:"#FFA300",c3:"#FFFFFF"},
+  MIA:{c1:"#008E97",c2:"#F58220",c3:"#FFFFFF"}, MIN:{c1:"#4F2683",c2:"#FFC62F",c3:"#FFFFFF"},
+  NE:{c1:"#002244",c2:"#C60C30",c3:"#B0B7BC"}, NEP:{c1:"#002244",c2:"#C60C30",c3:"#B0B7BC"},
+  NO:{c1:"#101820",c2:"#D3BC8D",c3:"#FFFFFF"}, NOS:{c1:"#101820",c2:"#D3BC8D",c3:"#FFFFFF"},
+  NYG:{c1:"#0B2265",c2:"#A71930",c3:"#FFFFFF"}, NYJ:{c1:"#125740",c2:"#000000",c3:"#FFFFFF"},
+  PHI:{c1:"#004C54",c2:"#A5ACAF",c3:"#ACC0C6"}, PIT:{c1:"#101820",c2:"#FFB612",c3:"#FFFFFF"},
+  SF:{c1:"#AA0000",c2:"#B3995D",c3:"#FFFFFF"}, SFO:{c1:"#AA0000",c2:"#B3995D",c3:"#FFFFFF"},
+  SEA:{c1:"#002244",c2:"#69BE28",c3:"#A5ACAF"},
+  TB:{c1:"#D50A0A",c2:"#34302B",c3:"#B1BABF"}, TBB:{c1:"#D50A0A",c2:"#34302B",c3:"#B1BABF"},
+  TEN:{c1:"#0C2340",c2:"#4B92DB",c3:"#C8102E"},
+  WAS:{c1:"#5A1414",c2:"#000000",c3:"#FFB612"}, WSH:{c1:"#5A1414",c2:"#000000",c3:"#FFB612"},
+  GB:{c1:"#203731",c2:"#FFB612",c3:"#FFFFFF"}, GBP:{c1:"#203731",c2:"#FFB612",c3:"#FFFFFF"},
 };
 function jerseyPill(name){
   const m=getPlayerMeta(name);
   if(!m?.team)return"";
   const num=m.jersey||"00";
-  const tc=NFL_TEAM_COLORS[m.team]||{c1:"#374151",c2:"#1f2937",c3:"#fff"};
-  return`<span class="jersey-pill" style="background:${tc.c1};border-color:${tc.c2};color:${tc.c3}">#${num}</span>`;
+  const tc=NFL_TEAM_COLORS[m.team];
+  if(!tc)_unmappedTeams.add(m.team);
+  const c=tc||{c1:"#374151",c2:"#1f2937",c3:"#fff"};
+  return`<span class="jersey-pill" style="background:${c.c1};border-color:${c.c2};color:${c.c3}">#${num}</span>`;
 }
 
 const norm    = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
@@ -429,6 +436,7 @@ let history      = JSON.parse(localStorage.getItem("wlHistory")||"[]");
 let mflPlayers   = [];
 const nameToId   = {};
 let _tbStatus    = {};
+let _unmappedTeams = new Set();
 
 function manualRefresh(){
   const lrt=parseInt(localStorage.getItem("lrTime")||"0"),elapsed=Date.now()-lrt;
