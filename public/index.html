@@ -285,7 +285,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.71";
+const APP_VERSION = "1.72";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -768,11 +768,11 @@ function applyExpandAll(){
   document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="contents");
   document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.add("open"));
   const chk=document.getElementById("expand-all-toggle");if(chk)chk.checked=true;
-  const lbl=document.querySelector(".expand-toggle-label .toggle-text");if(lbl)lbl.textContent="Collapse";
+  const lbl=document.getElementById("expand-text");if(lbl)lbl.textContent="Collapse";
 }
 function toggleAllOwners(){
   const chk=document.getElementById("expand-all-toggle");allExpanded=chk?chk.checked:!allExpanded;
-  const lbl=document.querySelector(".expand-toggle-label .toggle-text");
+  const lbl=document.getElementById("expand-text");
   if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse";}
   else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand";}
 }
