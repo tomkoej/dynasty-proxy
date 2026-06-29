@@ -278,7 +278,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.46";
+const APP_VERSION = "1.47";
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -768,13 +768,26 @@ function renderLegend(){
   if(rookieLbl) rookieLbl.classList.toggle("lk-active", fv.sort==="rookies");
 }
 function renderLeagueKey(){
+  // Build status-active league set: leagues where any watchlist player matches the status filter
+  let statusIds=null;
+  if(fv.status.size>0&&fv.league.size===0){
+    statusIds=new Set();
+    watchlist.forEach(p=>{
+      const st=playerStatus[norm(p.name)]||{};
+      LEAGUES.forEach(cfg=>{
+        const sv=st[cfg.id];
+        const svArr=Array.isArray(sv)?sv:[sv||"unknown"];
+        if(svArr.some(s=>fv.status.has(s)))statusIds.add(cfg.id);
+      });
+    });
+  }
   const groups=[{label:"SF",ids:LEAGUES.filter(c=>c.label==="SF")},{label:"SF/TE+",ids:LEAGUES.filter(c=>c.label==="SF/TE+")}];
   document.getElementById("league-key").innerHTML=groups.map(g=>{
     const fmtOn=fv.format.size>0&&fv.format.has(g.label);
     return`<div class="league-group"><span class="league-group-label${fmtOn?" lk-active":""}">${g.label}</span>${
       g.ids.map(c=>{
         const num=String(LEAGUES.indexOf(c)+1);
-        const on=fv.league.size>0&&fv.league.has(num);
+        const on=fv.league.size>0?fv.league.has(num):statusIds?statusIds.has(c.id):false;
         return`<span class="lk-item${on?" lk-active":""}">[${num}] ${MY_TEAM_NAMES[c.id]||c.id}</span>`;
       }).join("  ")
     }</div>`;
