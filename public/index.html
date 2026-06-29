@@ -12,12 +12,26 @@
       --blue:#2563eb; --red:#dc2626;
       --font:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
     }
-    html, body { height:100%; background:#0d1117; }
+    /* ── Day theme ─────────────────────────────────────────────────────────── */
+    body.day {
+      --bg:#ffffff; --surface:#f6f8fa; --border:#d0d7de;
+      --dim:#57606a; --muted:#afb8c1; --text:#1f2328;
+      --green:#1a7f37; --green-hi:#2da44e; --blue:#0550ae; --red:#cf222e;
+    }
+    html:has(body.day), body.day { background:#ffffff; }
+    body.day #debug-ticker { border-top-color:#d0d7de; }
+    body.day .hdr-btn { box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    body.day #mfl-keys-panel { box-shadow:0 4px 16px rgba(0,0,0,.12); }
+    body.day #filter-panel   { box-shadow:0 4px 16px rgba(0,0,0,.1); }
+    /* ── Theme toggle ──────────────────────────────────────────────────────── */
+    .theme-row { display:flex; align-items:center; gap:8px; margin-top:4px; }
+    .theme-icon { font-size:11px; color:var(--dim); }
+    html, body { height:100%; background:var(--bg); }
     body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:14px; display:flex; flex-direction:column; }
-    #page-wrap   { display:flex; flex-direction:column; height:100vh; background:#0d1117; }
+    #page-wrap   { display:flex; flex-direction:column; height:100vh; background:var(--bg); }
     #frozen-top  { flex-shrink:0; background:var(--bg); }
     #filter-panel { display:none; position:fixed; z-index:9999; background:var(--surface); border:1px solid var(--border); border-radius:6px; max-height:220px; overflow-y:auto; box-shadow:0 4px 16px rgba(0,0,0,.5); }
-    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:#0d1117; overscroll-behavior:none; }
+    #scroll-list { flex:1; overflow-y:auto; min-height:0; background:var(--bg); overscroll-behavior:none; }
     #list-inner  { max-width:680px; margin:0 auto; padding:8px 24px 16px; }
 
     #header {
@@ -186,8 +200,8 @@
     .revert-btn:hover { border-color:var(--green); color:var(--green); }
     .history-players { margin-top:6px; padding:6px 8px; background:var(--bg); border-radius:4px; font-size:11px; color:var(--dim); line-height:1.7; }
     .history-empty { color:var(--dim); font-size:13px; }
-    #debug-ticker { flex-shrink:0; background:#0d1117; border-top:1px solid #2a3040; padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
-    #debug-ticker .dt-val { color:#6b7280; }
+    #debug-ticker { flex-shrink:0; background:var(--bg); border-top:1px solid var(--border); padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
+    #debug-ticker .dt-val { color:var(--dim); }
     #debug-ticker .dt-key { color:var(--dim); margin-right:3px; }
     #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
     #debug-ticker .dt-sep { color:var(--muted); }
@@ -209,6 +223,14 @@
   <div>
     <h1>🏈 <span>Dynasty</span> Watchlist <span id="app-version" style="color:var(--dim);font-size:12px;font-weight:400;letter-spacing:.02em;"></span></h1>
     <p id="subtitle">—</p>
+    <div class="theme-row">
+      <span class="theme-icon" id="theme-icon-l">🌙</span>
+      <label class="expand-toggle-label" style="cursor:pointer;margin:0">
+        <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+      </label>
+      <span class="theme-icon" id="theme-icon-r">☀️</span>
+    </div>
   </div>
   <div id="header-right">
     <div id="header-btns">
@@ -282,7 +304,26 @@
 </div>
 
 <script>
-const APP_VERSION = "1.58";
+const APP_VERSION = "1.59";
+
+// ── Theme ──────────────────────────────────────────────────────────────────────
+let _isDayMode = localStorage.getItem("themeMode")==="day";
+let _bgColor   = _isDayMode ? "#ffffff" : "#0d1117";
+let _dimColor  = _isDayMode ? "#c8d0d8" : "#374151";
+
+function _applyTheme(isDay){
+  document.body.classList.toggle("day", isDay);
+  _bgColor  = isDay ? "#ffffff" : "#0d1117";
+  _dimColor = isDay ? "#c8d0d8" : "#374151";
+  const tog = document.getElementById("theme-toggle");
+  if(tog) tog.checked = isDay;
+  renderList();
+}
+function toggleTheme(){
+  _isDayMode = !_isDayMode;
+  localStorage.setItem("themeMode", _isDayMode ? "day" : "night");
+  _applyTheme(_isDayMode);
+}
 
 // ── Debug Ticker ───────────────────────────────────────────────────────────────
 let _dbgErr=null,_dbgErrTime=null;
@@ -1021,7 +1062,7 @@ function renderList(){
     return;
   }
 
-  const dimColor="#374151";
+  const dimColor=_dimColor;
   // Which league IDs are "in scope" for the current Format/League filter
   const scopeIds=(()=>{
     if(fv.league.size>0)return new Set([...fv.league].map(n=>LEAGUES[parseInt(n)-1]?.id).filter(Boolean));
@@ -1040,7 +1081,7 @@ function renderList(){
     const dim=shouldDim(cfg,sv);
     const bg=dim?dimColor:iconColor(sv);
     const rc=!dim?ringColor(sv):null;
-    const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px #0d1117,0 0 0 4px ${rc}`:``);
+    const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px ${_bgColor},0 0 0 4px ${rc}`:``);
     return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — ${iconLabel(sv)}">${num}</span>`;
   };
   const makeNwoIcon=(cfg,s)=>{
@@ -1051,7 +1092,7 @@ function renderList(){
       const dim=shouldDim(cfg,sv);
       const bg=dim?dimColor:iconColor(sv);
       const rc=!dim?ringColor(sv):null;
-      const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px #0d1117,0 0 0 4px ${rc}`:``);
+      const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px ${_bgColor},0 0 0 4px ${rc}`:``);
       return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
     }).join("");
   };
@@ -1144,6 +1185,7 @@ function removePlayer(i){
 
 // timestamp set by refresh block below
 document.getElementById("app-version").textContent="v"+APP_VERSION;
+_applyTheme(_isDayMode);
 renderLeagueKey();
 updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
