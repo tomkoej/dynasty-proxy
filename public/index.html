@@ -120,6 +120,9 @@
     #league-key { font-size:11px; margin-bottom:8px; line-height:2; }
     .lk-item { color:var(--dim); transition:color .15s; }
     .lk-item.lk-active { color:#fff; font-weight:600; }
+    body.day .lk-item.lk-active,
+    body.day .league-group-label.lk-active,
+    body.day .legend-label.lk-active { color:var(--text); }
     .legend-label.lk-active { color:#fff; font-weight:600; }
     .league-group-label { color:var(--dim); font-size:10px; text-transform:uppercase; letter-spacing:.04em; margin-right:6px; transition:color .15s; }
     .league-group-label.lk-active { color:#fff; font-weight:600; }
@@ -138,7 +141,7 @@
     /* Icon rows */
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
-    .row-label { color:#fff; font-size:10px; }
+    .row-label { color:var(--text); font-size:10px; }
     .icon-slot-ph { width:20px; height:20px; flex-shrink:0; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
@@ -153,7 +156,7 @@
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:flex; gap:20px; padding-left:36px; margin-top:3px; }
     .avail-col       { display:flex; flex-direction:column; gap:2px; }
-    .avail-col-label { color:#fff; font-size:10px; margin-bottom:4px; }
+    .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
     .owner-line.hl   { color:var(--text); }
 
@@ -220,22 +223,23 @@
 <div id="frozen-top">
 <div id="header">
   <div>
-    <h1>🏈 <span>Dynasty</span> Watchlist <span id="app-version" style="color:var(--dim);font-size:12px;font-weight:400;letter-spacing:.02em;"></span></h1>
+    <h1><span>Dynasty</span> Watchlist <span id="app-version" style="color:var(--dim);font-size:12px;font-weight:400;letter-spacing:.02em;"></span></h1>
     <p id="subtitle">—</p>
     <div class="theme-row">
       <label class="expand-toggle-label" style="cursor:pointer;margin:0">
         <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
-        <span class="toggle-text" id="theme-label">Night</span>
+        <span class="toggle-text">Night</span>
         <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-text">Day</span>
       </label>
     </div>
   </div>
   <div id="header-right">
     <div id="header-btns">
-      <button class="hdr-btn" id="mfl-keys-btn" onclick="toggleMflKeys()">🔑 API Keys</button>
+      <button class="hdr-btn" id="mfl-keys-btn" onclick="toggleMflKeys()">API Keys</button>
       <button class="hdr-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
-      <button class="hdr-btn" onclick="toggleHistory()">🕐 History</button>
+      <button class="hdr-btn" onclick="toggleHistory()">History</button>
     </div>
     <div id="timestamp-row"><span id="timestamp">Not yet refreshed</span><button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button></div>
     <div id="refresh-warning"></div>
@@ -302,7 +306,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.60";
+const APP_VERSION = "1.61";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -315,8 +319,7 @@ function _applyTheme(isDay){
   _dimColor = isDay ? "#c8d0d8" : "#374151";
   const tog = document.getElementById("theme-toggle");
   if(tog) tog.checked = isDay;
-  const lbl = document.getElementById("theme-label");
-  if(lbl) lbl.textContent = isDay ? "Day" : "Night";
+
   renderList();
 }
 function toggleTheme(){
