@@ -159,6 +159,7 @@
     .owner-toggle.open { transform:rotate(90deg); }
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:flex; gap:20px; padding-left:36px; margin-top:3px; }
+    .birthday-line   { color:var(--dim); font-size:10px; padding-left:36px; margin-bottom:3px; }
     .avail-col       { display:flex; flex-direction:column; gap:2px; }
     .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
@@ -294,7 +295,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.2";
+const APP_VERSION = "2.3";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -442,6 +443,15 @@ function playerAge(name){
   const kickoff=seasonKickoff(currentNFLSeasonYear());
   const ageYears=(kickoff.getTime()-bdMs)/(365.25*24*3600*1000);
   return ageYears.toFixed(2);
+}
+function birthdayLine(name){
+  const m=getPlayerMeta(name);
+  if(!m?.birthdate)return"";
+  const bdMs=parseInt(m.birthdate)*1000;
+  if(!bdMs)return"";
+  const d=new Date(bdMs);
+  const formatted=d.toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric",timeZone:"UTC"});
+  return`<div class="birthday-line">Born ${formatted}</div>`;
 }
 
 // ── Bye Weeks + Next Game (dynamic — always pulls the current NFL season) ─────
@@ -1153,7 +1163,7 @@ function renderList(){
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
       </div>
-      <div id="owners-${i}" style="display:none">${allStatuses}</div>
+      <div id="owners-${i}" style="display:none">${birthdayLine(name)}${allStatuses}</div>
     </div>`;
   }).join("");
   if(allExpanded)applyExpandAll();
