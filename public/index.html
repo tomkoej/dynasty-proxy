@@ -310,7 +310,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.21";
+const APP_VERSION = "2.22";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1311,10 +1311,10 @@ function renderList(){
     const allStatuses=buildStatusLines(status,pid);
     return`<div class="player-row">
       <div class="player-card-top">
+        <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
         ${jerseyPill(name)}
         <div class="player-card-text">
           <div class="player-name-row">
-            <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
             <span class="player-name">${name}</span><span class="player-pos">${pos}</span>
             ${team?`<span class="player-team">${team}</span>`:""}
             ${rookie?'<span class="rookie-badge">R</span>':""}
