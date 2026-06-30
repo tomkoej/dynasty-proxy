@@ -293,7 +293,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.96";
+const APP_VERSION = "1.97";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -461,10 +461,10 @@ function draftMeta(name){
   const yr=parseInt(m.draft_year)||null;
   const isUDFA=m.draft_team==="FA";
   if(isUDFA){
-    const exp=yr?draftExp(m):null;
-    const parts=["Undrafted"];
-    if(yr)parts.push(`${yr}`);
-    if(exp)parts.push(exp<=1?"ROOKIE":`Yr ${exp}`);
+    if(!yr)return`<div class="draft-meta">Undrafted</div>`;
+    const exp=draftExp(m);
+    const parts=[`${yr} Draft Class`,"Undrafted"];
+    parts.push(exp<=1?"ROOKIE":`Yr ${exp}`);
     return`<div class="draft-meta">${parts.join(" · ")}</div>`;
   }
   if(!yr)return`<div class="draft-meta">Undrafted</div>`;
