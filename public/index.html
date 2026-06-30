@@ -169,7 +169,7 @@
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:grid; margin-top:3px; }
     .expand-divider { border-top:1px solid var(--border); margin:8px 0; }
-    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:153px; }
+    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:161px; }
     .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
     .owner-line.hl   { color:var(--text); }
@@ -311,7 +311,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.35";
+const APP_VERSION = "2.36";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1271,15 +1271,15 @@ function renderList(){
         const parts=st.map(s=>{
           if(s==="taken"){const n=rawOwners[ti++]||"";return n||"Rostered";}
           if(s==="tradeblock"){const n=rawOwners[ti++]||"";return n||"Rostered";}
-          return s==="mine"?"My Team":s==="mytradeblock"?"My Trade Block":s==="available"?"Available":"Unknown";
+          return s==="mine"?(MY_TEAM_NAMES[cfg.id]||"My Team"):s==="mytradeblock"?(MY_TEAM_NAMES[cfg.id]||"My Team")+" (Trade Block)":s==="available"?"Available":"Unknown";
         });
         return`<div class="${cls}">[${num}] ${parts.join(" & ")}</div>`;
       }else{
         const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";let d;
         if(sv==="taken"){const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":"";d=n||"Rostered";}
         else if(sv==="tradeblock"){const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":"";d=n||"Rostered";}
-        else if(sv==="mytradeblock")d="My Trade Block";
-        else if(sv==="mine")d="My Team";
+        else if(sv==="mytradeblock")d=(MY_TEAM_NAMES[cfg.id]||"My Team")+" (Trade Block)";
+        else if(sv==="mine")d=MY_TEAM_NAMES[cfg.id]||"My Team";
         else if(sv==="available")d="Available";
         else d="Unknown";
         return`<div class="${cls}">[${num}] ${d}</div>`;
@@ -1287,7 +1287,7 @@ function renderList(){
     };
     const sfLines=LEAGUES.filter(c=>c.label==="SF").map(lineFor).join("");
     const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
-    return`<div class="avail-grid" style="grid-template-columns:134px 327px">
+    return`<div class="avail-grid" style="grid-template-columns:134px 343px">
       <div style="grid-column:2/-1;display:flex;gap:20px;">
         <div class="avail-col">${sfLines}</div>
         <div class="avail-col">${sfteLines}</div>
