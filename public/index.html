@@ -294,7 +294,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.1";
+const APP_VERSION = "2.2";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1011,7 +1011,7 @@ function buildAgeFilter(){
   const ages=new Set();
   watchlist.forEach(p=>{const a=playerAge(p.name);if(a)ages.add(a);});
   const sorted=[...ages].sort((a,b)=>parseFloat(a)-parseFloat(b));
-  csOptions("age",[{val:"",label:"Select All"},...sorted.map(a=>({val:a,label:"Age "+a}))]);
+  csOptions("age",[{val:"",label:"Select All"},...sorted.map(a=>({val:a,label:a}))]);
 }
 function buildNameDropdown(){const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));csOptions("name",[{val:"",label:"Select All"},...sorted.map(p=>({val:norm(p.name),label:p.name}))]);}
 
@@ -1053,7 +1053,17 @@ function renderList(){
     return true;
   });
   if(sortV==="rookies")rows=rows.filter(p=>isRookie(p.name));
-  rows.sort((a,b)=>sortV==="za"?sortKey(b.name).localeCompare(sortKey(a.name)):sortKey(a.name).localeCompare(sortKey(b.name)));
+  if(sortV==="agelo"||sortV==="agehi"){
+    rows.sort((a,b)=>{
+      const aAge=playerAge(a.name),bAge=playerAge(b.name);
+      if(aAge===null&&bAge===null)return sortKey(a.name).localeCompare(sortKey(b.name));
+      if(aAge===null)return 1;
+      if(bAge===null)return -1;
+      return sortV==="agelo"?parseFloat(aAge)-parseFloat(bAge):parseFloat(bAge)-parseFloat(aAge);
+    });
+  }else{
+    rows.sort((a,b)=>sortV==="za"?sortKey(b.name).localeCompare(sortKey(a.name)):sortKey(a.name).localeCompare(sortKey(b.name)));
+  }
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
   renderLeagueKey();renderLegend();
   const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0||fv.bye.size>0||fv.draftyear.size>0||fv.draftround.size>0||fv.draftpick.size>0||fv.draftexp.size>0||fv.age.size>0;
@@ -1161,7 +1171,7 @@ renderLeagueKey();
 updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
-csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
+csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();renderHistory();_dbgUpdate();
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
