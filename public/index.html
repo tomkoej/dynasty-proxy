@@ -7,7 +7,7 @@
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
-      --bg:#0e1520; --surface:#152030; --border:#243348; --dim:#6b7a8f;
+      --bg:#323841; --surface:#152030; --border:#243348; --dim:#6b7a8f;
       --muted:#2d3d52; --text:#d4dde8; --green:#16a34a; --green-hi:#22c55e;
       --blue:#2563eb; --red:#dc2626;
       --font:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
@@ -285,16 +285,16 @@
 </div>
 
 <script>
-const APP_VERSION = "1.80";
+const APP_VERSION = "1.83";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
-let _bgColor   = _isDayMode ? "#eceae6" : "#0e1520";
+let _bgColor   = _isDayMode ? "#eceae6" : "#323841";
 let _dimColor  = _isDayMode ? "#c0bcb4" : "#2d3d52";
 
 function _applyTheme(isDay){
   document.body.classList.toggle("day", isDay);
-  _bgColor  = isDay ? "#eceae6" : "#0e1520";
+  _bgColor  = isDay ? "#eceae6" : "#323841";
   _dimColor = isDay ? "#c0bcb4" : "#2d3d52";
   const tog = document.getElementById("theme-toggle");
   if(tog) tog.checked = isDay;
