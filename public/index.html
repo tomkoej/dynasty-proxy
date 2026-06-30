@@ -293,7 +293,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.98";
+const APP_VERSION = "1.99";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -409,6 +409,42 @@ function jerseyPill(name){
   if(!tc&&m.team!=="FA")_unmappedTeams.add(m.team);
   const c=tc||{c1:"#374151",c2:"#1f2937",c3:"#fff"};
   return`<span class="jersey-pill" style="background:${c.c1};border-color:${c.c2};color:${c.c3}">${num}</span>`;
+}
+
+// ── Season Kickoff Dates (for standardized "age at kickoff" calculations) ─────
+// Source: provided NFL season opener dates, 2000–2026. Update this table each
+// year once the next season's actual kickoff date is announced; years beyond
+// the table fall back to an estimate (Thursday after Labor Day).
+const SEASON_KICKOFF = {
+  2000:"2000-09-03", 2001:"2001-09-09", 2002:"2002-09-05", 2003:"2003-09-04",
+  2004:"2004-09-09", 2005:"2005-09-08", 2006:"2006-09-07", 2007:"2007-09-06",
+  2008:"2008-09-04", 2009:"2009-09-10", 2010:"2010-09-09", 2011:"2011-09-08",
+  2012:"2012-09-05", 2013:"2013-09-05", 2014:"2014-09-04", 2015:"2015-09-10",
+  2016:"2016-09-08", 2017:"2017-09-07", 2018:"2018-09-06", 2019:"2019-09-05",
+  2020:"2020-09-10", 2021:"2021-09-09", 2022:"2022-09-08", 2023:"2023-09-07",
+  2024:"2024-09-05", 2025:"2025-09-04", 2026:"2026-09-09",
+};
+function seasonKickoff(year){
+  if(SEASON_KICKOFF[year])return new Date(SEASON_KICKOFF[year]+"T00:00:00Z");
+  // Fallback estimate for years not yet in the table: Thursday after Labor Day.
+  // Not authoritative — replace with the real date in SEASON_KICKOFF once announced.
+  const d=new Date(Date.UTC(year,8,1));
+  const offsetToMon=(8-d.getUTCDay())%7;
+  d.setUTCDate(1+offsetToMon+3); // Labor Day Monday + 3 = Thursday
+  return d;
+}
+function playerAge(name){
+  const m=getPlayerMeta(name);
+  if(!m?.birthdate)return null;
+  const bdMs=parseInt(m.birthdate)*1000; // MFL birthdate is unix seconds
+  if(!bdMs)return null;
+  const birth=new Date(bdMs);
+  const kickoff=seasonKickoff(currentNFLSeasonYear());
+  let age=kickoff.getUTCFullYear()-birth.getUTCFullYear();
+  const hadBirthday=(kickoff.getUTCMonth()>birth.getUTCMonth())||
+    (kickoff.getUTCMonth()===birth.getUTCMonth()&&kickoff.getUTCDate()>=birth.getUTCDate());
+  if(!hadBirthday)age--;
+  return age;
 }
 
 // ── Bye Weeks + Next Game (dynamic — always pulls the current NFL season) ─────
