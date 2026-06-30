@@ -149,7 +149,7 @@
     .draft-meta { color:var(--dim); font-size:10px; }
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
-    .row-label { color:var(--text); font-size:10px; }
+    .row-label { color:var(--text); font-size:10px; padding-left:10px; }
     .icon-slot-ph { width:20px; height:20px; flex-shrink:0; }
     .grid-spacer { width:1px; }
     .draft-slot-pill { display:inline-flex; align-items:center; justify-content:center; height:20px; padding:0 5px; border-radius:5px; border:1px solid; font-family:var(--font); font-size:9px; font-weight:600; flex-shrink:0; box-sizing:border-box; }
@@ -310,7 +310,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.22";
+const APP_VERSION = "2.23";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
