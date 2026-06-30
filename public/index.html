@@ -295,7 +295,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.5";
+const APP_VERSION = "2.6";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -443,6 +443,22 @@ function playerAge(name){
   const kickoff=seasonKickoff(currentNFLSeasonYear());
   const ageYears=(kickoff.getTime()-bdMs)/(365.25*24*3600*1000);
   return ageYears.toFixed(2);
+}
+const AGE_BUCKETS=[
+  {max:23, label:"≤22"},
+  {min:23, max:25, label:"23–24"},
+  {min:25, max:27, label:"25–26"},
+  {min:27, max:29, label:"27–28"},
+  {min:29, max:31, label:"29–30"},
+  {min:31, max:33, label:"31–32"},
+  {min:33, max:35, label:"33–34"},
+  {min:35, label:"35+"},
+];
+function ageBucketLabel(ageStr){
+  if(ageStr===null)return null;
+  const age=parseFloat(ageStr);
+  const b=AGE_BUCKETS.find(b=>(b.min===undefined||age>=b.min)&&(b.max===undefined||age<b.max));
+  return b?b.label:null;
 }
 function birthdayLine(name){
   const m=getPlayerMeta(name);
@@ -1021,10 +1037,10 @@ function buildDraftExpFilter(){
   csOptions("draftexp",[{val:"",label:"Select All"},...sorted.map(e=>({val:String(e),label:e<=1?"Rookie":"Yr "+e}))]);
 }
 function buildAgeFilter(){
-  const ages=new Set();
-  watchlist.forEach(p=>{const a=playerAge(p.name);if(a)ages.add(a);});
-  const sorted=[...ages].sort((a,b)=>parseFloat(a)-parseFloat(b));
-  csOptions("age",[{val:"",label:"Select All"},...sorted.map(a=>({val:a,label:a}))]);
+  const present=new Set();
+  watchlist.forEach(p=>{const a=playerAge(p.name);const lbl=ageBucketLabel(a);if(lbl)present.add(lbl);});
+  const opts=AGE_BUCKETS.filter(b=>present.has(b.label)).map(b=>({val:b.label,label:b.label}));
+  csOptions("age",[{val:"",label:"Select All"},...opts]);
 }
 function buildNameDropdown(){const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));csOptions("name",[{val:"",label:"Select All"},...sorted.map(p=>({val:norm(p.name),label:p.name}))]);}
 
@@ -1054,7 +1070,7 @@ function renderList(){
     if(fv.draftround.size>0){const m=getPlayerMeta(p.name);const isUdft=m?.draft_team==="FA";const rd=m?.draft_round?String(parseInt(m.draft_round)):null;const ok=(isUdft&&fv.draftround.has("undrafted"))||(rd&&fv.draftround.has(rd));if(!ok)return false;}
     if(fv.draftpick.size>0){const m=getPlayerMeta(p.name);const isUdft=m?.draft_team==="FA";const ovr=draftOverall(m);const ok=(isUdft&&fv.draftpick.has("undrafted"))||(ovr&&fv.draftpick.has(String(ovr)));if(!ok)return false;}
     if(fv.draftexp.size>0){const m=getPlayerMeta(p.name);const e=draftExp(m);if(!e||!fv.draftexp.has(String(e)))return false;}
-    if(fv.age.size>0){const a=playerAge(p.name);if(!a||!fv.age.has(a))return false;}
+    if(fv.age.size>0){const a=playerAge(p.name);const lbl=ageBucketLabel(a);if(!lbl||!fv.age.has(lbl))return false;}
     if(fv.status.size>0){
       const st=playerStatus[norm(p.name)]||{};
       let cfgs;
