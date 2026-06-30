@@ -308,7 +308,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.17";
+const APP_VERSION = "2.18";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1250,7 +1250,7 @@ function renderList(){
     return st.map((si,k)=>{const sv=effStatus(cfg,si),dim=shouldDim(cfg,sv),bg=dim?dimColor:iconColor(sv),rc=!dim?ringColor(sv):null;
       const sty=`background:${bg}`+(rc?`;box-shadow:0 0 0 2px ${_bgColor},0 0 0 4px ${rc}`:"");
       return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
-    }).join("");
+    });
   };
   const buildStatusLines=(status,pid)=>{
     const lineFor=(cfg)=>{
@@ -1288,12 +1288,23 @@ function renderList(){
     const status=playerStatus[norm(name)]||{},meta=getPlayerMeta(name),team=meta?.team||"",rookie=isRookie(name),pid=nameToId[norm(name)];
     const _sfCfgs=LEAGUES.filter(c=>c.label==="SF"),_sfteCfgs=LEAGUES.filter(c=>c.label==="SF/TE+");
     const _sfteSlots=_sfteCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0),_sfSlots=_sfCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0),_maxSlots=Math.max(_sfSlots,_sfteSlots);
-    const _ph='<span class="icon-slot-ph"></span>';
-    const sfIcons=_sfCfgs.map(c=>makeIcon(c,status[c.id])).join("")+_ph.repeat(_maxSlots-_sfSlots);
-    const sfteIcons=_sfteCfgs.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
-    const _phPill='<span class="draft-slot-pill ph"></span>';
-    const sfPills=_sfCfgs.map(c=>draftSlotPill(c,name,pid)).join("")+_phPill.repeat(_maxSlots-_sfSlots);
-    const sftePills=_sfteCfgs.map(c=>c.twoCopy?draftSlotPill(c,name,pid,0)+draftSlotPill(c,name,pid,1):draftSlotPill(c,name,pid)).join("");
+    const gi=(col,row,html)=>`<div style="grid-column:${col};grid-row:${row};display:flex;align-items:center;justify-content:center;">${html}</div>`;
+    let _sfCells="",_col=2;
+    _sfCfgs.forEach(c=>{
+      _sfCells+=gi(_col,1,makeIcon(c,status[c.id]));
+      _sfCells+=gi(_col,2,draftSlotPill(c,name,pid));
+      _col++;
+    });
+    let _sfteCells="";_col=2;
+    _sfteCfgs.forEach(c=>{
+      if(c.twoCopy){
+        const circles=makeNwoIcon(c,status[c.id]);
+        _sfteCells+=gi(_col,3,circles[0])+gi(_col,4,draftSlotPill(c,name,pid,0));_col++;
+        _sfteCells+=gi(_col,3,circles[1])+gi(_col,4,draftSlotPill(c,name,pid,1));_col++;
+      }else{
+        _sfteCells+=gi(_col,3,makeIcon(c,status[c.id]))+gi(_col,4,draftSlotPill(c,name,pid));_col++;
+      }
+    });
     const allStatuses=buildStatusLines(status,pid);
     return`<div class="player-row">
       <div class="player-name-row">
@@ -1309,9 +1320,11 @@ function renderList(){
       ${draftMeta(name)}
       <div id="birthday-${i}" style="display:none">${birthdayLine(name)}</div>
       <span class="player-section-label">Status</span>
-      <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},26px) 10px repeat(${_maxSlots},34px)">
-        <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}<span class="grid-spacer"></span>${sfPills}</div>
-        <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}<span class="grid-spacer"></span>${sftePills}</div>
+      <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},44px);grid-template-rows:auto auto auto auto;row-gap:6px;column-gap:5px;">
+        <div style="grid-column:1;grid-row:1/3;display:flex;align-items:center;"><span class="row-label">SF</span></div>
+        <div style="grid-column:1;grid-row:3/5;display:flex;align-items:center;"><span class="row-label">SF/TE+</span></div>
+        ${_sfCells}
+        ${_sfteCells}
       </div>
       <div id="owners-${i}" style="display:none">${allStatuses}</div>
     </div>`;
