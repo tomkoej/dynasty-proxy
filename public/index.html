@@ -144,7 +144,7 @@
     .jersey-pill { display:inline-flex; align-items:center; justify-content:center; width:29px; height:29px; border-radius:7px; border:2px solid; font-family:var(--font); font-size:11px; font-weight:800; flex-shrink:0; }
     .bye-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 6px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.02em; flex-shrink:0; }
     .next-game-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 7px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.01em; flex-shrink:0; white-space:nowrap; }
-    .draft-meta { color:var(--dim); font-size:10px; padding-left:64px; margin-top:3px; }
+    .draft-meta { color:var(--dim); font-size:10px; padding-left:61px; margin-top:3px; }
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
     .row-label { color:var(--text); font-size:10px; }
@@ -308,7 +308,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.19";
+const APP_VERSION = "2.20";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1319,8 +1319,7 @@ function renderList(){
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
       ${draftMeta(name)}
-      <span class="player-section-label">Status</span>
-      <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},44px);grid-template-rows:auto auto auto auto;row-gap:6px;column-gap:5px;">
+      <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},44px);grid-template-rows:auto auto auto auto;row-gap:6px;column-gap:5px;margin-top:8px;">
         <div style="grid-column:1;grid-row:1/3;display:flex;align-items:center;"><span class="row-label">SF</span></div>
         <div style="grid-column:1;grid-row:3/5;display:flex;align-items:center;"><span class="row-label">SF/TE+</span></div>
         ${_sfCells}
