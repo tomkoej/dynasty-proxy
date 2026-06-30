@@ -259,6 +259,7 @@
       <div class="cs-wrap" id="csf-format"><button class="cs-btn" onclick="csToggle(this)">Format<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-format" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-league"><button class="cs-btn" onclick="csToggle(this)">League<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-league" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-bye"><button class="cs-btn" onclick="csToggle(this)">Bye Week<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-bye" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-college"><button class="cs-btn" onclick="csToggle(this)">College<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-college" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-draftyear"><button class="cs-btn" onclick="csToggle(this)">Draft Class<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftyear" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-draftround"><button class="cs-btn" onclick="csToggle(this)">Draft Round<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftround" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-draftpick"><button class="cs-btn" onclick="csToggle(this)">Overall Pick<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftpick" onclick="event.stopPropagation()"></div></div>
@@ -295,7 +296,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.9";
+const APP_VERSION = "2.10";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -569,7 +570,7 @@ async function loadByeWeeks(){
   const cachedSched=localStorage.getItem("mflScheduleV1");
   const cachedTime=parseInt(localStorage.getItem("mflByeWeeksTimeV1")||"0");
   if(cached&&cachedSched&&cachedYear===year&&(Date.now()-cachedTime)<86400000){
-    teamByeWeeks=JSON.parse(cached);teamSchedule=JSON.parse(cachedSched);buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();return;
+    teamByeWeeks=JSON.parse(cached);teamSchedule=JSON.parse(cachedSched);buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();return;
   }
   try{
     const d=await mfl("api",null,"nflSchedule",year,{W:"ALL"});
@@ -604,7 +605,7 @@ async function loadByeWeeks(){
     localStorage.setItem("mflScheduleV1",JSON.stringify(sched));
     localStorage.setItem("mflByeWeeksTimeV1",Date.now().toString());
     localStorage.setItem("mflByeYear",year);
-    buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+    buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
   }catch(e){ /* bye/schedule data is supplementary — fail silently */ }
 }
 
@@ -698,9 +699,9 @@ function isRookie(name){ const m=getPlayerMeta(name);return !!(m?.status==="R"||
 
 function recordChange(){ undoStack.push(clone(watchlist));if(undoStack.length>100)undoStack.shift();redoStack=[];updateUndoRedoBtns(); }
 function saveHistory(desc){ history.unshift({ts:Date.now(),desc,watchlist:clone(watchlist)});if(history.length>30)history.pop();localStorage.setItem("wlHistory",JSON.stringify(history));renderHistory(); }
-function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
-function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
-function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
+function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
+function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
+function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
 function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length;document.getElementById("redo-btn").disabled=!redoStack.length; }
 function toggleHistory(){ const p=document.getElementById("history-panel");p.style.display=p.style.display==="none"?"block":"none"; }
 let histExpanded=new Set();
@@ -746,7 +747,7 @@ async function loadPlayerPool(){
   mflPlayers.forEach(p=>{if(!p.name||!p.id)return;nameToId[norm(p.name)]=p.id;nameToId[norm(displayName(p.name))]=p.id;});
   const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV2")||Date.now()));
   document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
-  buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
 }
 
 let addTimer;
@@ -773,12 +774,12 @@ function addFromPool(name,pos){
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
   saveHistory("Added "+name);
   document.getElementById("add-search").value="";document.getElementById("add-results").style.display="none";
-  buildNameDropdown();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
 }
 function resetToDefaults(){
   if(!confirm("Reset watchlist to the 29 default players?"))return;
   recordChange();watchlist=clone(DEFAULT_WATCHLIST);localStorage.setItem("wl",JSON.stringify(watchlist));
-  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
 }
 
 function loadCachedRosters(){
@@ -908,9 +909,9 @@ function toggleOwners(idx){
   btn.classList.toggle("open",opening);
 }
 function clearFilters(){
-  [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league,fv.bye,fv.draftyear,fv.draftround,fv.draftpick,fv.draftexp,fv.age].forEach(s=>s.clear());fv.sort="az";
+  [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league,fv.bye,fv.college,fv.draftyear,fv.draftround,fv.draftpick,fv.draftexp,fv.age].forEach(s=>s.clear());fv.sort="az";
   closePanel();Object.keys(csQ).forEach(k=>csQ[k]="");
-  ["name","pos","nflteam","status","format","league","bye","draftyear","draftround","draftpick","draftexp","age","sort"].forEach(k=>{csUpdateBtn(k);csRender(k);});
+  ["name","pos","nflteam","status","format","league","bye","college","draftyear","draftround","draftpick","draftexp","age","sort"].forEach(k=>{csUpdateBtn(k);csRender(k);});
   buildLeagueFilter();document.getElementById("clear-filters-btn").style.display="none";renderList();
 }
 
@@ -945,9 +946,9 @@ function renderLeagueKey(){
   }).join("");
 }
 
-const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),bye:new Set(),draftyear:new Set(),draftround:new Set(),draftpick:new Set(),draftexp:new Set(),age:new Set(),sort:"az"};
+const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),bye:new Set(),college:new Set(),draftyear:new Set(),draftround:new Set(),draftpick:new Set(),draftexp:new Set(),age:new Set(),sort:"az"};
 const csData={},csQ={};
-const csCfg={name:{multi:true},pos:{multi:true},nflteam:{multi:true},status:{multi:true},format:{multi:true},league:{multi:true},bye:{multi:true},draftyear:{multi:true},draftround:{multi:true},draftpick:{multi:true},draftexp:{multi:true},age:{multi:true},sort:{multi:false}};
+const csCfg={name:{multi:true},pos:{multi:true},nflteam:{multi:true},status:{multi:true},format:{multi:true},league:{multi:true},bye:{multi:true},college:{multi:true},draftyear:{multi:true},draftround:{multi:true},draftpick:{multi:true},draftexp:{multi:true},age:{multi:true},sort:{multi:false}};
 let _panelKey=null;
 function closePanel(){
   if(!_panelKey)return;
@@ -1014,6 +1015,12 @@ function buildLeagueFilter(){
   csOptions("league",[{val:"",label:"Select All"},...pool.map(c=>{const num=LEAGUES.indexOf(c)+1;return{val:String(num),label:`[${num}] ${MY_TEAM_NAMES[c.id]||c.id}`};})]);
 }
 function buildTeamFilter(){const teams=new Set();watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});csOptions("nflteam",[{val:"",label:"Select All"},...[...teams].sort().map(t=>({val:t,label:t}))]);}
+function buildCollegeFilter(){
+  const colleges=new Set();
+  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.college)colleges.add(stripHtml(m.college));});
+  const sorted=[...colleges].sort();
+  csOptions("college",[{val:"",label:"Select All"},...sorted.map(c=>({val:c,label:c}))]);
+}
 function buildByeFilter(){
   const weeks=new Set();
   watchlist.forEach(p=>{const m=getPlayerMeta(p.name);const wk=m?.team?teamByeWeeks[m.team]:null;if(wk)weeks.add(wk);});
@@ -1082,6 +1089,7 @@ function renderList(){
     if(fv.pos.size>0&&!fv.pos.has(p.pos))return false;
     if(fv.nflteam.size>0){const m=getPlayerMeta(p.name);if(!fv.nflteam.has(m?.team||""))return false;}
     if(fv.bye.size>0){const m=getPlayerMeta(p.name);const wk=m?.team?teamByeWeeks[m.team]:null;if(!wk||!fv.bye.has(String(wk)))return false;}
+    if(fv.college.size>0){const m=getPlayerMeta(p.name);const col=m?.college?stripHtml(m.college):null;if(!col||!fv.college.has(col))return false;}
     if(fv.draftyear.size>0){const m=getPlayerMeta(p.name);if(!m?.draft_year||!fv.draftyear.has(String(parseInt(m.draft_year))))return false;}
     if(fv.draftround.size>0){const m=getPlayerMeta(p.name);const isUdft=m?.draft_team==="FA";const rd=m?.draft_round?String(parseInt(m.draft_round)):null;const ok=(isUdft&&fv.draftround.has("undrafted"))||(rd&&fv.draftround.has(rd));if(!ok)return false;}
     if(fv.draftpick.size>0){const m=getPlayerMeta(p.name);const isUdft=m?.draft_team==="FA";const ovr=draftOverall(m);const ok=(isUdft&&fv.draftpick.has("undrafted"))||(ovr&&fv.draftpick.has(String(ovr)));if(!ok)return false;}
@@ -1112,7 +1120,7 @@ function renderList(){
   }
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
   renderLeagueKey();renderLegend();
-  const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0||fv.bye.size>0||fv.draftyear.size>0||fv.draftround.size>0||fv.draftpick.size>0||fv.draftexp.size>0||fv.age.size>0;
+  const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0||fv.bye.size>0||fv.college.size>0||fv.draftyear.size>0||fv.draftround.size>0||fv.draftpick.size>0||fv.draftexp.size>0||fv.age.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
   if(!rows.length){
     if(!watchlist.length){
@@ -1209,7 +1217,7 @@ function renderList(){
 function removePlayer(i){
   const name=watchlist[i]?.name||"Player";recordChange();watchlist=watchlist.filter((_,j)=>j!==i);
   localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Removed "+name);
-  buildNameDropdown();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
 }
 
 document.getElementById("app-version").textContent="v"+APP_VERSION;
@@ -1219,7 +1227,7 @@ updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"}]);
-buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();renderHistory();_dbgUpdate();
+buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();renderHistory();_dbgUpdate();
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
 if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
