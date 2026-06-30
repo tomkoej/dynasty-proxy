@@ -143,6 +143,7 @@
     .rookie-badge { background:#818cf8; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
     .jersey-pill { display:inline-flex; align-items:center; justify-content:center; min-width:32px; height:22px; padding:0 7px; border-radius:11px; border:2px solid; font-family:var(--font); font-size:11px; font-weight:700; flex-shrink:0; }
     .bye-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 6px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.02em; flex-shrink:0; }
+    .next-game-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 7px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.01em; flex-shrink:0; white-space:nowrap; }
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
     .row-label { color:var(--text); font-size:10px; }
@@ -287,7 +288,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.85";
+const APP_VERSION = "1.86";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -403,8 +404,9 @@ function jerseyPill(name){
   return`<span class="jersey-pill" style="background:${c.c1};border-color:${c.c2};color:${c.c3}">${num}</span>`;
 }
 
-// ── Bye Weeks (dynamic — always pulls the current NFL season) ─────────────────
+// ── Bye Weeks + Next Game (dynamic — always pulls the current NFL season) ─────
 let teamByeWeeks = {};
+let teamSchedule = {}; // team -> [{week, opp, isHome, kickoff}, ...] sorted by week
 function currentNFLSeasonYear(){
   // NFL season year tracks the calendar year for nearly the whole year;
   // only Jan/early-Feb still belongs to the prior season's schedule.
@@ -418,34 +420,65 @@ function byePill(name){
   if(!wk)return"";
   return`<span class="bye-pill">BYE ${wk}</span>`;
 }
+function nextGamePill(name){
+  const m=getPlayerMeta(name);
+  if(!m?.team)return"";
+  const games=teamSchedule[m.team];
+  if(!games||!games.length)return"";
+  const nowSec=Date.now()/1000;
+  const next=games.find(g=>g.kickoff>nowSec);
+  if(!next)return"";
+  const d=new Date(next.kickoff*1000);
+  const day=d.toLocaleDateString([],{weekday:"short"});
+  let time=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  time=time.replace(" AM","a").replace(" PM","p");
+  const vsAt=next.isHome?"vs":"@";
+  return`<span class="next-game-pill">Wk${next.week} ${day} ${time} ${vsAt} ${next.opp}</span>`;
+}
 async function loadByeWeeks(){
   const year=String(currentNFLSeasonYear());
   const cachedYear=localStorage.getItem("mflByeYear");
   const cached=localStorage.getItem("mflByeWeeksV1");
+  const cachedSched=localStorage.getItem("mflScheduleV1");
   const cachedTime=parseInt(localStorage.getItem("mflByeWeeksTimeV1")||"0");
-  if(cached&&cachedYear===year&&(Date.now()-cachedTime)<86400000){
-    teamByeWeeks=JSON.parse(cached);buildByeFilter();renderList();return;
+  if(cached&&cachedSched&&cachedYear===year&&(Date.now()-cachedTime)<86400000){
+    teamByeWeeks=JSON.parse(cached);teamSchedule=JSON.parse(cachedSched);buildByeFilter();renderList();return;
   }
   try{
     const d=await mfl("api",null,"nflSchedule",year,{W:"ALL"});
     const weeks=toArr(d?.fullNflSchedule?.nflSchedule);
     const byes={};
+    const sched={}; // team -> array of game entries
     weeks.forEach(wk=>{
       const wkNum=parseInt(wk.week);
       if(!wkNum||wkNum<1||wkNum>18)return; // regular season only
       const playing=new Set();
-      toArr(wk.matchup).forEach(m=>{toArr(m.team).forEach(t=>{if(t.id)playing.add(t.id);});});
+      toArr(wk.matchup).forEach(m=>{
+        const teams=toArr(m.team);
+        const kickoff=parseInt(m.kickoff)||0;
+        teams.forEach((t,idx)=>{
+          if(!t.id)return;
+          playing.add(t.id);
+          const opp=teams[1-idx]?.id||"";
+          const isHome=t.isHome==="1";
+          if(!sched[t.id])sched[t.id]=[];
+          sched[t.id].push({week:wkNum,opp,isHome,kickoff});
+        });
+      });
       if(playing.size===0)return;
       Object.keys(NFL_TEAM_COLORS).forEach(code=>{
         if(!playing.has(code)&&byes[code]===undefined)byes[code]=wkNum;
       });
     });
+    Object.values(sched).forEach(arr=>arr.sort((a,b)=>a.week-b.week));
     teamByeWeeks=byes;
+    teamSchedule=sched;
     localStorage.setItem("mflByeWeeksV1",JSON.stringify(byes));
+    localStorage.setItem("mflScheduleV1",JSON.stringify(sched));
     localStorage.setItem("mflByeWeeksTimeV1",Date.now().toString());
     localStorage.setItem("mflByeYear",year);
     buildByeFilter();renderList();
-  }catch(e){ /* bye data is supplementary — fail silently, pills just won't show */ }
+  }catch(e){ /* bye/schedule data is supplementary — fail silently */ }
 }
 
 const norm    = s => (s||"").toLowerCase().replace(/[^a-z]/g,"");
@@ -972,6 +1005,7 @@ function renderList(){
         <span class="player-name">${name}</span><span class="player-pos">${pos}</span>
         ${team?`<span class="player-team">${team}</span>`:""}
         ${byePill(name)}
+        ${nextGamePill(name)}
         ${rookie?'<span class="rookie-badge">R</span>':""}
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
