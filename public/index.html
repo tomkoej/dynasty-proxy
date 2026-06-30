@@ -196,7 +196,12 @@
     .revert-btn:hover { border-color:var(--green); color:var(--green); }
     .history-players { margin-top:6px; padding:6px 8px; background:var(--bg); border-radius:4px; font-size:11px; color:var(--dim); line-height:1.7; }
     .history-empty { color:var(--dim); font-size:13px; }
-    #debug-ticker { flex-shrink:0; background:var(--bg); border-top:1px solid var(--border); padding:4px 14px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-family:var(--font); font-size:10px; line-height:1.6; }
+    #debug-ticker { flex-shrink:0; background:var(--bg); border-top:1px solid var(--border); padding:4px 14px; display:flex; gap:10px; align-items:flex-start; font-family:var(--font); font-size:10px; line-height:1.6; }
+    #debug-ticker-content { display:flex; gap:16px; align-items:center; flex-wrap:wrap; flex:1; min-width:0; }
+    #debug-ticker.collapsed #debug-ticker-content { display:none; }
+    #debug-ticker.collapsed { align-items:center; }
+    #ticker-toggle-btn { background:none; border:none; color:var(--dim); cursor:pointer; font-size:11px; padding:2px; line-height:1; flex-shrink:0; }
+    #ticker-toggle-btn:hover { color:var(--text); }
     #debug-ticker .dt-val { color:var(--dim); }
     #debug-ticker .dt-key { color:var(--dim); margin-right:3px; }
     #debug-ticker .dt-err { color:#ef4444; font-weight:600; }
@@ -299,11 +304,11 @@
     <div id="player-list"></div>
   </div>
 </div>
-<div id="debug-ticker"><span class="dt-val">loading…</span></div>
+<div id="debug-ticker"><button id="ticker-toggle-btn" onclick="toggleTicker()" title="Collapse/expand debug ticker">▾</button><div id="debug-ticker-content"><span class="dt-val">loading…</span></div></div>
 </div>
 
 <script>
-const APP_VERSION = "2.11";
+const APP_VERSION = "2.12";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -335,7 +340,7 @@ window.onunhandledrejection=e=>{
   _dbgErrTime=Date.now();_dbgUpdate();
 };
 function _dbgUpdate(){
-  const el=document.getElementById("debug-ticker");if(!el)return;
+  const el=document.getElementById("debug-ticker-content");if(!el)return;
   const safeLen=(key,parse=true)=>{
     const v=localStorage.getItem(key);if(v===null)return"null";if(!parse)return v.length+"b";
     try{const p=JSON.parse(v);return Array.isArray(p)?p.length+" items":typeof p==="object"&&p?Object.keys(p).length+" keys":JSON.stringify(p).slice(0,20);}catch{return"ERR";}
@@ -367,6 +372,18 @@ function _dbgUpdate(){
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
 setInterval(_dbgUpdate,3000);
+function applyTickerCollapse(collapsed){
+  const el=document.getElementById("debug-ticker");
+  const btn=document.getElementById("ticker-toggle-btn");
+  if(el)el.classList.toggle("collapsed",collapsed);
+  if(btn)btn.textContent=collapsed?"▸":"▾";
+}
+function toggleTicker(){
+  const collapsed=localStorage.getItem("tickerCollapsed")==="1";
+  const next=!collapsed;
+  localStorage.setItem("tickerCollapsed",next?"1":"0");
+  applyTickerCollapse(next);
+}
 
 // ── League config ──────────────────────────────────────────────────────────────
 const LEAGUES = [
@@ -1287,6 +1304,7 @@ function removePlayer(i){
 
 document.getElementById("app-version").textContent="v"+APP_VERSION;
 _applyTheme(_isDayMode);
+applyTickerCollapse(localStorage.getItem("tickerCollapsed")==="1");
 renderLeagueKey();
 updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
