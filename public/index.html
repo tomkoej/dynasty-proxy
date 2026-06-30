@@ -295,7 +295,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.6";
+const APP_VERSION = "2.7";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -452,7 +452,12 @@ const AGE_BUCKETS=[
   {min:29, max:31, label:"29–30"},
   {min:31, max:33, label:"31–32"},
   {min:33, max:35, label:"33–34"},
-  {min:35, label:"35+"},
+  {min:35, max:37, label:"35–36"},
+  {min:37, max:39, label:"37–38"},
+  {min:39, max:41, label:"39–40"},
+  {min:41, max:43, label:"41–42"},
+  {min:43, max:45, label:"43–44"},
+  {min:45, label:"45+"},
 ];
 function ageBucketLabel(ageStr){
   if(ageStr===null)return null;
