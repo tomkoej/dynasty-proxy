@@ -144,7 +144,7 @@
     .jersey-pill { display:inline-flex; align-items:center; justify-content:center; min-width:32px; height:22px; padding:0 7px; border-radius:11px; border:2px solid; font-family:var(--font); font-size:11px; font-weight:700; flex-shrink:0; }
     .bye-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 6px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.02em; flex-shrink:0; }
     .next-game-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 7px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.01em; flex-shrink:0; white-space:nowrap; }
-    .draft-meta { color:var(--dim); font-size:10px; padding-left:36px; margin-top:3px; }
+    .draft-meta { color:var(--dim); font-size:10px; padding-left:64px; margin-top:3px; }
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
     .row-label { color:var(--text); font-size:10px; }
@@ -289,7 +289,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.89";
+const APP_VERSION = "1.90";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -437,9 +437,10 @@ function nextGamePill(name){
 }
 function draftMeta(name){
   const m=getPlayerMeta(name);
-  if(!m?.draft_year)return"";
+  if(!m)return"";
+  if(!m.draft_year)return`<div class="draft-meta">Undrafted</div>`;
   const yr=parseInt(m.draft_year);
-  if(!yr)return"";
+  if(!yr)return`<div class="draft-meta">Undrafted</div>`;
   const exp=currentNFLSeasonYear()-yr+1;
   const parts=[`${yr} Draft`];
   if(m.draft_round&&m.draft_pick)parts.push(`Rd${m.draft_round} Pk${m.draft_pick}`);
