@@ -149,6 +149,13 @@
     .icon-row-line  { display:contents; }
     .row-label { color:var(--text); font-size:10px; }
     .icon-slot-ph { width:20px; height:20px; flex-shrink:0; }
+    .grid-spacer { width:1px; }
+    .draft-slot-pill { display:inline-flex; align-items:center; justify-content:center; height:20px; padding:0 5px; border-radius:5px; border:1px solid; font-family:var(--font); font-size:9px; font-weight:600; flex-shrink:0; box-sizing:border-box; }
+    .draft-slot-pill.found { border-color:var(--blue); color:var(--text); }
+    .draft-slot-pill.none { border-color:var(--border); color:var(--dim); }
+    .draft-slot-pill.na { border-color:var(--border); color:var(--muted); }
+    .draft-slot-pill.loading { border-color:var(--border); color:var(--dim); }
+    .draft-slot-pill.ph { border-color:transparent; visibility:hidden; }
     .league-icon {
       display:inline-flex; align-items:center; justify-content:center;
       width:20px; height:20px; border-radius:50%; color:white;
@@ -296,7 +303,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.10";
+const APP_VERSION = "2.11";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -353,6 +360,7 @@ function _dbgUpdate(){
     `<span class="dt-key">plSample:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Erick All");return m?JSON.stringify(m).slice(0,200):"not found";}catch{return"err";}})()}</span>`,
     _unmappedTeams.size?`<span class="dt-err">⚠ unmapped teams: ${[..._unmappedTeams].join(",")}</span>`:"",
     `<span class="dt-key">byes:</span><span class="dt-val">${Object.keys(teamByeWeeks).length} teams (yr ${localStorage.getItem("mflByeYear")||"—"})</span>`,
+    `<span class="dt-key">draftRaw:</span><span class="dt-val">${window._draftRawSample||"no fetch yet"}</span>`,
     `<span class="dt-key">draftOpts:</span><span class="dt-val">Yr=${(csData.draftyear||[]).length-1} Rd=${(csData.draftround||[]).length-1} Pk=${(csData.draftpick||[]).length-1} Exp=${(csData.draftexp||[]).length-1}</span>`,
     `<span class="dt-key">udft:</span><span class="dt-val">${(()=>{let none=0,udfa=0;watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(!m){none++;return;}if(m.draft_team==="FA")udfa++;});return"noMeta:"+none+" UDFA:"+udfa+" of "+watchlist.length;})()}</span>`,
   ].filter(Boolean);
@@ -563,6 +571,60 @@ function draftMeta(name){
   if(ageStr)parts.push(ageStr);
   return`<div class="draft-meta">${parts.join(" · ")}</div>`;
 }
+let leagueDraftResults={}; // { [leagueId]: { [year]: {playerId:{round,pick}} | null } }
+function loadDraftResultsCache(){
+  try{leagueDraftResults=JSON.parse(localStorage.getItem("mflDraftResultsV1")||"{}");}catch{leagueDraftResults={};}
+}
+function saveDraftResultsCache(){
+  localStorage.setItem("mflDraftResultsV1",JSON.stringify(leagueDraftResults));
+}
+async function ensureDraftResultsForWatchlist(){
+  loadDraftResultsCache();
+  const years=new Set();
+  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.draft_year){const y=parseInt(m.draft_year);if(y)years.add(y);}});
+  const needed=[];
+  LEAGUES.forEach(cfg=>{
+    years.forEach(yr=>{
+      if(!leagueDraftResults[cfg.id])leagueDraftResults[cfg.id]={};
+      if(leagueDraftResults[cfg.id][yr]===undefined)needed.push({cfg,yr});
+    });
+  });
+  if(!needed.length)return;
+  const _sleep=ms=>new Promise(r=>setTimeout(r,ms));
+  for(let i=0;i<needed.length;i++){
+    if(i>0)await _sleep(1000);
+    const {cfg,yr}=needed[i];
+    try{
+      const d=await mfl(cfg.server,cfg.id,"draftResults",String(yr));
+      const picks=toArr(d?.draftResults?.draftUnit?.draftPick);
+      const result={};
+      picks.forEach(p=>{
+        if(!p.player)return;
+        const rd=parseInt(p.round),pk=parseInt(p.pick);
+        if(rd&&pk)result[p.player]={round:rd,pick:pk};
+      });
+      leagueDraftResults[cfg.id][yr]=result;
+      if(!window._draftRawSample)window._draftRawSample=JSON.stringify(d).slice(0,300);
+    }catch(e){
+      leagueDraftResults[cfg.id][yr]=null; // treat fetch failure as "league didn't exist that year"
+    }
+  }
+  saveDraftResultsCache();
+  renderList();
+}
+function draftSlotPill(cfg,name,pid){
+  const m=getPlayerMeta(name);
+  if(!m?.draft_year||!pid)return`<span class="draft-slot-pill ph"></span>`;
+  const yr=parseInt(m.draft_year);
+  if(!yr)return`<span class="draft-slot-pill ph"></span>`;
+  const leagueData=leagueDraftResults[cfg.id];
+  const yearData=leagueData?leagueData[yr]:undefined;
+  if(yearData===undefined)return`<span class="draft-slot-pill loading">…</span>`;
+  if(yearData===null)return`<span class="draft-slot-pill na">N/A</span>`;
+  const pick=yearData[String(pid)];
+  if(!pick)return`<span class="draft-slot-pill none">—</span>`;
+  return`<span class="draft-slot-pill found">${pick.round}.${String(pick.pick).padStart(2,"0")}</span>`;
+}
 async function loadByeWeeks(){
   const year=String(currentNFLSeasonYear());
   const cachedYear=localStorage.getItem("mflByeYear");
@@ -570,7 +632,7 @@ async function loadByeWeeks(){
   const cachedSched=localStorage.getItem("mflScheduleV1");
   const cachedTime=parseInt(localStorage.getItem("mflByeWeeksTimeV1")||"0");
   if(cached&&cachedSched&&cachedYear===year&&(Date.now()-cachedTime)<86400000){
-    teamByeWeeks=JSON.parse(cached);teamSchedule=JSON.parse(cachedSched);buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();return;
+    teamByeWeeks=JSON.parse(cached);teamSchedule=JSON.parse(cachedSched);buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();return;
   }
   try{
     const d=await mfl("api",null,"nflSchedule",year,{W:"ALL"});
@@ -605,7 +667,7 @@ async function loadByeWeeks(){
     localStorage.setItem("mflScheduleV1",JSON.stringify(sched));
     localStorage.setItem("mflByeWeeksTimeV1",Date.now().toString());
     localStorage.setItem("mflByeYear",year);
-    buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+    buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
   }catch(e){ /* bye/schedule data is supplementary — fail silently */ }
 }
 
@@ -699,9 +761,9 @@ function isRookie(name){ const m=getPlayerMeta(name);return !!(m?.status==="R"||
 
 function recordChange(){ undoStack.push(clone(watchlist));if(undoStack.length>100)undoStack.shift();redoStack=[];updateUndoRedoBtns(); }
 function saveHistory(desc){ history.unshift({ts:Date.now(),desc,watchlist:clone(watchlist)});if(history.length>30)history.pop();localStorage.setItem("wlHistory",JSON.stringify(history));renderHistory(); }
-function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
-function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
-function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList(); }
+function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
+function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
+function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
 function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length;document.getElementById("redo-btn").disabled=!redoStack.length; }
 function toggleHistory(){ const p=document.getElementById("history-panel");p.style.display=p.style.display==="none"?"block":"none"; }
 let histExpanded=new Set();
@@ -747,7 +809,7 @@ async function loadPlayerPool(){
   mflPlayers.forEach(p=>{if(!p.name||!p.id)return;nameToId[norm(p.name)]=p.id;nameToId[norm(displayName(p.name))]=p.id;});
   const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV2")||Date.now()));
   document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
-  buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
 
 let addTimer;
@@ -774,12 +836,12 @@ function addFromPool(name,pos){
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
   saveHistory("Added "+name);
   document.getElementById("add-search").value="";document.getElementById("add-results").style.display="none";
-  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
 function resetToDefaults(){
   if(!confirm("Reset watchlist to the 29 default players?"))return;
   recordChange();watchlist=clone(DEFAULT_WATCHLIST);localStorage.setItem("wl",JSON.stringify(watchlist));
-  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
 
 function loadCachedRosters(){
@@ -1189,6 +1251,9 @@ function renderList(){
     const _ph='<span class="icon-slot-ph"></span>';
     const sfIcons=_sfCfgs.map(c=>makeIcon(c,status[c.id])).join("")+_ph.repeat(_maxSlots-_sfSlots);
     const sfteIcons=_sfteCfgs.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
+    const _phPill='<span class="draft-slot-pill ph"></span>';
+    const sfPills=_sfCfgs.map(c=>draftSlotPill(c,name,pid)).join("")+_phPill.repeat(_maxSlots-_sfSlots);
+    const sftePills=_sfteCfgs.map(c=>c.twoCopy?draftSlotPill(c,name,pid)+_phPill:draftSlotPill(c,name,pid)).join("");
     const allStatuses=buildStatusLines(status,pid);
     return`<div class="player-row">
       <div class="player-name-row">
@@ -1204,9 +1269,9 @@ function renderList(){
       ${draftMeta(name)}
       <div id="birthday-${i}" style="display:none">${birthdayLine(name)}</div>
       <span class="player-section-label">Status</span>
-      <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},26px)">
-        <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
-        <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
+      <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},26px) 10px repeat(${_maxSlots},34px)">
+        <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}<span class="grid-spacer"></span>${sfPills}</div>
+        <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}<span class="grid-spacer"></span>${sftePills}</div>
       </div>
       <div id="owners-${i}" style="display:none">${allStatuses}</div>
     </div>`;
@@ -1217,7 +1282,7 @@ function renderList(){
 function removePlayer(i){
   const name=watchlist[i]?.name||"Player";recordChange();watchlist=watchlist.filter((_,j)=>j!==i);
   localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Removed "+name);
-  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
 
 document.getElementById("app-version").textContent="v"+APP_VERSION;
@@ -1227,7 +1292,7 @@ updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"}]);
-buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();renderList();renderHistory();_dbgUpdate();
+buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();renderHistory();_dbgUpdate();
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
 if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
