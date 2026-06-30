@@ -169,7 +169,7 @@
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:grid; margin-top:3px; }
     .expand-divider { border-top:1px solid var(--border); margin:8px 0; }
-    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:150px; }
+    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:125px; }
     .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
     .owner-line.hl   { color:var(--text); }
@@ -311,7 +311,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.32";
+const APP_VERSION = "2.33";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1287,7 +1287,7 @@ function renderList(){
     };
     const sfLines=LEAGUES.filter(c=>c.label==="SF").map(lineFor).join("");
     const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
-    return`<div class="avail-grid" style="grid-template-columns:134px 360px">
+    return`<div class="avail-grid" style="grid-template-columns:134px 270px">
       <div style="grid-column:2/-1;display:flex;gap:20px;">
         <div class="avail-col">${sfLines}</div>
         <div class="avail-col">${sfteLines}</div>
