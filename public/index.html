@@ -7,7 +7,7 @@
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
     :root {
-      --bg:#323841; --surface:#152030; --border:#243348; --dim:#6b7a8f;
+      --bg:#0e1520; --surface:#152030; --border:#243348; --dim:#6b7a8f;
       --muted:#2d3d52; --text:#d4dde8; --green:#16a34a; --green-hi:#22c55e;
       --blue:#2563eb; --red:#dc2626;
       --font:"SF Mono","Fira Code","Cascadia Code",Consolas,monospace;
@@ -255,6 +255,7 @@
       <div class="cs-wrap" id="csf-status"><button class="cs-btn" onclick="csToggle(this)">Status<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-status" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-format"><button class="cs-btn" onclick="csToggle(this)">Format<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-format" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-league"><button class="cs-btn" onclick="csToggle(this)">League<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-league" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-bye"><button class="cs-btn" onclick="csToggle(this)">Bye Week<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-bye" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-sort"><button class="cs-btn" onclick="csToggle(this)">Sort<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-sort" onclick="event.stopPropagation()"></div></div>
     </div>
   </div>
@@ -286,16 +287,16 @@
 </div>
 
 <script>
-const APP_VERSION = "1.84";
+const APP_VERSION = "1.85";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
-let _bgColor   = _isDayMode ? "#eceae6" : "#323841";
+let _bgColor   = _isDayMode ? "#eceae6" : "#0e1520";
 let _dimColor  = _isDayMode ? "#c0bcb4" : "#2d3d52";
 
 function _applyTheme(isDay){
   document.body.classList.toggle("day", isDay);
-  _bgColor  = isDay ? "#eceae6" : "#323841";
+  _bgColor  = isDay ? "#eceae6" : "#0e1520";
   _dimColor = isDay ? "#c0bcb4" : "#2d3d52";
   const tog = document.getElementById("theme-toggle");
   if(tog) tog.checked = isDay;
@@ -423,7 +424,7 @@ async function loadByeWeeks(){
   const cached=localStorage.getItem("mflByeWeeksV1");
   const cachedTime=parseInt(localStorage.getItem("mflByeWeeksTimeV1")||"0");
   if(cached&&cachedYear===year&&(Date.now()-cachedTime)<86400000){
-    teamByeWeeks=JSON.parse(cached);renderList();return;
+    teamByeWeeks=JSON.parse(cached);buildByeFilter();renderList();return;
   }
   try{
     const d=await mfl("api",null,"nflSchedule",year,{W:"ALL"});
@@ -443,7 +444,7 @@ async function loadByeWeeks(){
     localStorage.setItem("mflByeWeeksV1",JSON.stringify(byes));
     localStorage.setItem("mflByeWeeksTimeV1",Date.now().toString());
     localStorage.setItem("mflByeYear",year);
-    renderList();
+    buildByeFilter();renderList();
   }catch(e){ /* bye data is supplementary — fail silently, pills just won't show */ }
 }
 
@@ -537,9 +538,9 @@ function isRookie(name){ const m=getPlayerMeta(name);return !!(m?.status==="R"||
 
 function recordChange(){ undoStack.push(clone(watchlist));if(undoStack.length>100)undoStack.shift();redoStack=[];updateUndoRedoBtns(); }
 function saveHistory(desc){ history.unshift({ts:Date.now(),desc,watchlist:clone(watchlist)});if(history.length>30)history.pop();localStorage.setItem("wlHistory",JSON.stringify(history));renderHistory(); }
-function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();renderList(); }
-function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();renderList(); }
-function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();renderList(); }
+function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();renderList(); }
+function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();renderList(); }
+function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();renderList(); }
 function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length;document.getElementById("redo-btn").disabled=!redoStack.length; }
 function toggleHistory(){ const p=document.getElementById("history-panel");p.style.display=p.style.display==="none"?"block":"none"; }
 let histExpanded=new Set();
@@ -585,7 +586,7 @@ async function loadPlayerPool(){
   mflPlayers.forEach(p=>{if(!p.name||!p.id)return;nameToId[norm(p.name)]=p.id;nameToId[norm(displayName(p.name))]=p.id;});
   const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV2")||Date.now()));
   document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
-  buildTeamFilter();renderList();
+  buildTeamFilter();buildByeFilter();renderList();
 }
 
 let addTimer;
@@ -612,12 +613,12 @@ function addFromPool(name,pos){
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
   saveHistory("Added "+name);
   document.getElementById("add-search").value="";document.getElementById("add-results").style.display="none";
-  buildNameDropdown();buildTeamFilter();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();renderList();
 }
 function resetToDefaults(){
   if(!confirm("Reset watchlist to the 29 default players?"))return;
   recordChange();watchlist=clone(DEFAULT_WATCHLIST);localStorage.setItem("wl",JSON.stringify(watchlist));
-  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();renderList();
+  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();buildByeFilter();renderList();
 }
 
 function loadCachedRosters(){
@@ -744,9 +745,9 @@ function toggleOwners(idx){
   el.style.display=opening?"contents":"none";btn.classList.toggle("open",opening);
 }
 function clearFilters(){
-  [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league].forEach(s=>s.clear());fv.sort="az";
+  [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league,fv.bye].forEach(s=>s.clear());fv.sort="az";
   closePanel();Object.keys(csQ).forEach(k=>csQ[k]="");
-  ["name","pos","nflteam","status","format","league","sort"].forEach(k=>{csUpdateBtn(k);csRender(k);});
+  ["name","pos","nflteam","status","format","league","bye","sort"].forEach(k=>{csUpdateBtn(k);csRender(k);});
   buildLeagueFilter();document.getElementById("clear-filters-btn").style.display="none";renderList();
 }
 
@@ -781,9 +782,9 @@ function renderLeagueKey(){
   }).join("");
 }
 
-const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),sort:"az"};
+const fv={name:new Set(),pos:new Set(),nflteam:new Set(),status:new Set(),format:new Set(),league:new Set(),bye:new Set(),sort:"az"};
 const csData={},csQ={};
-const csCfg={name:{multi:true},pos:{multi:true},nflteam:{multi:true},status:{multi:true},format:{multi:true},league:{multi:true},sort:{multi:false}};
+const csCfg={name:{multi:true},pos:{multi:true},nflteam:{multi:true},status:{multi:true},format:{multi:true},league:{multi:true},bye:{multi:true},sort:{multi:false}};
 let _panelKey=null;
 function closePanel(){
   if(!_panelKey)return;
@@ -850,6 +851,12 @@ function buildLeagueFilter(){
   csOptions("league",[{val:"",label:"Select All"},...pool.map(c=>{const num=LEAGUES.indexOf(c)+1;return{val:String(num),label:`[${num}] ${MY_TEAM_NAMES[c.id]||c.id}`};})]);
 }
 function buildTeamFilter(){const teams=new Set();watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.team)teams.add(m.team);});csOptions("nflteam",[{val:"",label:"Select All"},...[...teams].sort().map(t=>({val:t,label:t}))]);}
+function buildByeFilter(){
+  const weeks=new Set();
+  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);const wk=m?.team?teamByeWeeks[m.team]:null;if(wk)weeks.add(wk);});
+  const sorted=[...weeks].sort((a,b)=>a-b);
+  csOptions("bye",[{val:"",label:"Select All"},...sorted.map(w=>({val:String(w),label:"Week "+w}))]);
+}
 function buildNameDropdown(){const sorted=[...watchlist].sort((a,b)=>sortKey(a.name).localeCompare(sortKey(b.name)));csOptions("name",[{val:"",label:"Select All"},...sorted.map(p=>({val:norm(p.name),label:p.name}))]);}
 
 let allExpanded=false;
@@ -872,6 +879,7 @@ function renderList(){
     if(fv.name.size>0&&!fv.name.has(norm(p.name)))return false;
     if(fv.pos.size>0&&!fv.pos.has(p.pos))return false;
     if(fv.nflteam.size>0){const m=getPlayerMeta(p.name);if(!fv.nflteam.has(m?.team||""))return false;}
+    if(fv.bye.size>0){const m=getPlayerMeta(p.name);const wk=m?.team?teamByeWeeks[m.team]:null;if(!wk||!fv.bye.has(String(wk)))return false;}
     if(fv.status.size>0){
       const st=playerStatus[norm(p.name)]||{};
       let cfgs;
@@ -887,7 +895,7 @@ function renderList(){
   rows.sort((a,b)=>sortV==="za"?sortKey(b.name).localeCompare(sortKey(a.name)):sortKey(a.name).localeCompare(sortKey(b.name)));
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
   renderLeagueKey();renderLegend();
-  const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0;
+  const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0||fv.bye.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
   if(!rows.length){
     if(!watchlist.length){
@@ -981,7 +989,7 @@ function renderList(){
 function removePlayer(i){
   const name=watchlist[i]?.name||"Player";recordChange();watchlist=watchlist.filter((_,j)=>j!==i);
   localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Removed "+name);
-  buildNameDropdown();buildTeamFilter();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();renderList();
 }
 
 document.getElementById("app-version").textContent="v"+APP_VERSION;
@@ -991,7 +999,7 @@ updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
 csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"}]);
-buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();renderList();renderHistory();_dbgUpdate();
+buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();renderList();renderHistory();_dbgUpdate();
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
 if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
