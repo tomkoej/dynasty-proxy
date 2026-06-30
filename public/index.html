@@ -293,7 +293,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.97";
+const APP_VERSION = "1.98";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -938,15 +938,23 @@ function buildDraftYearFilter(){
 }
 function buildDraftRoundFilter(){
   const rounds=new Set();
-  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.draft_round)rounds.add(parseInt(m.draft_round));});
+  let hasUdft=false;
+  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(m?.draft_round)rounds.add(parseInt(m.draft_round));if(m?.draft_team==="FA")hasUdft=true;});
   const sorted=[...rounds].sort((a,b)=>a-b);
-  csOptions("draftround",[{val:"",label:"Select All"},...sorted.map(r=>({val:String(r),label:"Round "+r}))]);
+  const opts=[{val:"",label:"Select All"}];
+  if(hasUdft)opts.push({val:"undrafted",label:"Undrafted"});
+  opts.push(...sorted.map(r=>({val:String(r),label:"Round "+r})));
+  csOptions("draftround",opts);
 }
 function buildDraftPickFilter(){
   const picks=new Set();
-  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);const ovr=draftOverall(m);if(ovr)picks.add(ovr);});
+  let hasUdft=false;
+  watchlist.forEach(p=>{const m=getPlayerMeta(p.name);const ovr=draftOverall(m);if(ovr)picks.add(ovr);if(m?.draft_team==="FA")hasUdft=true;});
   const sorted=[...picks].sort((a,b)=>a-b);
-  csOptions("draftpick",[{val:"",label:"Select All"},...sorted.map(o=>({val:String(o),label:"Pick "+o}))]);
+  const opts=[{val:"",label:"Select All"}];
+  if(hasUdft)opts.push({val:"undrafted",label:"Undrafted"});
+  opts.push(...sorted.map(o=>({val:String(o),label:"Pick "+o})));
+  csOptions("draftpick",opts);
 }
 function buildDraftExpFilter(){
   const exps=new Set();
@@ -978,8 +986,8 @@ function renderList(){
     if(fv.nflteam.size>0){const m=getPlayerMeta(p.name);if(!fv.nflteam.has(m?.team||""))return false;}
     if(fv.bye.size>0){const m=getPlayerMeta(p.name);const wk=m?.team?teamByeWeeks[m.team]:null;if(!wk||!fv.bye.has(String(wk)))return false;}
     if(fv.draftyear.size>0){const m=getPlayerMeta(p.name);if(!m?.draft_year||!fv.draftyear.has(String(parseInt(m.draft_year))))return false;}
-    if(fv.draftround.size>0){const m=getPlayerMeta(p.name);if(!m?.draft_round||!fv.draftround.has(String(parseInt(m.draft_round))))return false;}
-    if(fv.draftpick.size>0){const m=getPlayerMeta(p.name);const ovr=draftOverall(m);if(!ovr||!fv.draftpick.has(String(ovr)))return false;}
+    if(fv.draftround.size>0){const m=getPlayerMeta(p.name);const isUdft=m?.draft_team==="FA";const rd=m?.draft_round?String(parseInt(m.draft_round)):null;const ok=(isUdft&&fv.draftround.has("undrafted"))||(rd&&fv.draftround.has(rd));if(!ok)return false;}
+    if(fv.draftpick.size>0){const m=getPlayerMeta(p.name);const isUdft=m?.draft_team==="FA";const ovr=draftOverall(m);const ok=(isUdft&&fv.draftpick.has("undrafted"))||(ovr&&fv.draftpick.has(String(ovr)));if(!ok)return false;}
     if(fv.draftexp.size>0){const m=getPlayerMeta(p.name);const e=draftExp(m);if(!e||!fv.draftexp.has(String(e)))return false;}
     if(fv.status.size>0){
       const st=playerStatus[norm(p.name)]||{};
