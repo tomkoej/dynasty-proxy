@@ -144,6 +144,7 @@
     .jersey-pill { display:inline-flex; align-items:center; justify-content:center; min-width:32px; height:22px; padding:0 7px; border-radius:11px; border:2px solid; font-family:var(--font); font-size:11px; font-weight:700; flex-shrink:0; }
     .bye-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 6px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.02em; flex-shrink:0; }
     .next-game-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 7px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.01em; flex-shrink:0; white-space:nowrap; }
+    .draft-meta { color:var(--dim); font-size:10px; padding-left:36px; margin-top:3px; }
     .icon-row-group { margin-top:0; padding-left:36px; display:grid; align-items:center; gap:5px; }
     .icon-row-line  { display:contents; }
     .row-label { color:var(--text); font-size:10px; }
@@ -288,7 +289,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.88";
+const APP_VERSION = "1.89";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -342,7 +343,7 @@ function _dbgUpdate(){
     `<span class="dt-key">tbRaw:</span><span class="dt-val">${(localStorage.getItem("_tbRaw")||"none").slice(0,80)}</span>`,
     `<span class="dt-key">myFr:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");return LEAGUES.map(l=>{const v=d[l.id];return v?(v.startsWith("OK")?"["+(LEAGUES.indexOf(l)+1)+"]✓":"["+(LEAGUES.indexOf(l)+1)+"]✗"):"?";}).join(" ");}catch{return"err";}})()}</span>`,
     `<span class="dt-key">frDetail:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");const miss=Object.entries(d).find(([k,v])=>v.startsWith("MISS"));return miss?miss[1].slice(0,200):"none";}catch{return"err";}})()}</span>`,
-    `<span class="dt-key">plKeys:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Erick All");if(!m)return"not found";const relevant=Object.keys(m).filter(k=>/draft|exp|age|year/i.test(k));return Object.keys(m).join(",")+" || RELEVANT: "+relevant.map(k=>k+"="+m[k]).join(",");}catch{return"err";}})()}</span>`,
+    `<span class="dt-key">plSample:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Erick All");return m?JSON.stringify(m).slice(0,200):"not found";}catch{return"err";}})()}</span>`,
     _unmappedTeams.size?`<span class="dt-err">⚠ unmapped teams: ${[..._unmappedTeams].join(",")}</span>`:"",
     `<span class="dt-key">byes:</span><span class="dt-val">${Object.keys(teamByeWeeks).length} teams (yr ${localStorage.getItem("mflByeYear")||"—"})</span>`,
   ].filter(Boolean);
@@ -433,6 +434,17 @@ function nextGamePill(name){
   let time=d.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
   const vsAt=next.isHome?"vs":"@";
   return`<span class="next-game-pill">Wk${next.week} ${day} ${time} ${vsAt} ${next.opp}</span>`;
+}
+function draftMeta(name){
+  const m=getPlayerMeta(name);
+  if(!m?.draft_year)return"";
+  const yr=parseInt(m.draft_year);
+  if(!yr)return"";
+  const exp=currentNFLSeasonYear()-yr+1;
+  const parts=[`${yr} Draft`];
+  if(m.draft_round&&m.draft_pick)parts.push(`Rd${m.draft_round} Pk${m.draft_pick}`);
+  if(exp>0)parts.push(`Yr ${exp}`);
+  return`<div class="draft-meta">${parts.join(" · ")}</div>`;
 }
 async function loadByeWeeks(){
   const year=String(currentNFLSeasonYear());
@@ -1008,6 +1020,7 @@ function renderList(){
         ${nextGamePill(name)}
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
+      ${draftMeta(name)}
       <span class="player-section-label">Status</span>
       <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},26px)">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
