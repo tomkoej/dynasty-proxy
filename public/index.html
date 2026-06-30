@@ -169,7 +169,7 @@
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:grid; margin-top:3px; }
     .expand-divider { border-top:1px solid var(--border); margin:8px 0; }
-    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:200px; }
+    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:150px; }
     .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
     .owner-line.hl   { color:var(--text); }
@@ -291,7 +291,7 @@
     <div class="legend-item"><div class="legend-dot" style="background:transparent;border:2px solid #f59e0b"></div><span class="legend-label">My Trade Block</span></div>
     <label id="expand-toggle-lbl" class="expand-toggle-label" style="margin-left:auto">
       <input type="checkbox" id="expand-all-toggle" onchange="toggleAllOwners()">
-      <span id="expand-text" class="toggle-text">Expand</span>
+      <span id="expand-text" class="toggle-text">Expand All</span>
       <span class="toggle-track"><span class="toggle-thumb"></span></span>
     </label>
     <div style="flex-basis:100%;height:0"></div>
@@ -311,7 +311,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.30";
+const APP_VERSION = "2.31";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1180,13 +1180,13 @@ function applyExpandAll(){
   document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="contents");
   document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.add("open"));
   const chk=document.getElementById("expand-all-toggle");if(chk)chk.checked=true;
-  const lbl=document.getElementById("expand-text");if(lbl)lbl.textContent="Collapse";
+  const lbl=document.getElementById("expand-text");if(lbl)lbl.textContent="Collapse All";
 }
 function toggleAllOwners(){
   const chk=document.getElementById("expand-all-toggle");allExpanded=chk?chk.checked:!allExpanded;
   const lbl=document.getElementById("expand-text");
-  if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse";}
-  else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand";}
+  if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse All";}
+  else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand All";}
 }
 
 function renderList(){
@@ -1287,7 +1287,7 @@ function renderList(){
     };
     const sfLines=LEAGUES.filter(c=>c.label==="SF").map(lineFor).join("");
     const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
-    return`<div class="avail-grid" style="grid-template-columns:134px minmax(420px,1fr)">
+    return`<div class="avail-grid" style="grid-template-columns:134px minmax(320px,1fr)">
       <div style="grid-column:2/-1;display:flex;gap:20px;">
         <div class="avail-col">${sfLines}</div>
         <div class="avail-col">${sfteLines}</div>
