@@ -295,7 +295,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.3";
+const APP_VERSION = "2.4";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -869,8 +869,11 @@ async function doRefresh(){
 
 function toggleOwners(idx){
   const el=document.getElementById("owners-"+idx),btn=document.getElementById("owntoggle-"+idx);
+  const bd=document.getElementById("birthday-"+idx);
   if(!el)return;const opening=el.style.display==="none";
-  el.style.display=opening?"contents":"none";btn.classList.toggle("open",opening);
+  el.style.display=opening?"contents":"none";
+  if(bd)bd.style.display=opening?"block":"none";
+  btn.classList.toggle("open",opening);
 }
 function clearFilters(){
   [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league,fv.bye,fv.draftyear,fv.draftround,fv.draftpick,fv.draftexp,fv.age].forEach(s=>s.clear());fv.sort="az";
@@ -1028,6 +1031,7 @@ function buildNameDropdown(){const sorted=[...watchlist].sort((a,b)=>sortKey(a.n
 let allExpanded=false;
 function applyExpandAll(){
   document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="contents");
+  document.querySelectorAll("#player-list [id^='birthday-']").forEach(el=>el.style.display="block");
   document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.add("open"));
   const chk=document.getElementById("expand-all-toggle");if(chk)chk.checked=true;
   const lbl=document.getElementById("expand-text");if(lbl)lbl.textContent="Collapse";
@@ -1036,7 +1040,7 @@ function toggleAllOwners(){
   const chk=document.getElementById("expand-all-toggle");allExpanded=chk?chk.checked:!allExpanded;
   const lbl=document.getElementById("expand-text");
   if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse";}
-  else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand";}
+  else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='birthday-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand";}
 }
 
 function renderList(){
@@ -1158,12 +1162,13 @@ function renderList(){
         <button class="remove-btn" onclick="removePlayer(${i})">×</button>
       </div>
       ${draftMeta(name)}
+      <div id="birthday-${i}" style="display:none">${birthdayLine(name)}</div>
       <span class="player-section-label">Status</span>
       <div class="icon-row-group" style="grid-template-columns:46px repeat(${_maxSlots},26px)">
         <div class="icon-row-line"><span class="row-label">SF</span>${sfIcons}</div>
         <div class="icon-row-line"><span class="row-label">SF/TE+</span>${sfteIcons}</div>
       </div>
-      <div id="owners-${i}" style="display:none">${birthdayLine(name)}${allStatuses}</div>
+      <div id="owners-${i}" style="display:none">${allStatuses}</div>
     </div>`;
   }).join("");
   if(allExpanded)applyExpandAll();
