@@ -288,7 +288,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.87";
+const APP_VERSION = "1.88";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -342,7 +342,7 @@ function _dbgUpdate(){
     `<span class="dt-key">tbRaw:</span><span class="dt-val">${(localStorage.getItem("_tbRaw")||"none").slice(0,80)}</span>`,
     `<span class="dt-key">myFr:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");return LEAGUES.map(l=>{const v=d[l.id];return v?(v.startsWith("OK")?"["+(LEAGUES.indexOf(l)+1)+"]✓":"["+(LEAGUES.indexOf(l)+1)+"]✗"):"?";}).join(" ");}catch{return"err";}})()}</span>`,
     `<span class="dt-key">frDetail:</span><span class="dt-val">${(()=>{try{const d=JSON.parse(localStorage.getItem("_frDebug")||"{}");const miss=Object.entries(d).find(([k,v])=>v.startsWith("MISS"));return miss?miss[1].slice(0,200):"none";}catch{return"err";}})()}</span>`,
-    `<span class="dt-key">plSample:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Erick All");return m?JSON.stringify(m).slice(0,200):"not found";}catch{return"err";}})()}</span>`,
+    `<span class="dt-key">plKeys:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Erick All");if(!m)return"not found";const relevant=Object.keys(m).filter(k=>/draft|exp|age|year/i.test(k));return Object.keys(m).join(",")+" || RELEVANT: "+relevant.map(k=>k+"="+m[k]).join(",");}catch{return"err";}})()}</span>`,
     _unmappedTeams.size?`<span class="dt-err">⚠ unmapped teams: ${[..._unmappedTeams].join(",")}</span>`:"",
     `<span class="dt-key">byes:</span><span class="dt-val">${Object.keys(teamByeWeeks).length} teams (yr ${localStorage.getItem("mflByeYear")||"—"})</span>`,
   ].filter(Boolean);
