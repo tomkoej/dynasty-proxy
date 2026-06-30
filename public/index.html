@@ -169,7 +169,7 @@
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
     .avail-grid      { display:grid; margin-top:3px; }
     .expand-divider { border-top:1px solid var(--border); margin:8px 0; }
-    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:161px; }
+    .avail-col       { display:flex; flex-direction:column; gap:2px; flex:1; min-width:170px; }
     .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
     .owner-line.hl   { color:var(--text); }
@@ -311,7 +311,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.36";
+const APP_VERSION = "2.37";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -392,7 +392,7 @@ function toggleTicker(){
 const LEAGUES = [
   { server:"www47", id:"13133", label:"SF" },
   { server:"www42", id:"71526", label:"SF" },
-  { server:"www47", id:"64818", twoCopy:true, label:"SF/TE+" },
+  { server:"www47", id:"64818", twoCopy:true, label:"SF/TE+", minYear:2024 },
   { server:"www48", id:"68291", label:"SF/TE+" },
   { server:"www47", id:"69382", label:"SF/TE+" },
   { server:"www47", id:"52453", label:"SF/TE+" },
@@ -597,10 +597,10 @@ function draftMeta(name){
 }
 let leagueDraftResults={}; // { [leagueId]: { [year]: {playerId:{round,pick}} | null } }
 function loadDraftResultsCache(){
-  try{leagueDraftResults=JSON.parse(localStorage.getItem("mflDraftResultsV4")||"{}");}catch{leagueDraftResults={};}
+  try{leagueDraftResults=JSON.parse(localStorage.getItem("mflDraftResultsV5")||"{}");}catch{leagueDraftResults={};}
 }
 function saveDraftResultsCache(){
-  localStorage.setItem("mflDraftResultsV4",JSON.stringify(leagueDraftResults));
+  localStorage.setItem("mflDraftResultsV5",JSON.stringify(leagueDraftResults));
 }
 async function ensureDraftResultsForWatchlist(){
   loadDraftResultsCache();
@@ -610,7 +610,16 @@ async function ensureDraftResultsForWatchlist(){
   LEAGUES.forEach(cfg=>{
     years.forEach(yr=>{
       if(!leagueDraftResults[cfg.id])leagueDraftResults[cfg.id]={};
-      if(leagueDraftResults[cfg.id][yr]===undefined)needed.push({cfg,yr});
+      if(leagueDraftResults[cfg.id][yr]===undefined){
+        if(cfg.minYear&&yr<cfg.minYear){
+          // This league's franchise/ID has MFL history predating when we actually
+          // took it over (e.g. nWo started 2024) — don't query or trust draft data
+          // from before that, it belongs to a prior league/owner, not us.
+          leagueDraftResults[cfg.id][yr]=null;
+        }else{
+          needed.push({cfg,yr});
+        }
+      }
     });
   });
   if(!needed.length)return;
@@ -1287,7 +1296,7 @@ function renderList(){
     };
     const sfLines=LEAGUES.filter(c=>c.label==="SF").map(lineFor).join("");
     const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
-    return`<div class="avail-grid" style="grid-template-columns:134px 343px">
+    return`<div class="avail-grid" style="grid-template-columns:134px 360px">
       <div style="grid-column:2/-1;display:flex;gap:20px;">
         <div class="avail-col">${sfLines}</div>
         <div class="avail-col">${sfteLines}</div>
