@@ -308,7 +308,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.15";
+const APP_VERSION = "2.16";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -655,7 +655,7 @@ function draftSlotPill(cfg,name,pid,idx){
   const picks=yearData[String(pid)];
   const i=idx||0;
   const pick=picks&&picks[i];
-  if(!pick)return`<span class="draft-slot-pill none">—</span>`;
+  if(!pick)return`<span class="draft-slot-pill none">UDFA</span>`;
   return`<span class="draft-slot-pill found">${pick.round}.${String(pick.pick).padStart(2,"0")}</span>`;
 }
 async function loadByeWeeks(){
