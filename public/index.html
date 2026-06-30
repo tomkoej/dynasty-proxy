@@ -308,7 +308,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.13";
+const APP_VERSION = "2.15";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -590,10 +590,10 @@ function draftMeta(name){
 }
 let leagueDraftResults={}; // { [leagueId]: { [year]: {playerId:{round,pick}} | null } }
 function loadDraftResultsCache(){
-  try{leagueDraftResults=JSON.parse(localStorage.getItem("mflDraftResultsV2")||"{}");}catch{leagueDraftResults={};}
+  try{leagueDraftResults=JSON.parse(localStorage.getItem("mflDraftResultsV4")||"{}");}catch{leagueDraftResults={};}
 }
 function saveDraftResultsCache(){
-  localStorage.setItem("mflDraftResultsV2",JSON.stringify(leagueDraftResults));
+  localStorage.setItem("mflDraftResultsV4",JSON.stringify(leagueDraftResults));
 }
 async function ensureDraftResultsForWatchlist(){
   loadDraftResultsCache();
@@ -615,15 +615,26 @@ async function ensureDraftResultsForWatchlist(){
       const d=await mfl(cfg.server,cfg.id,"draftResults",String(yr));
       const picks=toArr(d?.draftResults?.draftUnit?.draftPick);
       const result={};
+      let maxRound=0;
       picks.forEach(p=>{
         if(!p.player)return;
         const rd=parseInt(p.round),pk=parseInt(p.pick);
         if(rd&&pk){
+          if(rd>maxRound)maxRound=rd;
           if(!result[p.player])result[p.player]=[];
           result[p.player].push({round:rd,pick:pk});
         }
       });
-      leagueDraftResults[cfg.id][yr]=result;
+      // Guard against startup drafts: rookie drafts are short (4 rounds normally, 5 for the
+      // twoCopy/nWo league); startup drafts run much deeper to fill full rosters. If the
+      // deepest round seen exceeds the league's actual rookie draft length, this isn't a
+      // rookie draft — discard it so we don't show a startup-draft slot mislabeled as one.
+      const expectedRounds=cfg.twoCopy?5:4;
+      if(maxRound>expectedRounds){
+        leagueDraftResults[cfg.id][yr]=null;
+      }else{
+        leagueDraftResults[cfg.id][yr]=result;
+      }
       if(!window._draftRawSample)window._draftRawSample=JSON.stringify(d).slice(0,300);
     }catch(e){
       leagueDraftResults[cfg.id][yr]=null; // treat fetch failure as "league didn't exist that year"
