@@ -308,7 +308,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.12";
+const APP_VERSION = "2.13";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -590,10 +590,10 @@ function draftMeta(name){
 }
 let leagueDraftResults={}; // { [leagueId]: { [year]: {playerId:{round,pick}} | null } }
 function loadDraftResultsCache(){
-  try{leagueDraftResults=JSON.parse(localStorage.getItem("mflDraftResultsV1")||"{}");}catch{leagueDraftResults={};}
+  try{leagueDraftResults=JSON.parse(localStorage.getItem("mflDraftResultsV2")||"{}");}catch{leagueDraftResults={};}
 }
 function saveDraftResultsCache(){
-  localStorage.setItem("mflDraftResultsV1",JSON.stringify(leagueDraftResults));
+  localStorage.setItem("mflDraftResultsV2",JSON.stringify(leagueDraftResults));
 }
 async function ensureDraftResultsForWatchlist(){
   loadDraftResultsCache();
@@ -618,7 +618,10 @@ async function ensureDraftResultsForWatchlist(){
       picks.forEach(p=>{
         if(!p.player)return;
         const rd=parseInt(p.round),pk=parseInt(p.pick);
-        if(rd&&pk)result[p.player]={round:rd,pick:pk};
+        if(rd&&pk){
+          if(!result[p.player])result[p.player]=[];
+          result[p.player].push({round:rd,pick:pk});
+        }
       });
       leagueDraftResults[cfg.id][yr]=result;
       if(!window._draftRawSample)window._draftRawSample=JSON.stringify(d).slice(0,300);
@@ -629,7 +632,7 @@ async function ensureDraftResultsForWatchlist(){
   saveDraftResultsCache();
   renderList();
 }
-function draftSlotPill(cfg,name,pid){
+function draftSlotPill(cfg,name,pid,idx){
   const m=getPlayerMeta(name);
   if(!m?.draft_year||!pid)return`<span class="draft-slot-pill ph"></span>`;
   const yr=parseInt(m.draft_year);
@@ -638,7 +641,9 @@ function draftSlotPill(cfg,name,pid){
   const yearData=leagueData?leagueData[yr]:undefined;
   if(yearData===undefined)return`<span class="draft-slot-pill loading">…</span>`;
   if(yearData===null)return`<span class="draft-slot-pill na">N/A</span>`;
-  const pick=yearData[String(pid)];
+  const picks=yearData[String(pid)];
+  const i=idx||0;
+  const pick=picks&&picks[i];
   if(!pick)return`<span class="draft-slot-pill none">—</span>`;
   return`<span class="draft-slot-pill found">${pick.round}.${String(pick.pick).padStart(2,"0")}</span>`;
 }
@@ -1270,7 +1275,7 @@ function renderList(){
     const sfteIcons=_sfteCfgs.map(c=>c.twoCopy?makeNwoIcon(c,status[c.id]):makeIcon(c,status[c.id])).join("");
     const _phPill='<span class="draft-slot-pill ph"></span>';
     const sfPills=_sfCfgs.map(c=>draftSlotPill(c,name,pid)).join("")+_phPill.repeat(_maxSlots-_sfSlots);
-    const sftePills=_sfteCfgs.map(c=>c.twoCopy?draftSlotPill(c,name,pid)+_phPill:draftSlotPill(c,name,pid)).join("");
+    const sftePills=_sfteCfgs.map(c=>c.twoCopy?draftSlotPill(c,name,pid,0)+draftSlotPill(c,name,pid,1):draftSlotPill(c,name,pid)).join("");
     const allStatuses=buildStatusLines(status,pid);
     return`<div class="player-row">
       <div class="player-name-row">
