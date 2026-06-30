@@ -167,8 +167,8 @@
     .owner-toggle:hover { color:var(--text); }
     .owner-toggle.open { transform:rotate(90deg); }
     .player-section-label { color:var(--dim); font-size:9px; text-transform:uppercase; letter-spacing:.05em; padding-left:24px; display:block; margin:5px 0 4px; }
-    .avail-grid      { display:flex; gap:20px; padding-left:139px; margin-top:3px; }
-    .expand-divider { border-top:1px solid var(--border); margin:8px 0 8px 139px; }
+    .avail-grid      { display:grid; margin-top:3px; }
+    .expand-divider { border-top:1px solid var(--border); margin:8px 0; }
     .avail-col       { display:flex; flex-direction:column; gap:2px; }
     .avail-col-label { color:var(--text); font-size:10px; margin-bottom:4px; }
     .owner-line      { color:var(--dim); font-size:11px; line-height:1.6; transition:color .15s; }
@@ -311,7 +311,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.28";
+const APP_VERSION = "2.29";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1257,7 +1257,7 @@ function renderList(){
       return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
     });
   };
-  const buildStatusLines=(status,pid)=>{
+  const buildStatusLines=(status,pid,maxSlots)=>{
     const lineFor=(cfg)=>{
       const num=LEAGUES.indexOf(cfg)+1,numStr=String(num),leagueSv=status[cfg.id];
       const svArr=Array.isArray(leagueSv)?leagueSv:[leagueSv||"unknown"];
@@ -1287,7 +1287,12 @@ function renderList(){
     };
     const sfLines=LEAGUES.filter(c=>c.label==="SF").map(lineFor).join("");
     const sfteLines=LEAGUES.filter(c=>c.label==="SF/TE+").map(lineFor).join("");
-    return`<div class="avail-grid"><div class="avail-col">${sfLines}</div><div class="avail-col">${sfteLines}</div></div>`;
+    return`<div class="avail-grid" style="grid-template-columns:134px repeat(${maxSlots},44px)">
+      <div style="grid-column:2/-1;display:flex;gap:20px;">
+        <div class="avail-col">${sfLines}</div>
+        <div class="avail-col">${sfteLines}</div>
+      </div>
+    </div>`;
   };
   el.innerHTML=rows.map(({name,pos,i})=>{
     const status=playerStatus[norm(name)]||{},meta=getPlayerMeta(name),team=meta?.team||"",rookie=isRookie(name),pid=nameToId[norm(name)];
@@ -1310,7 +1315,7 @@ function renderList(){
         _sfteCells+=gi(_col,3,makeIcon(c,status[c.id]))+gi(_col,4,draftSlotPill(c,name,pid));_col++;
       }
     });
-    const allStatuses=buildStatusLines(status,pid);
+    const allStatuses=buildStatusLines(status,pid,_maxSlots);
     return`<div class="player-row">
       <div class="player-card-top">
         <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
