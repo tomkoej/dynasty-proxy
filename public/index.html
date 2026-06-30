@@ -141,7 +141,7 @@
     .player-pos  { color:var(--text); font-size:14px; }
     .player-team { color:var(--text); font-size:14px; }
     .rookie-badge { background:#818cf8; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
-    .jersey-pill { display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:9px; border:2.5px solid; font-family:var(--font); font-size:14px; font-weight:800; flex-shrink:0; }
+    .jersey-pill { display:inline-flex; align-items:center; justify-content:center; width:29px; height:29px; border-radius:7px; border:2px solid; font-family:var(--font); font-size:11px; font-weight:800; flex-shrink:0; }
     .bye-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 6px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.02em; flex-shrink:0; }
     .next-game-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 7px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.01em; flex-shrink:0; white-space:nowrap; }
     .draft-meta { color:var(--dim); font-size:10px; padding-left:64px; margin-top:3px; }
@@ -289,7 +289,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.91";
+const APP_VERSION = "1.92";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -442,9 +442,9 @@ function draftMeta(name){
   const yr=parseInt(m.draft_year);
   if(!yr)return`<div class="draft-meta">Undrafted</div>`;
   const exp=currentNFLSeasonYear()-yr+1;
-  const parts=[`${yr} Draft`];
+  const parts=[`${yr} Draft Class`];
   if(m.draft_round&&m.draft_pick)parts.push(`Rd${m.draft_round} Pk${m.draft_pick}`);
-  if(exp>0)parts.push(`Yr ${exp}`);
+  parts.push(exp<=1?"ROOKIE":`Yr ${exp}`);
   return`<div class="draft-meta">${parts.join(" · ")}</div>`;
 }
 async function loadByeWeeks(){
