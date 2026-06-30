@@ -293,7 +293,7 @@
 </div>
 
 <script>
-const APP_VERSION = "1.95";
+const APP_VERSION = "1.96";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -351,8 +351,7 @@ function _dbgUpdate(){
     _unmappedTeams.size?`<span class="dt-err">⚠ unmapped teams: ${[..._unmappedTeams].join(",")}</span>`:"",
     `<span class="dt-key">byes:</span><span class="dt-val">${Object.keys(teamByeWeeks).length} teams (yr ${localStorage.getItem("mflByeYear")||"—"})</span>`,
     `<span class="dt-key">draftOpts:</span><span class="dt-val">Yr=${(csData.draftyear||[]).length-1} Rd=${(csData.draftround||[]).length-1} Pk=${(csData.draftpick||[]).length-1} Exp=${(csData.draftexp||[]).length-1}</span>`,
-    `<span class="dt-key">udft:</span><span class="dt-val">${(()=>{let none=0,noYr=0,noRdPk=0;watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(!m){none++;return;}if(!m.draft_year)noYr++;if(!m.draft_round||!m.draft_pick)noRdPk++;});return"noMeta:"+none+" noYr:"+noYr+" noRdPk:"+noRdPk+" of "+watchlist.length;})()}</span>`,
-    `<span class="dt-key">bagent:</span><span class="dt-val">${(()=>{try{const m=getPlayerMeta("Tyson Bagent");if(!m)return"NOT FOUND in pool";return JSON.stringify(m);}catch(e){return"err:"+e.message;}})()}</span>`,
+    `<span class="dt-key">udft:</span><span class="dt-val">${(()=>{let none=0,udfa=0;watchlist.forEach(p=>{const m=getPlayerMeta(p.name);if(!m){none++;return;}if(m.draft_team==="FA")udfa++;});return"noMeta:"+none+" UDFA:"+udfa+" of "+watchlist.length;})()}</span>`,
   ].filter(Boolean);
   el.innerHTML=parts.join('<span class="dt-sep"> · </span>');
 }
@@ -459,8 +458,15 @@ function draftExp(m){
 function draftMeta(name){
   const m=getPlayerMeta(name);
   if(!m)return"";
-  if(!m.draft_year)return`<div class="draft-meta">Undrafted</div>`;
-  const yr=parseInt(m.draft_year);
+  const yr=parseInt(m.draft_year)||null;
+  const isUDFA=m.draft_team==="FA";
+  if(isUDFA){
+    const exp=yr?draftExp(m):null;
+    const parts=["Undrafted"];
+    if(yr)parts.push(`${yr}`);
+    if(exp)parts.push(exp<=1?"ROOKIE":`Yr ${exp}`);
+    return`<div class="draft-meta">${parts.join(" · ")}</div>`;
+  }
   if(!yr)return`<div class="draft-meta">Undrafted</div>`;
   const exp=draftExp(m);
   const ovr=draftOverall(m);
