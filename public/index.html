@@ -311,7 +311,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.41";
+const APP_VERSION = "2.42";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1280,14 +1280,14 @@ function renderList(){
         const parts=st.map(s=>{
           if(s==="taken"){const n=rawOwners[ti++]||"";return n||"Rostered";}
           if(s==="tradeblock"){const n=rawOwners[ti++]||"";return n||"Rostered";}
-          return s==="mine"?(MY_TEAM_NAMES[cfg.id]||"My Team"):s==="mytradeblock"?(MY_TEAM_NAMES[cfg.id]||"My Team")+" (Trade Block)":s==="available"?"Available":"Unknown";
+          return s==="mine"?(MY_TEAM_NAMES[cfg.id]||"My Team"):s==="mytradeblock"?(MY_TEAM_NAMES[cfg.id]||"My Team"):s==="available"?"Available":"Unknown";
         });
         return`<div class="${cls}">[${num}] ${parts.join(" & ")}</div>`;
       }else{
         const sv=typeof status[cfg.id]==="string"?status[cfg.id]:"unknown";let d;
         if(sv==="taken"){const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":"";d=n||"Rostered";}
         else if(sv==="tradeblock"){const n=(rosters&&pid)?rosters[cfg.id]?.owners?.[pid]||"":"";d=n||"Rostered";}
-        else if(sv==="mytradeblock")d=(MY_TEAM_NAMES[cfg.id]||"My Team")+" (Trade Block)";
+        else if(sv==="mytradeblock")d=MY_TEAM_NAMES[cfg.id]||"My Team";
         else if(sv==="mine")d=MY_TEAM_NAMES[cfg.id]||"My Team";
         else if(sv==="available")d="Available";
         else d="Unknown";
