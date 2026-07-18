@@ -371,7 +371,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.58";
+const APP_VERSION = "2.59";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -935,7 +935,7 @@ async function loadPlayerPool(){
     }catch(e){document.getElementById("pool-status").textContent="Could not load pool: "+e.message;return;}
   }
   mflPlayers.forEach(p=>{if(!p.name||!p.id)return;nameToId[norm(p.name)]=p.id;nameToId[norm(displayName(p.name))]=p.id;});
-  const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV2")||Date.now()));
+  const ts=new Date(parseInt(localStorage.getItem("mflPoolTimeV3")||Date.now()));
   document.getElementById("pool-status").textContent=`${mflPlayers.length.toLocaleString()} players · pool updated ${ts.toLocaleString([],{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"})}`;
   buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
