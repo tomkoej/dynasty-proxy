@@ -171,6 +171,7 @@
     .player-pos  { color:var(--text); font-size:14px; }
     .player-team { color:var(--text); font-size:14px; }
     .rookie-badge { background:#818cf8; color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:3px; flex-shrink:0; }
+    .unmatched-badge { background:transparent; border:1px solid #f59e0b; color:#f59e0b; font-size:9px; font-weight:700; padding:1px 6px; border-radius:3px; flex-shrink:0; cursor:help; }
     .jersey-pill { display:inline-flex; align-items:center; justify-content:center; width:29px; height:29px; border-radius:7px; border:2px solid; font-family:var(--font); font-size:11px; font-weight:800; flex-shrink:0; }
     .bye-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 6px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.02em; flex-shrink:0; }
     .next-game-pill { display:inline-flex; align-items:center; justify-content:center; padding:1px 7px; border-radius:4px; border:1px solid var(--border); color:var(--dim); font-family:var(--font); font-size:10px; font-weight:600; letter-spacing:.01em; flex-shrink:0; white-space:nowrap; }
@@ -371,7 +372,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.59";
+const APP_VERSION = "2.60";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1508,6 +1509,7 @@ function renderList(){
   };
   el.innerHTML=rows.map(({name,pos,i})=>{
     const status=playerStatus[norm(name)]||{},meta=getPlayerMeta(name),team=meta?.team||"",rookie=isRookie(name),pid=nameToId[norm(name)];
+    const unmatched=mflPlayers.length>0&&!meta;
     const _sfCfgs=LEAGUES.filter(c=>c.label==="SF"),_sfteCfgs=LEAGUES.filter(c=>c.label==="SF/TE+");
     const _sfteSlots=_sfteCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0),_sfSlots=_sfCfgs.reduce((n,c)=>n+(c.twoCopy?2:1),0),_maxSlots=Math.max(_sfSlots,_sfteSlots);
     const gi=(col,row,html)=>`<div style="grid-column:${col};grid-row:${row};display:flex;align-items:center;justify-content:center;">${html}</div>`;
@@ -1535,6 +1537,7 @@ function renderList(){
         <div class="player-card-text">
           <div class="player-name-row">
             <span class="player-name">${name}</span><span class="player-pos">${pos}</span>
+            ${unmatched?'<span class="unmatched-badge" title="This name doesn\'t match any player in MFL\'s current pool — check for a typo, or remove and re-add via search">⚠ Not Found</span>':""}
             ${team?`<span class="player-team">${team}</span>`:""}
             ${rookie?'<span class="rookie-badge">R</span>':""}
             ${byePill(name)}
