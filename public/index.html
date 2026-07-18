@@ -355,7 +355,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.48";
+const APP_VERSION = "2.49";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -804,22 +804,22 @@ const sortKey = n => { const w=(n||"").trim().split(/\s+/),sfx=/^(jr\.?|sr\.?|ii
 function stripHtml(s){ return(s||"").replace(/<[^>]*>/g,""); }
 
 const DEFAULT_WATCHLIST=[
-  {name:"Caleb Williams",pos:"QB"},{name:"Jayden Daniels",pos:"QB"},
-  {name:"CJ Stroud",pos:"QB"},{name:"Anthony Richardson",pos:"QB"},
-  {name:"Bijan Robinson",pos:"RB"},{name:"Breece Hall",pos:"RB"},
-  {name:"Jahmyr Gibbs",pos:"RB"},{name:"Jonathon Brooks",pos:"RB"},
-  {name:"Ashton Jeanty",pos:"RB"},
-  {name:"Marvin Harrison Jr.",pos:"WR"},{name:"Malik Nabers",pos:"WR"},
-  {name:"Brian Thomas Jr.",pos:"WR"},{name:"Rome Odunze",pos:"WR"},
-  {name:"Puka Nacua",pos:"WR"},{name:"Rashee Rice",pos:"WR"},
-  {name:"Jaxon Smith-Njigba",pos:"WR"},{name:"Keon Coleman",pos:"WR"},
-  {name:"Emeka Egbuka",pos:"WR"},{name:"Tetairoa McMillan",pos:"WR"},
-  {name:"Luther Burden III",pos:"WR"},{name:"Ja'Lynn Polk",pos:"WR"},
-  {name:"Ladd McConkey",pos:"WR"},{name:"Xavier Worthy",pos:"WR"},
-  {name:"Adonai Mitchell",pos:"WR"},
-  {name:"Brock Bowers",pos:"TE"},{name:"Trey McBride",pos:"TE"},
-  {name:"Sam LaPorta",pos:"TE"},{name:"Tucker Kraft",pos:"TE"},
-  {name:"Cade Otton",pos:"TE"}
+  {name:"Deshaun Watson",pos:"QB"},{name:"Tyson Bagent",pos:"QB"},
+  {name:"Jalen Milroe",pos:"QB"},{name:"Garret Nussmeier",pos:"QB"},
+  {name:"Joe Mixon",pos:"RB"},{name:"Kendre Miller",pos:"RB"},
+  {name:"Devin Neal",pos:"RB"},{name:"LeQuint Allen",pos:"RB"},
+  {name:"Adam Randall",pos:"RB"},
+  {name:"Brandon Aiyuk",pos:"WR"},{name:"Cyrus Allen",pos:"WR"},
+  {name:"Malik Benson",pos:"WR"},{name:"Isaiah Bond",pos:"WR"},
+  {name:"Deion Burks",pos:"WR"},{name:"Keon Coleman",pos:"WR"},
+  {name:"Ryan Flournoy",pos:"WR"},{name:"Bryce Lance",pos:"WR"},
+  {name:"Tyren Montgomery",pos:"WR"},{name:"Brenen Thompson",pos:"WR"},
+  {name:"Cedric Tillman",pos:"WR"},{name:"Jordan Whittington",pos:"WR"},
+  {name:"Erick All",pos:"TE"},{name:"Nate Boerkircher",pos:"TE"},
+  {name:"Mitchell Evans",pos:"TE"},{name:"Theo Johnson",pos:"TE"},
+  {name:"Cole Kmet",pos:"TE"},{name:"Charlie Kolar",pos:"TE"},
+  {name:"Ja'Tavion Sanders",pos:"TE"},{name:"Darnell Washington",pos:"TE"},
+  {name:"Trevor Lawrence",pos:"QB"},{name:"De'Von Achane",pos:"RB"}
 ];
 
 let mflUserInfo  = localStorage.getItem("mflUserInfo") || null;
@@ -965,7 +965,7 @@ function addFromPool(name,pos){
   buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
 function resetToDefaults(){
-  if(!confirm("Reset watchlist to the 29 default players?"))return;
+  if(!confirm("Reset watchlist to the 31 default players?"))return;
   recordChange();watchlist=clone(DEFAULT_WATCHLIST);localStorage.setItem("wl",JSON.stringify(watchlist));
   saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
@@ -1321,7 +1321,7 @@ function renderList(){
         <p style="color:var(--dim);font-size:13px;">Your watchlist is empty.</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button onclick="toggleHistory()" style="background:none;border:1px solid var(--border);color:var(--dim);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#9733; Open History</button>
-          <button onclick="resetToDefaults()" style="background:none;border:1px solid var(--blue);color:var(--blue);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#8635; Reset to default (29 players)</button>
+          <button onclick="resetToDefaults()" style="background:none;border:1px solid var(--blue);color:var(--blue);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#8635; Reset to default (31 players)</button>
         </div></div>`;
     }else{el.innerHTML='<p class="no-results">No players match.</p>';}
     return;
