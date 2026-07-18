@@ -50,7 +50,6 @@
     #header h1 { font-size:18px; font-weight:700; }
     #header h1 span { color:var(--green-hi); }
     #header p  { color:var(--dim); font-size:12px; margin-top:3px; }
-    #header-right { display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
     #header-btns  { display:flex; gap:6px; align-items:center; }
     .hdr-btn {
       background:var(--surface); border:1px solid var(--border); color:var(--text);
@@ -72,7 +71,7 @@
     #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:22px; padding:0; line-height:1; font-family:var(--font); flex-shrink:0; display:flex; align-items:center; }
     #refresh-btn-sm:hover:not(:disabled) { color:var(--text); }
     #refresh-btn-sm:disabled { opacity:.4; cursor:default; }
-    #refresh-warning { color:#ef4444; font-size:10px; text-align:right; min-height:14px; }
+    #refresh-warning { color:#ef4444; font-size:10px; text-align:right; }
 
     #main { max-width:680px; margin:0 auto; padding:10px 24px 0; }
     .sec-label { color:var(--dim); font-size:11px; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.04em; }
@@ -265,9 +264,6 @@
       </label>
     </div>
   </div>
-  <div id="header-right">
-    <button class="hdr-btn" onclick="toggleHistory()">History</button>
-  </div>
 </div>
 <div id="account-data-header" onclick="toggleAccountData()">
   <span id="account-data-chevron">▸</span>
@@ -279,6 +275,7 @@
     <button class="hdr-btn" id="mfl-keys-btn" onclick="toggleMflKeys()">API Keys</button>
     <button class="hdr-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
     <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
+    <button class="hdr-btn" onclick="toggleHistory()">History</button>
     <button class="hdr-btn" onclick="exportWatchlist()" title="Download your watchlist and history as a backup file">⬇ Export</button>
     <button class="hdr-btn" onclick="document.getElementById('import-file-input').click()" title="Restore your watchlist from a backup file">⬆ Import</button>
     <input type="file" id="import-file-input" accept="application/json" style="display:none" onchange="handleImportFile(event)">
@@ -374,7 +371,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.56";
+const APP_VERSION = "2.57";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
