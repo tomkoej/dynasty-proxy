@@ -266,6 +266,8 @@
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
       <button class="hdr-btn" onclick="toggleHistory()">History</button>
       <button class="hdr-btn" onclick="exportWatchlist()" title="Download your watchlist and history as a backup file">⬇ Export</button>
+      <button class="hdr-btn" onclick="document.getElementById('import-file-input').click()" title="Restore your watchlist from a backup file">⬆ Import</button>
+      <input type="file" id="import-file-input" accept="application/json" style="display:none" onchange="handleImportFile(event)">
     </div>
     <div id="timestamp-row"><span id="timestamp">Not yet refreshed</span><button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button></div>
     <div id="refresh-warning"></div>
@@ -359,7 +361,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.53";
+const APP_VERSION = "2.54";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -809,33 +811,7 @@ function stripHtml(s){ return(s||"").replace(/<[^>]*>/g,""); }
 
 let mflUserInfo  = localStorage.getItem("mflUserInfo") || null;
 let mflUsername  = localStorage.getItem("mflUsername") || null;
-let watchlist    = JSON.parse(localStorage.getItem("wl")||"null");
-if(watchlist===null){
-  // One-time migration (v2.53): earlier versions relied on a hardcoded DEFAULT_WATCHLIST
-  // fallback that was never actually persisted to storage. That fallback concept is now
-  // removed entirely, so this seeds your real, current list into storage once here. After
-  // this runs, storage is the only source of truth — no hardcoded list will ever silently
-  // reappear again if storage is ever cleared in the future.
-  watchlist=[
-    {name:"Deshaun Watson",pos:"QB"},{name:"Tyson Bagent",pos:"QB"},
-    {name:"Jalen Milroe",pos:"QB"},{name:"Garret Nussmeier",pos:"QB"},
-    {name:"Joe Mixon",pos:"RB"},{name:"Kendre Miller",pos:"RB"},
-    {name:"Devin Neal",pos:"RB"},{name:"LeQuint Allen",pos:"RB"},
-    {name:"Adam Randall",pos:"RB"},
-    {name:"Brandon Aiyuk",pos:"WR"},{name:"Cyrus Allen",pos:"WR"},
-    {name:"Malik Benson",pos:"WR"},{name:"Isaiah Bond",pos:"WR"},
-    {name:"Deion Burks",pos:"WR"},{name:"Keon Coleman",pos:"WR"},
-    {name:"Ryan Flournoy",pos:"WR"},{name:"Bryce Lance",pos:"WR"},
-    {name:"Tyren Montgomery",pos:"WR"},{name:"Brenen Thompson",pos:"WR"},
-    {name:"Cedric Tillman",pos:"WR"},{name:"Jordan Whittington",pos:"WR"},
-    {name:"Erick All",pos:"TE"},{name:"Nate Boerkircher",pos:"TE"},
-    {name:"Mitchell Evans",pos:"TE"},{name:"Theo Johnson",pos:"TE"},
-    {name:"Cole Kmet",pos:"TE"},{name:"Charlie Kolar",pos:"TE"},
-    {name:"Ja'Tavion Sanders",pos:"TE"},{name:"Darnell Washington",pos:"TE"},
-    {name:"Trevor Lawrence",pos:"QB"},{name:"De'Von Achane",pos:"RB"}
-  ];
-  localStorage.setItem("wl",JSON.stringify(watchlist));
-}
+let watchlist    = JSON.parse(localStorage.getItem("wl")||"null") || [];
 let playerStatus = JSON.parse(localStorage.getItem("ps")||"{}");
 let leagueNames  = JSON.parse(localStorage.getItem("ln")||"{}");
 let lastRefresh  = localStorage.getItem("lr") || "Never";
@@ -1002,6 +978,48 @@ function exportWatchlist(){
   localStorage.setItem("lastExport",readableTs);
   const _exEl=document.getElementById("export-timestamp");
   if(_exEl)_exEl.textContent="Exported "+readableTs;
+}
+function handleImportFile(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    let data;
+    try{
+      data=JSON.parse(e.target.result);
+    }catch(err){
+      alert("Could not read this file — it doesn't look like valid JSON.");
+      event.target.value="";
+      return;
+    }
+    if(!data||!Array.isArray(data.fullWatchlist)){
+      alert("This doesn't look like a Dynasty Watchlist backup file (missing the expected watchlist data).");
+      event.target.value="";
+      return;
+    }
+    const importedList=data.fullWatchlist.filter(p=>p&&typeof p.name==="string"&&typeof p.pos==="string").map(p=>({name:p.name,pos:p.pos}));
+    if(!importedList.length){
+      alert("This backup file doesn't contain any valid players.");
+      event.target.value="";
+      return;
+    }
+    const dateInfo=data.exportedAt?" (backup from "+data.exportedAt+")":"";
+    if(!confirm("Import "+importedList.length+" players"+dateInfo+"?\n\nThis replaces your current watchlist ("+watchlist.length+" players). You can Undo this afterward if needed.")){
+      event.target.value="";
+      return;
+    }
+    recordChange();
+    watchlist=importedList;
+    localStorage.setItem("wl",JSON.stringify(watchlist));
+    saveHistory("Imported "+watchlist.length+" players"+dateInfo);
+    buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
+    event.target.value="";
+  };
+  reader.onerror=function(){
+    alert("Error reading the file.");
+    event.target.value="";
+  };
+  reader.readAsText(file);
 }
 
 function loadCachedRosters(){
@@ -1362,6 +1380,7 @@ function renderList(){
       el.innerHTML=`<div style="padding:20px 0;display:flex;flex-direction:column;gap:10px;">
         <p style="color:var(--dim);font-size:13px;">Your watchlist is empty. Use the search bar above to add players, or:</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="document.getElementById('import-file-input').click()" style="background:none;border:1px solid var(--blue);color:var(--blue);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#8593; Import a Backup</button>
           <button onclick="toggleHistory()" style="background:none;border:1px solid var(--border);color:var(--dim);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#9733; Open History</button>
         </div></div>`;
     }else{el.innerHTML='<p class="no-results">No players match.</p>';}
