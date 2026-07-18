@@ -371,7 +371,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.57";
+const APP_VERSION = "2.58";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -971,14 +971,18 @@ function exportWatchlist(){
   const readableTs=now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
   const currentView=getVisibleRows().map(p=>({name:p.name,pos:p.pos}));
   const fullWatchlist=watchlist.map(p=>({name:p.name,pos:p.pos}));
+  const trimmedHistory=history.map(h=>({
+    date:new Date(h.ts).toLocaleString([],{weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"}),
+    desc:h.desc
+  }));
   const payload={
     exportedAt:readableTs,
     appVersion:APP_VERSION,
-    note:"'currentView' matches what was on screen (your active filter/sort) at export time. 'fullWatchlist' is your complete list regardless of any filter, included so this backup never drops players just because a filter was active. 'apiKeys' contains your MFL league API keys — these grant read access to your private league data, so treat this file as sensitive (don't post it publicly).",
+    note:"'currentView' matches what was on screen (your active filter/sort) at export time. 'fullWatchlist' is your complete list regardless of any filter, included so this backup never drops players just because a filter was active. 'apiKeys' contains your MFL league API keys — these grant read access to your private league data, so treat this file as sensitive (don't post it publicly). 'history' is a lightweight timeline (date + description only) — it doesn't include full player snapshots per entry, since restoring from history is what the in-app History panel and Undo are for, not this file.",
     currentView:currentView,
     fullWatchlist:fullWatchlist,
     apiKeys:mflApiKeys,
-    history:history
+    history:trimmedHistory
   };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);
