@@ -61,6 +61,8 @@
     .hdr-btn:disabled { opacity:.4; cursor:default; }
     #timestamp-row { display:flex; align-items:center; gap:8px; }
     #timestamp { color:var(--dim); font-size:11px; font-family:var(--font); }
+    #export-timestamp-row { margin-top:2px; }
+    #export-timestamp { color:var(--dim); font-size:11px; font-family:var(--font); }
     #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:22px; padding:0; line-height:1; font-family:var(--font); flex-shrink:0; display:flex; align-items:center; }
     #refresh-btn-sm:hover:not(:disabled) { color:var(--text); }
     #refresh-btn-sm:disabled { opacity:.4; cursor:default; }
@@ -267,6 +269,7 @@
     </div>
     <div id="timestamp-row"><span id="timestamp">Not yet refreshed</span><button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button></div>
     <div id="refresh-warning"></div>
+    <div id="export-timestamp-row"><span id="export-timestamp">Not yet exported</span></div>
   </div>
 </div>
 
@@ -356,7 +359,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.52";
+const APP_VERSION = "2.53";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -804,28 +807,35 @@ const toArr   = v => Array.isArray(v)?v:(v&&typeof v==="object"?[v]:[]);
 const sortKey = n => { const w=(n||"").trim().split(/\s+/),sfx=/^(jr\.?|sr\.?|ii|iii|iv|v)$/i,last=[...w].reverse().find(p=>!sfx.test(p))||w[0]; return(last+" "+n).toLowerCase(); };
 function stripHtml(s){ return(s||"").replace(/<[^>]*>/g,""); }
 
-const DEFAULT_WATCHLIST=[
-  {name:"Deshaun Watson",pos:"QB"},{name:"Tyson Bagent",pos:"QB"},
-  {name:"Jalen Milroe",pos:"QB"},{name:"Garret Nussmeier",pos:"QB"},
-  {name:"Joe Mixon",pos:"RB"},{name:"Kendre Miller",pos:"RB"},
-  {name:"Devin Neal",pos:"RB"},{name:"LeQuint Allen",pos:"RB"},
-  {name:"Adam Randall",pos:"RB"},
-  {name:"Brandon Aiyuk",pos:"WR"},{name:"Cyrus Allen",pos:"WR"},
-  {name:"Malik Benson",pos:"WR"},{name:"Isaiah Bond",pos:"WR"},
-  {name:"Deion Burks",pos:"WR"},{name:"Keon Coleman",pos:"WR"},
-  {name:"Ryan Flournoy",pos:"WR"},{name:"Bryce Lance",pos:"WR"},
-  {name:"Tyren Montgomery",pos:"WR"},{name:"Brenen Thompson",pos:"WR"},
-  {name:"Cedric Tillman",pos:"WR"},{name:"Jordan Whittington",pos:"WR"},
-  {name:"Erick All",pos:"TE"},{name:"Nate Boerkircher",pos:"TE"},
-  {name:"Mitchell Evans",pos:"TE"},{name:"Theo Johnson",pos:"TE"},
-  {name:"Cole Kmet",pos:"TE"},{name:"Charlie Kolar",pos:"TE"},
-  {name:"Ja'Tavion Sanders",pos:"TE"},{name:"Darnell Washington",pos:"TE"},
-  {name:"Trevor Lawrence",pos:"QB"},{name:"De'Von Achane",pos:"RB"}
-];
-
 let mflUserInfo  = localStorage.getItem("mflUserInfo") || null;
 let mflUsername  = localStorage.getItem("mflUsername") || null;
-let watchlist    = JSON.parse(localStorage.getItem("wl")||"null") || DEFAULT_WATCHLIST;
+let watchlist    = JSON.parse(localStorage.getItem("wl")||"null");
+if(watchlist===null){
+  // One-time migration (v2.53): earlier versions relied on a hardcoded DEFAULT_WATCHLIST
+  // fallback that was never actually persisted to storage. That fallback concept is now
+  // removed entirely, so this seeds your real, current list into storage once here. After
+  // this runs, storage is the only source of truth — no hardcoded list will ever silently
+  // reappear again if storage is ever cleared in the future.
+  watchlist=[
+    {name:"Deshaun Watson",pos:"QB"},{name:"Tyson Bagent",pos:"QB"},
+    {name:"Jalen Milroe",pos:"QB"},{name:"Garret Nussmeier",pos:"QB"},
+    {name:"Joe Mixon",pos:"RB"},{name:"Kendre Miller",pos:"RB"},
+    {name:"Devin Neal",pos:"RB"},{name:"LeQuint Allen",pos:"RB"},
+    {name:"Adam Randall",pos:"RB"},
+    {name:"Brandon Aiyuk",pos:"WR"},{name:"Cyrus Allen",pos:"WR"},
+    {name:"Malik Benson",pos:"WR"},{name:"Isaiah Bond",pos:"WR"},
+    {name:"Deion Burks",pos:"WR"},{name:"Keon Coleman",pos:"WR"},
+    {name:"Ryan Flournoy",pos:"WR"},{name:"Bryce Lance",pos:"WR"},
+    {name:"Tyren Montgomery",pos:"WR"},{name:"Brenen Thompson",pos:"WR"},
+    {name:"Cedric Tillman",pos:"WR"},{name:"Jordan Whittington",pos:"WR"},
+    {name:"Erick All",pos:"TE"},{name:"Nate Boerkircher",pos:"TE"},
+    {name:"Mitchell Evans",pos:"TE"},{name:"Theo Johnson",pos:"TE"},
+    {name:"Cole Kmet",pos:"TE"},{name:"Charlie Kolar",pos:"TE"},
+    {name:"Ja'Tavion Sanders",pos:"TE"},{name:"Darnell Washington",pos:"TE"},
+    {name:"Trevor Lawrence",pos:"QB"},{name:"De'Von Achane",pos:"RB"}
+  ];
+  localStorage.setItem("wl",JSON.stringify(watchlist));
+}
 let playerStatus = JSON.parse(localStorage.getItem("ps")||"{}");
 let leagueNames  = JSON.parse(localStorage.getItem("ln")||"{}");
 let lastRefresh  = localStorage.getItem("lr") || "Never";
@@ -989,11 +999,9 @@ function exportWatchlist(){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-}
-function resetToDefaults(){
-  if(!confirm("Reset watchlist to the 31 default players?"))return;
-  recordChange();watchlist=clone(DEFAULT_WATCHLIST);localStorage.setItem("wl",JSON.stringify(watchlist));
-  saveHistory("Reset to default watchlist ("+watchlist.length+" players)");buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
+  localStorage.setItem("lastExport",readableTs);
+  const _exEl=document.getElementById("export-timestamp");
+  if(_exEl)_exEl.textContent="Exported "+readableTs;
 }
 
 function loadCachedRosters(){
@@ -1341,7 +1349,10 @@ function getVisibleRows(){
 function renderList(){
   const el=document.getElementById("player-list"),rosters=loadCachedRosters();
   let rows=getVisibleRows();
-  document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
+  const _posCounts={QB:0,RB:0,WR:0,TE:0};
+  watchlist.forEach(p=>{if(_posCounts[p.pos]!==undefined)_posCounts[p.pos]++;});
+  const _posBreakdown=["QB","RB","WR","TE"].filter(k=>_posCounts[k]>0).map(k=>_posCounts[k]+" "+k).join(" · ");
+  document.getElementById("subtitle").textContent=watchlist.length+" players"+(_posBreakdown?" ("+_posBreakdown+")":"")+" · 6 leagues";
   renderLeagueKey();renderLegend();
   const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0||fv.bye.size>0||fv.college.size>0||fv.draftyear.size>0||fv.draftround.size>0||fv.draftpick.size>0||fv.draftexp.size>0||fv.age.size>0;
   document.getElementById("clear-filters-btn").style.display=anyFilter?"inline":"none";
@@ -1349,10 +1360,9 @@ function renderList(){
   if(!rows.length){
     if(!watchlist.length){
       el.innerHTML=`<div style="padding:20px 0;display:flex;flex-direction:column;gap:10px;">
-        <p style="color:var(--dim);font-size:13px;">Your watchlist is empty.</p>
+        <p style="color:var(--dim);font-size:13px;">Your watchlist is empty. Use the search bar above to add players, or:</p>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button onclick="toggleHistory()" style="background:none;border:1px solid var(--border);color:var(--dim);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#9733; Open History</button>
-          <button onclick="resetToDefaults()" style="background:none;border:1px solid var(--blue);color:var(--blue);padding:7px 14px;border-radius:5px;font-family:var(--font);font-size:12px;cursor:pointer;">&#8635; Reset to default (31 players)</button>
         </div></div>`;
     }else{el.innerHTML='<p class="no-results">No players match.</p>';}
     return;
@@ -1481,6 +1491,8 @@ buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();bu
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
 if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
+const _lastExport=localStorage.getItem("lastExport");
+if(_lastExport)document.getElementById("export-timestamp").textContent="Exported "+_lastExport;
 loadPlayerPool();
 loadByeWeeks();
 </script>
