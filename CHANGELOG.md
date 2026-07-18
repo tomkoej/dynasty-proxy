@@ -4,6 +4,9 @@ This file tracks the why behind each version of public/index.html, complementing
 Versions prior to v1.33 were built across earlier sessions and aren't itemized individually here; see "Foundational Build" at the bottom for a summary.
 
 
+## v2.60
+**Added:** a visible warning badge on any player card whose name doesn't resolve to a live MFL player (typo, or MFL hasn't updated the record yet). Previously this failed silently — the player would just show with no team, age, or draft data and no indication why, which is how a spelling mismatch went unnoticed for a while before. Guarded against a false-positive flash on every page load while the player pool is still fetching.
+
 ## v2.59
 **Fixed:** the "pool updated [time]" text was reading from `mflPoolTimeV2`, a cache key left behind from before the player pool cache was bumped to V3. Since nothing writes to V2 anymore, the displayed timestamp always silently fell back to "right now" instead of the true cache age. Now correctly reads V3. Audited every other localStorage key in the app for the same read/write mismatch pattern — this was the only one.
 
@@ -53,6 +56,22 @@ Versions prior to v1.33 were built across earlier sessions and aren't itemized i
 
 ## v2.44
 **Changed:** UDFA legend entry expanded to explain what it means (superseded by the simpler wording in v2.45).
+
+## v2.43
+**Changed:** Draft Slot legend key updated — sample tag changed to "1.01," added descriptor rows for UDFA and N/A so the key is actually instructive instead of just showing one example pill.
+
+## v2.30–v2.42
+**Changed:** expanded-view column width and inter-column gap tuning across many small iterative passes. Widened the expanded-view text columns (previously cramped, sized off the icon grid's 44px columns) — discovered partway through that an attempt using `minmax(...,1fr)` was silently always filling to the full container width regardless of the specified minimum, so switched to a genuinely fixed pixel width instead. Several further rounds of percentage-based width/gap adjustments, landing on a 343px text column, 120px first column, and 2.8px gap between icon/draft-slot columns. Added "Expand All"/"Collapse All" wording to the expand-toggle labels. Expanded view now shows the actual franchise name for "My Team" status instead of the generic phrase.
+**Fixed:** the nWo league (64818) was pulling in pre-2024 MFL draft history that predated when it was actually taken over, incorrectly showing real draft picks as UDFA. Added `minYear:2024` to its config and bumped the draft-results cache key to invalidate the bad cached data.
+
+## v1.99–v2.29 — Reconstructed, lower confidence
+**Note:** this range happened in the prior chat session, before a new session picked up the project at v2.29. Unlike everything above, this section is pieced together from a search of that old conversation rather than direct visibility into every change, so treat version numbers and boundaries here as approximate rather than exact.
+
+**Draft slot pill ambiguity fixed.** The compact per-player status/draft-slot grid relied purely on column position to convey which league each pill belonged to, with no explicit label — easy to misread. Resolved by prefixing each draft pill with its league number (matching the `[N]` bracket convention already used everywhere else in the app — league key, status filter, expanded owner lines), and also adding draft slot info into the expanded view's per-league lines so every card has an unambiguous cross-check.
+
+**Debug ticker collapse toggle (~v2.12).** The bottom diagnostic ribbon had accumulated enough temporary debug lines over the session that it was wrapping to multiple rows and eating vertical space meant for the player list. Added a collapse/expand toggle button that persists its state across reloads.
+
+**General polish through v2.29.** Continued iterative refinement of the status icon grid, draft metadata display, and filter system building on the v1.33–v1.98 foundation below — the prior session's summary describes this stretch as "hundreds of incremental feature additions and bug fixes," which is consistent with the density of small fixes visible in what's documented above and below this entry.
 
 v1.98 — Undrafted option in Draft Round / Overall Pick filters
 Added an explicit "Undrafted" choice to both filters (only shown when a UDFA exists on the watchlist), since those two fields are legitimately empty for undrafted players and they were previously unreachable through those filters.
