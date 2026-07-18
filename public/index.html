@@ -263,6 +263,7 @@
       <button class="hdr-btn" id="undo-btn" onclick="undo()" disabled>↩ Undo</button>
       <button class="hdr-btn" id="redo-btn" onclick="redo()" disabled>↪ Redo</button>
       <button class="hdr-btn" onclick="toggleHistory()">History</button>
+      <button class="hdr-btn" onclick="exportWatchlist()" title="Download your watchlist and history as a backup file">⬇ Export</button>
     </div>
     <div id="timestamp-row"><span id="timestamp">Not yet refreshed</span><button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button></div>
     <div id="refresh-warning"></div>
@@ -355,7 +356,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.49";
+const APP_VERSION = "2.50";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -963,6 +964,24 @@ function addFromPool(name,pos){
   saveHistory("Added "+name);
   document.getElementById("add-search").value="";document.getElementById("add-results").style.display="none";
   buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
+}
+function exportWatchlist(){
+  const payload={
+    exportedAt:new Date().toISOString(),
+    appVersion:APP_VERSION,
+    watchlist:watchlist,
+    history:history
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  const ts=new Date().toISOString().slice(0,10);
+  a.href=url;
+  a.download="dynasty-watchlist-backup-"+ts+".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 function resetToDefaults(){
   if(!confirm("Reset watchlist to the 31 default players?"))return;
