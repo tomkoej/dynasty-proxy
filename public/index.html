@@ -356,7 +356,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.50";
+const APP_VERSION = "2.51";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -966,16 +966,22 @@ function addFromPool(name,pos){
   buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
 function exportWatchlist(){
+  const now=new Date();
+  const readableTs=now.toLocaleString([],{weekday:"short",month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit",second:"2-digit"});
+  const currentView=getVisibleRows().map(p=>({name:p.name,pos:p.pos}));
+  const fullWatchlist=watchlist.map(p=>({name:p.name,pos:p.pos}));
   const payload={
-    exportedAt:new Date().toISOString(),
+    exportedAt:readableTs,
     appVersion:APP_VERSION,
-    watchlist:watchlist,
+    note:"'currentView' matches what was on screen (your active filter/sort) at export time. 'fullWatchlist' is your complete list regardless of any filter, included so this backup never drops players just because a filter was active.",
+    currentView:currentView,
+    fullWatchlist:fullWatchlist,
     history:history
   };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
-  const ts=new Date().toISOString().slice(0,10);
+  const ts=now.toISOString().slice(0,10);
   a.href=url;
   a.download="dynasty-watchlist-backup-"+ts+".json";
   document.body.appendChild(a);
@@ -1293,8 +1299,8 @@ function toggleAllOwners(){
   else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand All";}
 }
 
-function renderList(){
-  const sortV=fv.sort||"az",el=document.getElementById("player-list"),rosters=loadCachedRosters();
+function getVisibleRows(){
+  const sortV=fv.sort||"az";
   let rows=watchlist.map((p,i)=>({...p,i})).filter(p=>{
     if(fv.name.size>0&&!fv.name.has(norm(p.name)))return false;
     if(fv.pos.size>0&&!fv.pos.has(p.pos))return false;
@@ -1329,6 +1335,11 @@ function renderList(){
   }else{
     rows.sort((a,b)=>sortV==="za"?sortKey(b.name).localeCompare(sortKey(a.name)):sortKey(a.name).localeCompare(sortKey(b.name)));
   }
+  return rows;
+}
+function renderList(){
+  const el=document.getElementById("player-list"),rosters=loadCachedRosters();
+  let rows=getVisibleRows();
   document.getElementById("subtitle").textContent=watchlist.length+" players · 6 leagues";
   renderLeagueKey();renderLegend();
   const anyFilter=fv.name.size>0||fv.pos.size>0||fv.nflteam.size>0||fv.status.size>0||fv.format.size>0||fv.league.size>0||fv.bye.size>0||fv.college.size>0||fv.draftyear.size>0||fv.draftround.size>0||fv.draftpick.size>0||fv.draftexp.size>0||fv.age.size>0;
