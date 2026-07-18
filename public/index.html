@@ -63,6 +63,7 @@
     #timestamp { color:var(--dim); font-size:11px; font-family:var(--font); }
     #export-timestamp-row { margin-top:2px; }
     #export-timestamp { color:var(--dim); font-size:11px; font-family:var(--font); }
+    #export-nudge { color:var(--dim); font-size:11px; font-family:var(--font); font-style:italic; }
     #refresh-btn-sm { background:none; border:none; color:var(--dim); cursor:pointer; font-size:22px; padding:0; line-height:1; font-family:var(--font); flex-shrink:0; display:flex; align-items:center; }
     #refresh-btn-sm:hover:not(:disabled) { color:var(--text); }
     #refresh-btn-sm:disabled { opacity:.4; cursor:default; }
@@ -271,7 +272,7 @@
     </div>
     <div id="timestamp-row"><span id="timestamp">Not yet refreshed</span><button id="refresh-btn-sm" onclick="manualRefresh()" title="Refresh rosters">⟳</button></div>
     <div id="refresh-warning"></div>
-    <div id="export-timestamp-row"><span id="export-timestamp">Not yet exported</span></div>
+    <div id="export-timestamp-row"><span id="export-timestamp">Not yet exported</span><span id="export-nudge" style="display:none"></span></div>
   </div>
 </div>
 
@@ -361,7 +362,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.54";
+const APP_VERSION = "2.55";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -874,9 +875,14 @@ function isRookie(name){ const m=getPlayerMeta(name);return !!(m?.status==="R"||
 
 function recordChange(){ undoStack.push(clone(watchlist));if(undoStack.length>100)undoStack.shift();redoStack=[];updateUndoRedoBtns(); }
 function saveHistory(desc){ history.unshift({ts:Date.now(),desc,watchlist:clone(watchlist)});if(history.length>30)history.pop();localStorage.setItem("wlHistory",JSON.stringify(history));renderHistory(); }
-function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
-function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();localStorage.setItem("wl",JSON.stringify(watchlist));updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
-function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
+function saveWatchlist(){
+  localStorage.setItem("wl",JSON.stringify(watchlist));
+  localStorage.setItem("wlDirtySinceExport","1");
+  updateExportNudge();
+}
+function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();saveWatchlist();updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
+function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();saveWatchlist();updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
+function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);saveWatchlist();saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
 function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length;document.getElementById("redo-btn").disabled=!redoStack.length; }
 function toggleHistory(){ const p=document.getElementById("history-panel");p.style.display=p.style.display==="none"?"block":"none"; }
 let histExpanded=new Set();
@@ -944,7 +950,7 @@ function updateAddResults(){
 }
 function addFromPool(name,pos){
   if(watchlist.some(p=>norm(p.name)===norm(name)))return;
-  recordChange();watchlist.push({name,pos});localStorage.setItem("wl",JSON.stringify(watchlist));
+  recordChange();watchlist.push({name,pos});saveWatchlist();
   const status=computePlayerStatus(name);
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
   saveHistory("Added "+name);
@@ -959,9 +965,10 @@ function exportWatchlist(){
   const payload={
     exportedAt:readableTs,
     appVersion:APP_VERSION,
-    note:"'currentView' matches what was on screen (your active filter/sort) at export time. 'fullWatchlist' is your complete list regardless of any filter, included so this backup never drops players just because a filter was active.",
+    note:"'currentView' matches what was on screen (your active filter/sort) at export time. 'fullWatchlist' is your complete list regardless of any filter, included so this backup never drops players just because a filter was active. 'apiKeys' contains your MFL league API keys — these grant read access to your private league data, so treat this file as sensitive (don't post it publicly).",
     currentView:currentView,
     fullWatchlist:fullWatchlist,
+    apiKeys:mflApiKeys,
     history:history
   };
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
@@ -976,8 +983,30 @@ function exportWatchlist(){
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
   localStorage.setItem("lastExport",readableTs);
+  localStorage.setItem("lastExportTime",now.getTime().toString());
+  localStorage.setItem("wlDirtySinceExport","0");
   const _exEl=document.getElementById("export-timestamp");
   if(_exEl)_exEl.textContent="Exported "+readableTs;
+  updateExportNudge();
+}
+function updateExportNudge(){
+  const el=document.getElementById("export-nudge");
+  if(!el)return;
+  const dirty=localStorage.getItem("wlDirtySinceExport")==="1";
+  const lastTime=parseInt(localStorage.getItem("lastExportTime")||"0");
+  const daysSince=lastTime?(Date.now()-lastTime)/86400000:Infinity;
+  if(!lastTime){
+    el.textContent=" · never exported";
+    el.style.display="inline";
+  }else if(dirty){
+    el.textContent=" · changes since last export";
+    el.style.display="inline";
+  }else if(daysSince>7){
+    el.textContent=" · export is "+Math.floor(daysSince)+"d old";
+    el.style.display="inline";
+  }else{
+    el.style.display="none";
+  }
 }
 function handleImportFile(event){
   const file=event.target.files[0];
@@ -1004,15 +1033,23 @@ function handleImportFile(event){
       return;
     }
     const dateInfo=data.exportedAt?" (backup from "+data.exportedAt+")":"";
-    if(!confirm("Import "+importedList.length+" players"+dateInfo+"?\n\nThis replaces your current watchlist ("+watchlist.length+" players). You can Undo this afterward if needed.")){
+    const importedApiKeys=(data.apiKeys&&typeof data.apiKeys==="object")?data.apiKeys:null;
+    const apiKeyCount=importedApiKeys?Object.keys(importedApiKeys).filter(k=>importedApiKeys[k]).length:0;
+    const apiKeyMsg=apiKeyCount>0?" and "+apiKeyCount+" API key"+(apiKeyCount!==1?"s":""):"";
+    if(!confirm("Import "+importedList.length+" players"+apiKeyMsg+dateInfo+"?\n\nThis replaces your current watchlist ("+watchlist.length+" players)"+(apiKeyCount>0?" and restores the API keys in this backup":"")+". You can Undo the watchlist change afterward if needed.")){
       event.target.value="";
       return;
     }
     recordChange();
     watchlist=importedList;
-    localStorage.setItem("wl",JSON.stringify(watchlist));
-    saveHistory("Imported "+watchlist.length+" players"+dateInfo);
+    saveWatchlist();
+    saveHistory("Imported "+watchlist.length+" players"+apiKeyMsg+dateInfo);
+    if(apiKeyCount>0){
+      Object.assign(mflApiKeys,importedApiKeys);
+      localStorage.setItem("mflApiKeys",JSON.stringify(mflApiKeys));
+    }
     buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
+    if(apiKeyCount>0)doRefresh();
     event.target.value="";
   };
   reader.onerror=function(){
@@ -1492,7 +1529,7 @@ function renderList(){
 
 function removePlayer(i){
   const name=watchlist[i]?.name||"Player";recordChange();watchlist=watchlist.filter((_,j)=>j!==i);
-  localStorage.setItem("wl",JSON.stringify(watchlist));saveHistory("Removed "+name);
+  saveWatchlist();saveHistory("Removed "+name);
   buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
 }
 
@@ -1512,6 +1549,7 @@ const _stale=!_lrTime||Date.now()-_lrTime>1800000;
 if(_stale){doRefresh();}else{document.getElementById("timestamp").textContent="Updated "+lastRefresh;}
 const _lastExport=localStorage.getItem("lastExport");
 if(_lastExport)document.getElementById("export-timestamp").textContent="Exported "+_lastExport;
+updateExportNudge();
 loadPlayerPool();
 loadByeWeeks();
 </script>
