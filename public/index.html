@@ -321,8 +321,8 @@
       <div class="cs-wrap" id="csf-bye"><button class="cs-btn" onclick="csToggle(this)">Bye Week<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-bye" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-college"><button class="cs-btn" onclick="csToggle(this)">College<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-college" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-draftyear"><button class="cs-btn" onclick="csToggle(this)">Draft Class<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftyear" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-draftround"><button class="cs-btn" onclick="csToggle(this)">Draft Round<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftround" onclick="event.stopPropagation()"></div></div>
-      <div class="cs-wrap" id="csf-draftpick"><button class="cs-btn" onclick="csToggle(this)">Overall Pick<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftpick" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-draftround"><button class="cs-btn" onclick="csToggle(this)">NFL Draft Round<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftround" onclick="event.stopPropagation()"></div></div>
+      <div class="cs-wrap" id="csf-draftpick"><button class="cs-btn" onclick="csToggle(this)">NFL Overall Pick<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftpick" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-draftexp"><button class="cs-btn" onclick="csToggle(this)">Years in NFL<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-draftexp" onclick="event.stopPropagation()"></div></div>
       <div class="cs-wrap" id="csf-age"><button class="cs-btn" onclick="csToggle(this)">Age<span class="cs-spacer"></span><span class="cs-arr">▾</span></button><div class="cs-list" id="csl-age" onclick="event.stopPropagation()"></div></div>
     </div>
@@ -372,7 +372,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.61";
+const APP_VERSION = "2.62";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1595,7 +1595,7 @@ renderLeagueKey();
 updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
-csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"},{val:"byelo",label:"Earliest Bye"},{val:"byehi",label:"Latest Bye"},{val:"draftlo",label:"Earliest Pick"},{val:"drafthi",label:"Latest Pick"}]);
+csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"},{val:"byelo",label:"Earliest Bye Week"},{val:"byehi",label:"Latest Bye Week"},{val:"draftlo",label:"Earliest NFL Pick"},{val:"drafthi",label:"Latest NFL Pick"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();renderHistory();_dbgUpdate();
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
