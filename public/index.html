@@ -375,7 +375,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.66";
+const APP_VERSION = "2.67";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1513,25 +1513,42 @@ function renderList(){
     });
     return dots.join("");
   };
+  const STATUS_BUCKET_LABEL={team:"On your team",unavailable:"Unavailable",available:"Available",unknown:"Unknown"};
+  const STATUS_BUCKET_LABEL_LOWER={team:"on your team",unavailable:"unavailable",available:"available",unknown:"unknown"};
+  const statusBucketFor=(s)=>{
+    if(s==="mine"||s==="mytradeblock")return"team";
+    if(s==="taken"||s==="tradeblock")return"unavailable";
+    if(s==="available")return"available";
+    return"unknown";
+  };
   const statusSummaryText=(status)=>{
-    let avail=0,mine=0,taken=0,unknown=0;
-    LEAGUES.forEach(cfg=>{
-      const sv=status[cfg.id],arr=cfg.twoCopy?(Array.isArray(sv)?sv:["unknown","unknown"]):[sv||"unknown"];
-      arr.forEach(s=>{
-        if(s==="available")avail++;
-        else if(s==="mine"||s==="mytradeblock")mine++;
-        else if(s==="taken"||s==="tradeblock")taken++;
-        else unknown++;
-      });
+    const buckets={team:[],unavailable:[],available:[],unknown:[]};
+    let splitEntry=null;
+    LEAGUES.forEach((cfg,idx)=>{
+      const num=idx+1;
+      if(cfg.twoCopy){
+        const sv=status[cfg.id],arr=Array.isArray(sv)?sv:["unknown","unknown"];
+        const b1=statusBucketFor(arr[0]),b2=statusBucketFor(arr[1]);
+        if(b1===b2)buckets[b1].push(num);
+        else splitEntry={num,b1,b2};
+      }else{
+        buckets[statusBucketFor(status[cfg.id])].push(num);
+      }
     });
-    const total=avail+mine+taken+unknown;
-    if(total>0&&avail===total)return"Available everywhere";
-    if(total>0&&mine===total)return"Rostered on all your teams";
+    const usedBuckets=Object.keys(buckets).filter(k=>buckets[k].length>0);
+    if(!splitEntry&&usedBuckets.length===1){
+      return`${STATUS_BUCKET_LABEL[usedBuckets[0]]} in all ${LEAGUES.length} leagues`;
+    }
     const parts=[];
-    if(mine)parts.push(mine+" on your team"+(mine!==1?"s":""));
-    if(taken)parts.push(taken+" rostered elsewhere");
-    if(avail)parts.push(avail+" available");
-    if(unknown)parts.push(unknown+" unknown");
+    ["team","unavailable","available","unknown"].forEach(b=>{
+      if(buckets[b].length>0){
+        const n=buckets[b].length;
+        parts.push(`${STATUS_BUCKET_LABEL[b]} in ${n} league${n!==1?"s":""} [${buckets[b].join("][")}]`);
+      }
+    });
+    if(splitEntry){
+      parts.push(`[${splitEntry.num}] nWo — 1 ${STATUS_BUCKET_LABEL_LOWER[splitEntry.b1]}, 1 ${STATUS_BUCKET_LABEL_LOWER[splitEntry.b2]}`);
+    }
     return parts.join(" · ")||"No data";
   };
   const buildStatusLines=(status,pid,maxSlots)=>{
