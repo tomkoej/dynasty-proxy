@@ -372,7 +372,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.62";
+const APP_VERSION = "2.64";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1595,7 +1595,7 @@ renderLeagueKey();
 updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
-csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"},{val:"byelo",label:"Earliest Bye Week"},{val:"byehi",label:"Latest Bye Week"},{val:"draftlo",label:"Earliest NFL Pick"},{val:"drafthi",label:"Latest NFL Pick"}]);
+csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Age (Youngest to Oldest)"},{val:"agehi",label:"Age (Oldest to Youngest)"},{val:"byelo",label:"Bye Week (Ascending)"},{val:"byehi",label:"Bye Week (Descending)"},{val:"draftlo",label:"NFL Draft Pick (Ascending)"},{val:"drafthi",label:"NFL Draft Pick (Descending)"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();renderHistory();_dbgUpdate();
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
