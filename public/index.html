@@ -165,9 +165,7 @@
     .player-card-top { display:flex; align-items:center; gap:10px; }
     .player-card-text { display:flex; flex-direction:column; min-width:0; flex:1; gap:3px; }
     .player-name-row { display:flex; align-items:center; gap:8px; }
-    .remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0; }
-    .status-toggle { margin-left:auto; color:var(--dim); font-size:10px; text-decoration:underline; cursor:pointer; white-space:nowrap; flex-shrink:0; }
-    .status-toggle.expanded { color:var(--green); }
+    .remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0; margin-left:auto; }
     .status-summary { display:flex; align-items:center; gap:6px; margin-top:8px; padding-left:36px; }
     .status-summary-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
     .status-summary-text { color:var(--dim); font-size:10px; margin-left:2px; }
@@ -377,7 +375,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.65";
+const APP_VERSION = "2.66";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1214,18 +1212,12 @@ async function doRefresh(){
 
 function toggleOwners(idx){
   const el=document.getElementById("owners-"+idx),btn=document.getElementById("owntoggle-"+idx);
+  const full=document.getElementById("iconrow-"+idx),summary=document.getElementById("statussummary-"+idx);
   if(!el)return;const opening=el.style.display==="none";
   el.style.display=opening?"contents":"none";
   btn.classList.toggle("open",opening);
-}
-function toggleStatusSummary(idx){
-  const full=document.getElementById("iconrow-"+idx),summary=document.getElementById("statussummary-"+idx),toggle=document.getElementById("statustoggle-"+idx);
-  if(!full||!summary||!toggle)return;
-  const opening=full.style.display==="none";
-  full.style.display=opening?"":"none";
-  summary.style.display=opening?"none":"flex";
-  toggle.textContent=opening?"Collapse Status":"Expand Status";
-  toggle.classList.toggle("expanded",opening);
+  if(full)full.style.display=opening?"":"none";
+  if(summary)summary.style.display=opening?"none":"flex";
 }
 function clearFilters(){
   [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league,fv.bye,fv.college,fv.draftyear,fv.draftround,fv.draftpick,fv.draftexp,fv.age].forEach(s=>s.clear());fv.sort="az";
@@ -1397,6 +1389,8 @@ let allExpanded=false;
 function applyExpandAll(){
   document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="contents");
   document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.add("open"));
+  document.querySelectorAll("#player-list [id^='iconrow-']").forEach(el=>el.style.display="");
+  document.querySelectorAll("#player-list [id^='statussummary-']").forEach(el=>el.style.display="none");
   const chk=document.getElementById("expand-all-toggle");if(chk)chk.checked=true;
   const lbl=document.getElementById("expand-text");if(lbl)lbl.textContent="Collapse All";
 }
@@ -1404,7 +1398,13 @@ function toggleAllOwners(){
   const chk=document.getElementById("expand-all-toggle");allExpanded=chk?chk.checked:!allExpanded;
   const lbl=document.getElementById("expand-text");
   if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse All";}
-  else{document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand All";}
+  else{
+    document.querySelectorAll("#player-list [id^='owners-']").forEach(el=>el.style.display="none");
+    document.querySelectorAll("#player-list [id^='owntoggle-']").forEach(b=>b.classList.remove("open"));
+    document.querySelectorAll("#player-list [id^='iconrow-']").forEach(el=>el.style.display="none");
+    document.querySelectorAll("#player-list [id^='statussummary-']").forEach(el=>el.style.display="flex");
+    const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand All";
+  }
 }
 
 function getVisibleRows(){
@@ -1607,7 +1607,6 @@ function renderList(){
             ${rookie?'<span class="rookie-badge">R</span>':""}
             ${byePill(name)}
             ${nextGamePill(name)}
-            <span class="status-toggle" id="statustoggle-${i}" onclick="toggleStatusSummary(${i})">Expand Status</span>
             <button class="remove-btn" onclick="removePlayer(${i})">×</button>
           </div>
           ${draftMeta(name)}
