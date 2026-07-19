@@ -375,7 +375,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.68";
+const APP_VERSION = "2.69";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -893,9 +893,9 @@ function saveWatchlist(){
   localStorage.setItem("wlDirtySinceExport","1");
   updateExportStatus();
 }
-function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();saveWatchlist();updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
-function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();saveWatchlist();updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
-function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);saveWatchlist();saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList(); }
+function undo(){ if(!undoStack.length)return;redoStack.push(clone(watchlist));watchlist=undoStack.pop();saveWatchlist();updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();const _a=captureScrollAnchor();renderList();restoreScrollAnchor(_a); }
+function redo(){ if(!redoStack.length)return;undoStack.push(clone(watchlist));watchlist=redoStack.pop();saveWatchlist();updateUndoRedoBtns();buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();const _a=captureScrollAnchor();renderList();restoreScrollAnchor(_a); }
+function revertToHistory(i){ recordChange();watchlist=clone(history[i].watchlist);saveWatchlist();saveHistory("Reverted to: "+history[i].desc);buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();const _a=captureScrollAnchor();renderList();restoreScrollAnchor(_a); }
 function updateUndoRedoBtns(){ document.getElementById("undo-btn").disabled=!undoStack.length;document.getElementById("redo-btn").disabled=!redoStack.length; }
 function toggleHistory(){ const p=document.getElementById("history-panel");p.style.display=p.style.display==="none"?"block":"none"; }
 let histExpanded=new Set();
@@ -968,7 +968,7 @@ function addFromPool(name,pos){
   if(status){playerStatus[norm(name)]=status;localStorage.setItem("ps",JSON.stringify(playerStatus));}
   saveHistory("Added "+name);
   document.getElementById("add-search").value="";document.getElementById("add-results").style.display="none";
-  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();const _a=captureScrollAnchor();renderList();restoreScrollAnchor(_a);
 }
 function exportWatchlist(){
   const now=new Date();
@@ -1081,7 +1081,7 @@ function handleImportFile(event){
       Object.assign(mflApiKeys,importedApiKeys);
       localStorage.setItem("mflApiKeys",JSON.stringify(mflApiKeys));
     }
-    buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
+    buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();const _a=captureScrollAnchor();renderList();restoreScrollAnchor(_a);
     if(apiKeyCount>0)doRefresh();
     event.target.value="";
   };
@@ -1394,17 +1394,29 @@ function applyExpandAll(){
   const chk=document.getElementById("expand-all-toggle");if(chk)chk.checked=true;
   const lbl=document.getElementById("expand-text");if(lbl)lbl.textContent="Collapse All";
 }
-function toggleAllOwners(){
+function captureScrollAnchor(){
   const scrollEl=document.getElementById("scroll-list");
-  let anchor=null,anchorTopBefore=0;
-  if(scrollEl){
-    const containerTop=scrollEl.getBoundingClientRect().top;
-    const rows=scrollEl.querySelectorAll(".player-row");
-    for(const row of rows){
-      const r=row.getBoundingClientRect();
-      if(r.bottom>containerTop){anchor=row;anchorTopBefore=r.top;break;}
-    }
+  if(!scrollEl)return null;
+  const containerTop=scrollEl.getBoundingClientRect().top;
+  const rows=scrollEl.querySelectorAll(".player-row");
+  for(const row of rows){
+    const r=row.getBoundingClientRect();
+    if(r.bottom>containerTop)return{name:row.dataset.playerName,topBefore:r.top};
   }
+  return null;
+}
+function restoreScrollAnchor(anchor){
+  if(!anchor)return;
+  const scrollEl=document.getElementById("scroll-list");
+  if(!scrollEl)return;
+  let row;
+  try{row=scrollEl.querySelector('.player-row[data-player-name="'+CSS.escape(anchor.name)+'"]');}catch(e){return;}
+  if(!row)return;
+  const topAfter=row.getBoundingClientRect().top;
+  scrollEl.scrollTop+=(topAfter-anchor.topBefore);
+}
+function toggleAllOwners(){
+  const _anchor=captureScrollAnchor();
   const chk=document.getElementById("expand-all-toggle");allExpanded=chk?chk.checked:!allExpanded;
   const lbl=document.getElementById("expand-text");
   if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse All";}
@@ -1415,10 +1427,7 @@ function toggleAllOwners(){
     document.querySelectorAll("#player-list [id^='statussummary-']").forEach(el=>el.style.display="flex");
     const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand All";
   }
-  if(anchor&&scrollEl){
-    const anchorTopAfter=anchor.getBoundingClientRect().top;
-    scrollEl.scrollTop+=(anchorTopAfter-anchorTopBefore);
-  }
+  restoreScrollAnchor(_anchor);
 }
 
 function getVisibleRows(){
@@ -1626,7 +1635,7 @@ function renderList(){
     });
     const allStatuses=buildStatusLines(status,pid,_maxSlots);
     const summaryDots=statusSummaryDots(status),summaryText=statusSummaryText(status);
-    return`<div class="player-row">
+    return`<div class="player-row" data-player-name="${name}">
       <div class="player-card-top">
         <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
         ${jerseyPill(name)}
@@ -1659,7 +1668,7 @@ function renderList(){
 function removePlayer(i){
   const name=watchlist[i]?.name||"Player";recordChange();watchlist=watchlist.filter((_,j)=>j!==i);
   saveWatchlist();saveHistory("Removed "+name);
-  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();
+  buildNameDropdown();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();const _a=captureScrollAnchor();renderList();restoreScrollAnchor(_a);
 }
 
 document.getElementById("app-version").textContent="v"+APP_VERSION;
