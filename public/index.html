@@ -165,7 +165,12 @@
     .player-card-top { display:flex; align-items:center; gap:10px; }
     .player-card-text { display:flex; flex-direction:column; min-width:0; flex:1; gap:3px; }
     .player-name-row { display:flex; align-items:center; gap:8px; }
-    .remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0; margin-left:auto; }
+    .remove-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-family:var(--font); font-size:14px; padding:0 2px; line-height:1; flex-shrink:0; }
+    .status-toggle { margin-left:auto; color:var(--dim); font-size:10px; text-decoration:underline; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+    .status-toggle.expanded { color:var(--green); }
+    .status-summary { display:flex; align-items:center; gap:6px; margin-top:8px; padding-left:36px; }
+    .status-summary-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+    .status-summary-text { color:var(--dim); font-size:10px; margin-left:2px; }
     .remove-btn:hover { color:var(--red); }
     .player-name { color:var(--text); }
     .player-pos  { color:var(--text); font-size:14px; }
@@ -372,7 +377,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.64";
+const APP_VERSION = "2.65";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1213,6 +1218,15 @@ function toggleOwners(idx){
   el.style.display=opening?"contents":"none";
   btn.classList.toggle("open",opening);
 }
+function toggleStatusSummary(idx){
+  const full=document.getElementById("iconrow-"+idx),summary=document.getElementById("statussummary-"+idx),toggle=document.getElementById("statustoggle-"+idx);
+  if(!full||!summary||!toggle)return;
+  const opening=full.style.display==="none";
+  full.style.display=opening?"":"none";
+  summary.style.display=opening?"none":"flex";
+  toggle.textContent=opening?"Collapse Status":"Expand Status";
+  toggle.classList.toggle("expanded",opening);
+}
 function clearFilters(){
   [fv.name,fv.pos,fv.nflteam,fv.status,fv.format,fv.league,fv.bye,fv.college,fv.draftyear,fv.draftround,fv.draftpick,fv.draftexp,fv.age].forEach(s=>s.clear());fv.sort="az";
   closePanel();Object.keys(csQ).forEach(k=>csQ[k]="");
@@ -1491,6 +1505,35 @@ function renderList(){
       return`<span class="league-icon" style="${sty}" title="[${num}] ${ln} — Copy ${k+1}: ${iconLabel(sv)}">${num}</span>`;
     });
   };
+  const statusSummaryDots=(status)=>{
+    const dots=[];
+    LEAGUES.forEach(cfg=>{
+      const sv=status[cfg.id],arr=cfg.twoCopy?(Array.isArray(sv)?sv:["unknown","unknown"]):[sv||"unknown"];
+      arr.forEach(s=>{dots.push(`<span class="status-summary-dot" style="background:${iconColor(s)}"></span>`);});
+    });
+    return dots.join("");
+  };
+  const statusSummaryText=(status)=>{
+    let avail=0,mine=0,taken=0,unknown=0;
+    LEAGUES.forEach(cfg=>{
+      const sv=status[cfg.id],arr=cfg.twoCopy?(Array.isArray(sv)?sv:["unknown","unknown"]):[sv||"unknown"];
+      arr.forEach(s=>{
+        if(s==="available")avail++;
+        else if(s==="mine"||s==="mytradeblock")mine++;
+        else if(s==="taken"||s==="tradeblock")taken++;
+        else unknown++;
+      });
+    });
+    const total=avail+mine+taken+unknown;
+    if(total>0&&avail===total)return"Available everywhere";
+    if(total>0&&mine===total)return"Rostered on all your teams";
+    const parts=[];
+    if(mine)parts.push(mine+" on your team"+(mine!==1?"s":""));
+    if(taken)parts.push(taken+" rostered elsewhere");
+    if(avail)parts.push(avail+" available");
+    if(unknown)parts.push(unknown+" unknown");
+    return parts.join(" · ")||"No data";
+  };
   const buildStatusLines=(status,pid,maxSlots)=>{
     const lineFor=(cfg)=>{
       const num=LEAGUES.indexOf(cfg)+1,numStr=String(num),leagueSv=status[cfg.id];
@@ -1551,6 +1594,7 @@ function renderList(){
       }
     });
     const allStatuses=buildStatusLines(status,pid,_maxSlots);
+    const summaryDots=statusSummaryDots(status),summaryText=statusSummaryText(status);
     return`<div class="player-row">
       <div class="player-card-top">
         <button class="owner-toggle" id="owntoggle-${i}" onclick="toggleOwners(${i})">▶</button>
@@ -1563,12 +1607,14 @@ function renderList(){
             ${rookie?'<span class="rookie-badge">R</span>':""}
             ${byePill(name)}
             ${nextGamePill(name)}
+            <span class="status-toggle" id="statustoggle-${i}" onclick="toggleStatusSummary(${i})">Expand Status</span>
             <button class="remove-btn" onclick="removePlayer(${i})">×</button>
           </div>
           ${draftMeta(name)}
         </div>
       </div>
-      <div class="icon-row-group" style="grid-template-columns:120px repeat(${_maxSlots},44px);grid-template-rows:auto auto auto auto;row-gap:6px;column-gap:2.8px;margin-top:8px;">
+      <div class="status-summary" id="statussummary-${i}">${summaryDots}<span class="status-summary-text">${summaryText}</span></div>
+      <div class="icon-row-group" id="iconrow-${i}" style="display:none;grid-template-columns:120px repeat(${_maxSlots},44px);grid-template-rows:auto auto auto auto;row-gap:6px;column-gap:2.8px;margin-top:8px;">
         <div style="grid-column:1;grid-row:1/3;display:flex;align-items:center;"><span class="row-label">SF</span></div>
         <div style="grid-column:1;grid-row:3/5;display:flex;align-items:center;"><span class="row-label">SF/TE+</span></div>
         ${_sfCells}
