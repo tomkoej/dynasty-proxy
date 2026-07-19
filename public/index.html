@@ -372,7 +372,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.60";
+const APP_VERSION = "2.61";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1426,6 +1426,27 @@ function getVisibleRows(){
       if(bAge===null)return -1;
       return sortV==="agelo"?parseFloat(aAge)-parseFloat(bAge):parseFloat(bAge)-parseFloat(aAge);
     });
+  }else if(sortV==="byelo"||sortV==="byehi"){
+    rows.sort((a,b)=>{
+      const am=getPlayerMeta(a.name),bm=getPlayerMeta(b.name);
+      const aWk=am?.team?teamByeWeeks[am.team]:null,bWk=bm?.team?teamByeWeeks[bm.team]:null;
+      if(aWk==null&&bWk==null)return sortKey(a.name).localeCompare(sortKey(b.name));
+      if(aWk==null)return 1;
+      if(bWk==null)return -1;
+      return sortV==="byelo"?aWk-bWk:bWk-aWk;
+    });
+  }else if(sortV==="draftlo"||sortV==="drafthi"){
+    // "Draft Slot" sorts by NFL draft overall pick — the same value already used by the
+    // Overall Pick filter. League-specific rookie draft slots aren't used here since a
+    // player can have a different slot in each of the 6 leagues, so there's no single
+    // unambiguous "draft slot" value to sort by other than their real NFL draft position.
+    rows.sort((a,b)=>{
+      const aOvr=draftOverall(getPlayerMeta(a.name)),bOvr=draftOverall(getPlayerMeta(b.name));
+      if(aOvr==null&&bOvr==null)return sortKey(a.name).localeCompare(sortKey(b.name));
+      if(aOvr==null)return 1;
+      if(bOvr==null)return -1;
+      return sortV==="draftlo"?aOvr-bOvr:bOvr-aOvr;
+    });
   }else{
     rows.sort((a,b)=>sortV==="za"?sortKey(b.name).localeCompare(sortKey(a.name)):sortKey(a.name).localeCompare(sortKey(b.name)));
   }
@@ -1574,7 +1595,7 @@ renderLeagueKey();
 updateMFLBtn();
 csOptions("pos",[{val:"",label:"Select All"},{val:"QB",label:"QB"},{val:"RB",label:"RB"},{val:"WR",label:"WR"},{val:"TE",label:"TE"}]);
 csOptions("status",[{val:"",label:"Select All"},{val:"available",label:"Available"},{val:"mine",label:"My Team"},{val:"mytradeblock",label:"My Trade Block"},{val:"tradeblock",label:"Trade Block"},{val:"taken",label:"Rostered"}]);
-csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"}]);
+csOptions("sort",[{val:"az",label:"A to Z"},{val:"za",label:"Z to A"},{val:"rookies",label:"Rookies Only"},{val:"agelo",label:"Youngest First"},{val:"agehi",label:"Oldest First"},{val:"byelo",label:"Earliest Bye"},{val:"byehi",label:"Latest Bye"},{val:"draftlo",label:"Earliest Pick"},{val:"drafthi",label:"Latest Pick"}]);
 buildNameDropdown();buildFormatFilter();buildLeagueFilter();buildTeamFilter();buildByeFilter();buildCollegeFilter();buildDraftYearFilter();buildDraftRoundFilter();buildDraftPickFilter();buildDraftExpFilter();buildAgeFilter();ensureDraftResultsForWatchlist();renderList();renderHistory();_dbgUpdate();
 const _lrTime=parseInt(localStorage.getItem("lrTime")||"0");
 const _stale=!_lrTime||Date.now()-_lrTime>1800000;
