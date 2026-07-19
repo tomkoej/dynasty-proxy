@@ -375,7 +375,7 @@
 </div>
 
 <script>
-const APP_VERSION = "2.67";
+const APP_VERSION = "2.68";
 
 // ── Theme ──────────────────────────────────────────────────────────────────────
 let _isDayMode = localStorage.getItem("themeMode")==="day";
@@ -1395,6 +1395,16 @@ function applyExpandAll(){
   const lbl=document.getElementById("expand-text");if(lbl)lbl.textContent="Collapse All";
 }
 function toggleAllOwners(){
+  const scrollEl=document.getElementById("scroll-list");
+  let anchor=null,anchorTopBefore=0;
+  if(scrollEl){
+    const containerTop=scrollEl.getBoundingClientRect().top;
+    const rows=scrollEl.querySelectorAll(".player-row");
+    for(const row of rows){
+      const r=row.getBoundingClientRect();
+      if(r.bottom>containerTop){anchor=row;anchorTopBefore=r.top;break;}
+    }
+  }
   const chk=document.getElementById("expand-all-toggle");allExpanded=chk?chk.checked:!allExpanded;
   const lbl=document.getElementById("expand-text");
   if(allExpanded){applyExpandAll();if(lbl)lbl.textContent="Collapse All";}
@@ -1404,6 +1414,10 @@ function toggleAllOwners(){
     document.querySelectorAll("#player-list [id^='iconrow-']").forEach(el=>el.style.display="none");
     document.querySelectorAll("#player-list [id^='statussummary-']").forEach(el=>el.style.display="flex");
     const elbl=document.getElementById("expand-text");if(elbl)elbl.textContent="Expand All";
+  }
+  if(anchor&&scrollEl){
+    const anchorTopAfter=anchor.getBoundingClientRect().top;
+    scrollEl.scrollTop+=(anchorTopAfter-anchorTopBefore);
   }
 }
 
